@@ -5,18 +5,20 @@ use strict;
 use Net::IRC;
 use Data::Dumper;
 use IrcLog qw(get_dbh gmt_today);
+use Config::File;
 
 my $irc = new Net::IRC;
 
-my $nick = shift @ARGV || "ilbot6";
+my $conf = Config::File::read_config_file("bot.conf");
+my $nick = shift @ARGV || $conf->{NICK} || "ilbot6";
 
 my $conn = $irc->newconn(
         Nick    => $nick,
-        Server  => 'irc.freenode.net'
+        Server  => $conf->{SERVER} || 'irc.freenode.net',
         );
 my $dbh = get_dbh();
 
-my $channel = "#perl6";
+my $channel = $conf->{CHANNEL} || "#perl6";
 my $q = $dbh->prepare("INSERT INTO irclog VALUES(?, ?, ?, ?, ?)");
 $conn->add_global_handler('376', \&on_connect);
 $conn->add_handler("public", \&on_public);
