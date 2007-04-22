@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+    <meta name="description" content="IRC LOG for channel <TMPL_VAR NAME=CHANNEL>" />
+    <link rel="stylesheet" type="text/css" href="/irclog/style.css" title="Purple Haze Stylesheet" />
+    <link rel="shortcut icon" href="/irclog/moose1.ico" type="image/x-icon" />
+    <title>IRC log for <TMPL_VAR NAME=CHANNEL></title>
+</head>
+<body>
+    <p><img style="float:right" src="moosecamel.png" width="400" height="194"
+    alt="A Camel and a Moose"/></p>
+    
+    <h1>IRC log for <TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></h1>
+
+    <p><TMPL_IF NAME=PREV_URL><a href="<TMPL_VAR NAME=PREV_URL>">Previous
+    day</a></TMPL_IF> 
+    <a href="<TMPL_VAR NAME=INDEX_URL>">index</a>
+    <TMPL_IF NAME=NEXT_URL><a href="<TMPL_VAR NAME=NEXT_URL>">next
+    day</a></TMPL_IF>
+    </p>
+
+    <p>All times are in GMT.</p>
+
+    <table>
+        <tr>
+            <th>Time</th>
+            <th>Nick</th>
+            <th>Message</th>
+        </tr>
+        <TMPL_LOOP NAME=MESSAGES>
+        <tr id="id_l<TMPL_VAR NAME=__counter__>" <TMPL_IF NAME=CLASS>class="<TMPL_VAR NAME=CLASS>"</TMPL_IF>>
+            <td><TMPL_UNLESS NAME=SPECIAL><a href="#id_l<TMPL_VAR NAME=__counter__>" class="time"><TMPL_VAR
+            NAME=TIME></a></TMPL_UNLESS></td>
+            <td class="nick<TMPL_IF NAME=NICK_CLASS> <TMPL_VAR NAME=NICK_CLASS></TMPL_IF>"><TMPL_VAR NAME=NICK></td>
+            <td><TMPL_VAR NAME=MESSAGE></td>
+        </tr>
+        </TMPL_LOOP>
+
+    </table>
+    <TMPL_INCLUDE NAME="footer.tmpl">
+</body>
+</html>
+<!-- <TMPL_IF DEBUG> <TMPL_VAR NAME=DEBUG> </TMPL_IF> -->
