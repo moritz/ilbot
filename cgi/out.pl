@@ -12,23 +12,28 @@ use HTML::Entities;
 use HTML::Template;
 use POSIX qw(ceil);
 use Regexp::Common qw(URI);
+use Config::File;
 #use Data::Dumper;
 
 
 # Configuration
 # $base_url is the absoulte URL to the directoy where index.pl and out.pl live
 # If they live in the root of their own virtual host, set it to "/".
-my $base_url = "/irclog/";
+my $conf = Config::File::read_config_file("cgi.conf");
+my $base_url = $conf->{BASE_URL} || "/";
 
+# I'm to lazy right to move this to  a config file, because Config::File seems
+# unable to handle arrays, just hashes.
+ 
 # map nicks to CSS classes.
 my @colors = (
-        ['TimToady',    'nick1'],
-        ['audreyt',    'nick2'],
-        ['evalbot',    'bots'],
-        ['lambdabot',    'bots'],
-        ['svnbot6',    'bots'],
-        ['specbot',    'bots'],
-        ['pasteling',    'bots'],
+        ['TimToady',	'nick1'],
+        ['audreyt',     'nick2'],
+        ['evalbot',     'bots'],
+        ['lambdabot',   'bots'],
+        ['svnbot6',     'bots'],
+        ['specbot',     'bots'],
+        ['pasteling',   'bots'],
          );
 # additional classes for nicks, sorted by frequency of speech:
 my @nick_classes = qw(nick3 nick4 nick5 nick6 nick7 nick8);
@@ -47,6 +52,7 @@ my $t = HTML::Template->new(
         loop_context_vars => 1,
         );
 
+$t->param(BASE_URL => $base_url);
 my $db = $dbh->prepare("SELECT nick, timestamp, line FROM irclog WHERE day = ? AND channel = ?");
 $db->execute($date, $full_channel);
 
