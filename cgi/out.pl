@@ -217,10 +217,16 @@ sub revision_linkify {
     my $str = shift;
     my $result = "";
     while ($str =~ m/\br(\d+)\b/){
-        $result .= encode_entities($`, '<>&"');
-        $result .= qq{<a href="http://dev.pugscode.org/changeset/$1">} . encode_entities($&) . '</a>';
+        $result .= email_obfuscate($`);
+        $result .= qq{<a href="http://dev.pugscode.org/changeset/$1">} . email_obfuscate($&) . '</a>';
         $str = $';
     }
-    return $result . encode_entities($str, '<>&"');
+    return $result . email_obfuscate($str);
 
+}
+
+sub email_obfuscate {
+	my $str = encode_entities(shift, '<>&');
+	$str =~  s/(?<=\w)\@(?=\w)/<img src="at.png">/g;
+	return $str;
 }
