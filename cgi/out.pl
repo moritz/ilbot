@@ -155,7 +155,7 @@ $t->param(
 
 }
     
-print $t->output;
+print encode("utf-8", $t->output);
 
 
 # my_encode takes a string, encodes it in utf-8, and calls all output
@@ -203,7 +203,7 @@ sub break_apart {
 sub linkify {
     my $str = shift;
     my $result = "";
-    while ($str =~ m/$RE{URI}{HTTP}/){
+    while ($str =~ m/$RE{URI}{HTTP}(?:#[\w-]+)?/){
         $result .= revision_linkify($`);
         $result .= qq{<a href="$&">} . encode_entities($&, '<>&"') . '</a>';
         $str = $';

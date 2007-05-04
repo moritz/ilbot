@@ -40,6 +40,14 @@
         </TMPL_LOOP>
 
     </table>
+
+    <p><TMPL_IF NAME=PREV_URL><a href="<TMPL_VAR NAME=PREV_URL>">Previous
+    day</a></TMPL_IF> 
+    <a href="<TMPL_VAR NAME=INDEX_URL>">index</a>
+    <TMPL_IF NAME=NEXT_URL><a href="<TMPL_VAR NAME=NEXT_URL>">next
+    day</a></TMPL_IF>
+    </p>
+
     <TMPL_INCLUDE NAME="footer.tmpl">
 </body>
 </html>
