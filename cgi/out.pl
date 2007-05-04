@@ -204,8 +204,10 @@ sub linkify {
     my $str = shift;
     my $result = "";
     while ($str =~ m/$RE{URI}{HTTP}(?:#[\w-]+)?/){
+        my $linktext = $&;
+        $linktext =~ s/(\S{60,})/ break_apart($1, 60) /eg;
         $result .= revision_linkify($`);
-        $result .= qq{<a href="$&">} . encode_entities($&, '<>&"') . '</a>';
+        $result .= qq{<a href="$&">} . encode_entities($linktext, '<>&"') . '</a>';
         $str = $';
     }
     return $result . revision_linkify($str);
