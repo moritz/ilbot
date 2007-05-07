@@ -67,7 +67,7 @@ sub on_other {
     } elsif ($e_type eq "part" || $e_type eq "leaving"){
         $q->execute($channel, gmt_today(), "", time, "$e_nick left $channel");
     } elsif ($e_type eq "nick") {
-        $q->execute($channel, gmt_today(), "", time, "$str changed the nick to $e_nick");
+        $q->execute($channel, gmt_today(), "", time, "$e_nick changed their nick to $str");
     } elsif ($e_type eq "caction"){
         $q->execute($channel, gmt_today(), "* $e_nick", time , $str);
     } else {
