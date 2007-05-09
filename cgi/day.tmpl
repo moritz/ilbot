@@ -31,12 +31,7 @@
             <th>Message</th>
         </tr>
         <TMPL_LOOP NAME=MESSAGES>
-        <tr id="id_l<TMPL_VAR NAME=__counter__>" <TMPL_IF NAME=CLASS>class="<TMPL_VAR NAME=CLASS>"</TMPL_IF>>
-            <td><TMPL_UNLESS NAME=SPECIAL><a href="#id_l<TMPL_VAR NAME=__counter__>" class="time"><TMPL_VAR
-            NAME=TIME></a></TMPL_UNLESS></td>
-            <td class="nick<TMPL_IF NAME=NICK_CLASS> <TMPL_VAR NAME=NICK_CLASS></TMPL_IF>"><TMPL_VAR NAME=NICK></td>
-            <td><TMPL_VAR NAME=MESSAGE></td>
-        </tr>
+		<TMPL_INCLUDE NAME='line.tmpl'>
         </TMPL_LOOP>
 
     </table>

@@ -1,8 +1,6 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use lib "/home/moritz/sg/online/";
-use SGO qw(get_dbh);
 use Date::Simple qw(today);
 use CGI::Carp qw(fatalsToBrowser);
 use Encode::Guess;
@@ -10,12 +8,11 @@ use CGI;
 use Encode;
 use HTML::Entities;
 use HTML::Template;
+use Config::File;
+use IrcLog qw(get_dbh);
 
-# CONFIG:
-# same as in out.pl
-my $base_url = "/irclog/";
-
-# End of CONFIG
+my $conf = Config::File::read_config_file("cgi.conf");
+my $base_url = $conf->{BASE_URL} || "/";
  
 my $q = new CGI;
 print "Content-Type: text/html; charset=UTF-8\n\n";

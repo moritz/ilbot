@@ -1,17 +1,13 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use lib "/home/moritz/sg/online/";
-use IrcLog qw(get_dbh gmt_today);
-use Date::Simple qw(date);
 use CGI::Carp qw(fatalsToBrowser);
+use IrcLog qw(get_dbh gmt_today my_encode message_line);
+use Date::Simple qw(date);
 use Encode::Guess;
 use CGI;
 use Encode;
-use HTML::Entities;
 use HTML::Template;
-use POSIX qw(ceil);
-use Regexp::Common qw(URI);
 use Config::File;
 #use Data::Dumper;
 
@@ -50,9 +46,11 @@ my $date = $q->param("date") || gmt_today();
 my $t = HTML::Template->new(
         filename => "day.tmpl",
         loop_context_vars => 1,
+		global_vars => 1,
         );
 
 $t->param(BASE_URL => $base_url);
+my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
 my $db = $dbh->prepare("SELECT nick, timestamp, line FROM irclog WHERE day = ? AND channel = ?");
 $db->execute($date, $full_channel);
 
@@ -62,11 +60,11 @@ print "Content-Type: text/html; charset=UTF-8\n\n";
 # determine which colors to use for which nick:
 {
     my $count = scalar @nick_classes + scalar @colors + 1;
-    my $q = $dbh->prepare("SELECT nick, COUNT(nick) AS c FROM irclog" .
+    my $q1 = $dbh->prepare("SELECT nick, COUNT(nick) AS c FROM irclog" .
             " WHERE day = ? " .
             " GROUP BY nick ORDER BY c DESC LIMIT $count");
-    $q->execute($date);
-    while (my @row = $q->fetchrow_array and @nick_classes){
+    $q1->execute($date);
+    while (my @row = $q1->fetchrow_array and @nick_classes){
         next if ($row[0] eq "");
         my $n = quotemeta $row[0];
         unless (grep { $_->[0] =~ m/^$n/ } @colors){
@@ -84,55 +82,29 @@ my $prev_nick ="";
 my $c = 0;
 
 # populate the template
+my $line_number = 0;
 while (my @row = $db->fetchrow_array){
     my $nick = my_encode($row[0]);
-    my %h = (
-        TIME     => format_time($row[1]),
-        MESSAGE => my_encode($row[2]),
-    );
-    if ($nick ne $prev_nick){
-        # $c++ is used to alternate the background color
-        $c++;
-        $h{NICK} = $nick;
-    } else {
-        # omit nick in successive lines from the same nick
-        $h{NICK} = "";
-    }
+	my $timestamp = $row[1];
+	my $message = $row[2];
 
-    my @classes;
-
-    if ($row[0] eq ""){
-        # empty nick column means that nobody said anything, but 
-        # it's a join, leave, topic etc.
-        push @classes, "special";
-        $h{SPECIAL} = 1;
-    }
-    if ($c % 2){
-        push @classes, "dark";
-    }
-    if (@classes){
-        $h{CLASS} = join " ", @classes;
-    }
-    # determine nick color:
-    # perhaps do something more fancy, like count the number of lines per
-    # nick, and give special colors to the $n most active nicks
-NICK:    foreach (@colors){
-        my $n = quotemeta $_->[0];
-        if ($nick =~ m/^$n/ or $nick =~ m/^\* $n/){
-            $h{NICK_CLASS} = $_->[1];
-            last NICK;
-        }
-    }
-#    print STDERR "No color found for $nick\n" unless ($h{NICK_CLASS});    
-    push @msg, \%h;
-    $prev_nick = $nick;
+	push @msg, message_line($nick, 
+			$timestamp, 
+			$message, 
+			++$line_number,
+			\$c,
+			$prev_nick,
+			\@colors,
+			$self_url,
+			);
+	$prev_nick = $nick;
 }
 
 $t->param(
-        CHANNEL     => $full_channel,
-        MESSAGES     => \@msg,
-        DATE         => $date,
-        INDEX_URL     => $base_url,
+        CHANNEL		=> $full_channel,
+        MESSAGES    => \@msg,
+        DATE        => $date,
+        INDEX_URL    => $base_url,
      );
 
 # check if previous/next date exists in database
@@ -158,77 +130,3 @@ $t->param(
 print encode("utf-8", $t->output);
 
 
-# my_encode takes a string, encodes it in utf-8, and calls all output
-# processing
-sub my_encode {
-    my $str = shift;
-    $str =~ s/[\x02\x16]//g;
-    my $enc = guess_encoding($str, qw(utf-8 latin1));
-    if (ref($enc)){
-        $str =  $enc->decode($str);
-    } else {
-        $str = decode("utf-8", $str);
-    }
-    # break long words to avoid weird html layout
-    $str =~ s/(\w{60,})/ break_apart($1, 60) /eg;
-    return linkify($str);
-}
-
-# turns a timestap into a (GMT) time string
-sub format_time {
-    my $d = shift;
-    my @times = gmtime($d);
-    return sprintf("%02d:%02d", $times[2], $times[1]);
-}
-
-# expects a string consisting of a single long word, and returns the same
-# string with spaces after each 50 bytes at least
-sub break_apart {
-    my $str = shift;
-    my $max_chunk_size = shift || 50;
-    my $l = length $str;
-    my $chunk_size = ceil( $l / ceil($l/$max_chunk_size));
-
-    my $result = substr $str, 0, $chunk_size;
-    for (my $i = $chunk_size; $i < $l; $i += $chunk_size){
-        $result .= " " . substr $str, $i, $chunk_size;
-    }
-    return $result;
-}
-
-# takes a valid UTF-8 string, turns URLs into links, and encodes unsafe
-# characters
-# nb there is no need to encode characters with high bits (encode_entities
-# does that by default, but we're using utf-8 as output, so who cares...)
-sub linkify {
-    my $str = shift;
-    my $result = "";
-    while ($str =~ m/$RE{URI}{HTTP}(?:#[\w-]+)?/){
-        my $linktext = $&;
-        $linktext =~ s/(\S{60,})/ break_apart($1, 60) /eg;
-        $result .= revision_linkify($`);
-        $result .= qq{<a href="$&">} . encode_entities($linktext, '<>&"') . '</a>';
-        $str = $';
-    }
-    return $result . revision_linkify($str);
-}
-
-#turns r\d+ into a link to the appropriate changeset.
-# this is #perl6-specific and therefore not very nice
-sub revision_linkify {
-    my $str = shift;
-    my $result = "";
-    while ($str =~ m/\br(\d+)\b/){
-        $result .= email_obfuscate($`);
-        $result .= qq{<a href="http://dev.pugscode.org/changeset/$1">} . email_obfuscate($&) . '</a>';
-        $str = $';
-    }
-    return $result . email_obfuscate($str);
-
-}
-
-sub email_obfuscate {
-	my $str = encode_entities(shift, '<>&');
-	$str =~  s/(?<=\w)\@(?=\w)/<img src="at.png">/g;
-	return $str;
-}

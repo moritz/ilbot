@@ -51,6 +51,23 @@ table {
 /*	table-layout: fixed; */
 }
 
+label,input {
+	display: block;
+	width: 10em;
+	float: left;
+	margin-bottom: 2ex;
+}
+
+label {
+	text-align: right;
+	width: 8em;
+	padding-right: 2ex;
+}
+
+br {
+	clear: left;
+}
+
 .nick1 { color: green; font-weight: bold; }
 .nick2 { color: red;  font-weight: bold;}
 .nick3 { color: blue; }

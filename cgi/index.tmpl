@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
-    <meta name="description" content="IRC LOG for channel <TMPL_VAR NAME=CHANNEL>" />
+    <meta name="description" content="IRC logs by ilbot" />
     <link rel="stylesheet" type="text/css" href="<TMPL_VAR NAME=BASE_URL>style.css" title="Purple Haze Stylesheet" />
     <link rel="shortcut icon" href="<TMPL_VAR NAME=BASE_URL>moose1.ico" type="image/x-icon" />
     <title>IRC logs</title>
@@ -16,7 +16,7 @@
         <h2 id="<TMPL_VAR NAME=CHANNEL>"><TMPL_VAR NAME=CHANNEL></h2>
         <TMPL_IF NAME=DATES>
         <ul><TMPL_LOOP NAME=DATES>
-            <li><a href="<TMPL_VAR NAME=URL>"><TMPL_VAR NAME=DATE></a></li>
+            <li style="display:inline"><a href="<TMPL_VAR NAME=URL>"><TMPL_VAR NAME=DATE></a></li>
         </TMPL_LOOP></ul>
         </TMPL_IF>
     </TMPL_LOOP>
