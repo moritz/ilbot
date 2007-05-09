@@ -50,6 +50,7 @@ my $t = HTML::Template->new(
         );
 
 $t->param(BASE_URL => $base_url);
+$t->param(SEARCH_URL => $base_url . "search.pl?channel=$full_channel");
 my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
 my $db = $dbh->prepare("SELECT nick, timestamp, line FROM irclog WHERE day = ? AND channel = ?");
 $db->execute($date, $full_channel);
