@@ -105,12 +105,25 @@ sub linkify {
 sub revision_linkify {
     my $str = shift;
     my $result = "";
-    while ($str =~ m/\br(\d+)\b/){
-        $result .= email_obfuscate($`);
-        $result .= qq{<a href="http://dev.pugscode.org/changeset/$1">} . email_obfuscate($&) . '</a>';
+    while ($str =~ m/ r(\d+)\b/){
+        $result .= synopsis_linkify($`);
+        $result .= qq{ <a href="http://dev.pugscode.org/changeset/$1">$&</a>};
         $str = $';
     }
+    return $result . synopsis_linkify($str);
+
+}
+
+sub synopsis_linkify {
+	my $str = shift;
+	my $result = "";
+	while ($str =~ m/(?<= )S(\d\d):(\d{2,})(?= )/) {
+		$result .= email_obfuscate($`);
+		$result .= qq{<a href="http://perlcabal.org/syn/S$1.html#_line_$2">$&</a>};
+        $str = $';
+	}
     return $result . email_obfuscate($str);
+
 
 }
 

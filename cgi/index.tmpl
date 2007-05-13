@@ -12,6 +12,8 @@
 <body>
     <h1>IRC logs</h1>
 
+    <p><a href="<TMPL_VAR NAME=BASE_URL>search.pl">Search the logs</a></p>
+
     <TMPL_LOOP NAME=CHANNELS>
         <h2 id="<TMPL_VAR NAME=CHANNEL>"><TMPL_VAR NAME=CHANNEL></h2>
         <TMPL_IF NAME=DATES>
