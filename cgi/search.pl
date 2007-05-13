@@ -17,6 +17,7 @@ my $base_url = $conf->{BASE_URL} || "/";
 my $q = new CGI;
 print "Content-Type: text/html; charset=UTF-8\n\n";
 my $t = HTML::Template->new(filename => "search.tmpl");
+$t->param(BASE_URL => $base_url);
 
 my $dbh = get_dbh();
 {
