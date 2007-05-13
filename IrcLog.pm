@@ -117,7 +117,7 @@ sub revision_linkify {
 sub synopsis_linkify {
 	my $str = shift;
 	my $result = "";
-	while ($str =~ m/(?<= )S(\d\d):(\d{2,})(?= )/) {
+	while ($str =~ m/\bS(\d\d):(\d{2,})\b/) {
 		$result .= email_obfuscate($`);
 		$result .= qq{<a href="http://perlcabal.org/syn/S$1.html#_line_$2">$&</a>};
         $str = $';
