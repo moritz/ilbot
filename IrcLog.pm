@@ -105,9 +105,9 @@ sub linkify {
 sub revision_linkify {
     my $str = shift;
     my $result = "";
-    while ($str =~ m/ r(\d+)\b/){
+    while ($str =~ m/\br(\d+)\b/){
         $result .= synopsis_linkify($`);
-        $result .= qq{ <a href="http://dev.pugscode.org/changeset/$1">$&</a>};
+        $result .= qq{<a href="http://dev.pugscode.org/changeset/$1">$&</a>};
         $str = $';
     }
     return $result . synopsis_linkify($str);
