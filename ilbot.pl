@@ -19,7 +19,7 @@ my $conn = $irc->newconn(
 my $dbh = get_dbh();
 
 my $channel = $conf->{CHANNEL} || "#perl6";
-my $q = $dbh->prepare("INSERT INTO irclog VALUES(?, ?, ?, ?, ?)");
+my $q = $dbh->prepare("INSERT INTO irclog (channel, day, nick, timestamp, line) VALUES(?, ?, ?, ?, ?)");
 $conn->add_global_handler('376', \&on_connect);
 $conn->add_handler("public", \&on_public);
 $conn->add_handler("notice", \&on_public);
