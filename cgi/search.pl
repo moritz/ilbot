@@ -53,7 +53,7 @@ if (my $nick = $t->param('nick')){
     my $channel = my_encode($q->param('channel')) || die "No channel provided";
 
     my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog WHERE channel = ? AND ( nick = ? OR nick = ?) ORDER BY day DESC");
-    my $q2 = $dbh->prepare("SELECT timestamp, line FROM irclog WHERE day = ? AND channel = ? AND (nick = ? OR nick = ?)");
+    my $q2 = $dbh->prepare("SELECT timestamp, line FROM irclog WHERE day = ? AND channel = ? AND (nick = ? OR nick = ?) ORDER BY id");
 
     $q1->execute($channel, $nick, "* $nick");
     my $short_channel = $channel;
