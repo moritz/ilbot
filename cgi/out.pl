@@ -9,6 +9,7 @@ use CGI;
 use Encode;
 use HTML::Template;
 use Config::File;
+use File::Slurp;
 #use Data::Dumper;
 
 
@@ -41,6 +42,12 @@ my $default_channel = "perl6";
 my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param("channel") || $default_channel;
+
+
+unless ($channel =~ m/^\w+$/){
+	# guard againt channel=../../../etc/passwd or so
+	die "Invalid channel name";
+}
 my $full_channel = "#" . $channel;
 my $date = $q->param("date") || gmt_today();
 my $t = HTML::Template->new(
@@ -49,6 +56,12 @@ my $t = HTML::Template->new(
 		global_vars => 1,
         );
 
+{
+	my $clf = "channels/$channel.tmpl";
+	if (-e $clf) {
+		$t->param(CHANNEL_LINKS =>"" .  read_file($clf));
+	}
+}
 $t->param(BASE_URL => $base_url);
 $t->param(SEARCH_URL => $base_url . "search.pl?channel=$full_channel");
 my $self_url = $base_url . "out.pl?channel=$channel;date=$date";

@@ -15,6 +15,7 @@
     
     <h1>IRC log for <TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></h1>
 
+    <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
     <p>All times are in GMT.</p>
@@ -32,6 +33,7 @@
     </table>
 
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
+    <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
 
     <TMPL_INCLUDE NAME="footer.tmpl">
 </body>

@@ -18,6 +18,8 @@ my $q = new CGI;
 print "Content-Type: text/html; charset=UTF-8\n\n";
 my $t = HTML::Template->new(filename => "search.tmpl");
 $t->param(BASE_URL => $base_url);
+my $lines_per_page = 500;
+my $start = $q->param("start") || 0;
 
 my $dbh = get_dbh();
 {
