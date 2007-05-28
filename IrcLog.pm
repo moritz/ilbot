@@ -119,7 +119,7 @@ sub synopsis_linkify {
 	my $result = "";
 	while ($str =~ m/\bS(\d\d):(\d+)\b/) {
 		$result .= email_obfuscate($`);
-		$result .= qq{<a href="http://perlcabal.org/syn/S$1.html#_line_$2">$&</a>};
+		$result .= qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
         $str = $';
 	}
     return $result . email_obfuscate($str);
