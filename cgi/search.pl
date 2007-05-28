@@ -96,5 +96,5 @@ sub get_line_number {
     $q1->execute(@_);
     my ($count) = $q1->fetchrow_array();
 #    warn $count, $/;
-    return $count;
+    return $count + 1;
 }
