@@ -24,16 +24,21 @@ my $base_url = $conf->{BASE_URL} || "/";
  
 # map nicks to CSS classes.
 my @colors = (
-        ['TimToady',	'nick1'],
-        ['audreyt',     'nick2'],
+        ['TimToady',	'nick_timtoady'],
+        ['audreyt',     'nick_audreyt'],
         ['evalbot',     'bots'],
         ['lambdabot',   'bots'],
         ['svnbot6',     'bots'],
         ['specbot',     'bots'],
         ['pasteling',   'bots'],
+	['moritz',	'nick_moritz'],
+	['agentzh',	'nick_agentzh'],
+	['Aankhen``',	'nick_aahnkhen'],
+	['dduncan',	'nick_dduncan'],
+	['fglock',	'nick_fglock'],
          );
 # additional classes for nicks, sorted by frequency of speech:
-my @nick_classes = qw(nick3 nick4 nick5 nick6 nick7 nick8);
+my @nick_classes = qw(nick1 nick2 nick3 nick4);
 # Default channel: this channel will be shown if no channel=... arg is given
 my $default_channel = "perl6";
 

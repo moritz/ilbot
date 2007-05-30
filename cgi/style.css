@@ -68,12 +68,23 @@ br {
 	clear: left;
 }
 
-.nick1 { color: green; font-weight: bold; }
-.nick2 { color: red;  font-weight: bold;}
-.nick3 { color: blue; }
-.nick4 { color:	#A52A2A; }
-.nick5 { color: #8B008B; }
-.nick6 { color: #70709f; }
-.nick7 { color: #00008B; }
-.nick8 { color: #4B0082; }
+/* most important channel members. This is subjective, if you have a different
+ * opinion, feel free to change */
+.nick_timtoady 	{ color: green; font-weight: bold; }
+.nick_audreyt 	{ color: red;  font-weight: bold;}
+
+/* nick with the most lines, excluding the most import nicks */
+.nick_moritz 	{ color: #00AA33; }
+.nick_agentzh	{ color: #AA0000; }
+.nick_aahnkhen	{ color: #005500; }
+.nick_dduncan	{ color: #FF0077; }
+.nick_fglock	{ color: blue; }
+
+/* all "active" bots, (svnbot6, lambdabot, specbot etc.) */
 .bots  {color: #FFA500; font-style: italic}
+
+/* The rest gets dynamically allocated colors */
+.nick1 { color: #8B008B; }
+.nick2 { color: #50507f; }
+.nick3 { color: #00008B; }
+.nick4 { color: #222222; }
