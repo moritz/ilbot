@@ -61,13 +61,16 @@ sub on_other {
     my $str = join ":|:", $event->args;
     my ($e_nick, $e_type) = ($event->nick, $event->type);
     if ($e_type eq "topic"){
-        $q->execute($channel, gmt_today(), "", time, "topic for $channel is: " . ($event->args)[2]);
+#        print Dumper([$event]);
+        my @a = @{ $event->{args} };
+#        print Dumper(\@a);
+        $q->execute($channel, gmt_today(), "", time, "topic for $channel is: " . $a[$#a]);
     } elsif ($e_type eq "join"){
         $q->execute($channel, gmt_today(), "", time, "$e_nick joined $channel");
     } elsif ($e_type eq "part" || $e_type eq "leaving"){
         $q->execute($channel, gmt_today(), "", time, "$e_nick left $channel");
     } elsif ($e_type eq "nick") {
-        $q->execute($channel, gmt_today(), "", time, "$e_nick changed their nick to $str");
+        $q->execute($channel, gmt_today(), "", time, "$e_nick changed the nick to $str");
     } elsif ($e_type eq "caction"){
         $q->execute($channel, gmt_today(), "* $e_nick", time , $str);
     } else {

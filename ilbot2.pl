@@ -57,6 +57,8 @@ use IrcLog qw(get_dbh gmt_today);
     sub nick_change {
         #BUGGY!
 #Can't use string ("nipotan") as a HASH ref while "strict refs" in use at ilbot2.pl line 60.
+	return undef;
+
         my $self = shift;
         my $e = shift;
         $q->execute($e->{channel}, gmt_today(), "", time, $e->{from} . ' is now known as ' . $e->{to});
