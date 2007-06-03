@@ -90,7 +90,7 @@ sub break_apart {
 sub linkify {
     my $str = shift;
     my $result = "";
-    while ($str =~ m/$RE{URI}{HTTP}(?:#[\w-_%]+)?/){
+    while ($str =~ m/$RE{URI}{HTTP}(?:#[\w_%-]+)?/){
         my $linktext = $&;
         $linktext =~ s/(\S{60,})/ break_apart($1, 60) /eg;
         $result .= revision_linkify($`);
