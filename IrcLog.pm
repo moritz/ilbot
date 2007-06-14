@@ -19,6 +19,7 @@ our @EXPORT = qw(
         message_line
         );
 
+
 # get a database handle.
 # you will have to modify that routine to fit your needs
 sub get_dbh() {
@@ -61,11 +62,81 @@ sub format_time {
     return sprintf("%02d:%02d", $times[2], $times[1]);
 }
 
+sub revision_links {
+	my $r = shift;
+	$r =~ s/^r//;
+	return qq{<a href="http://dev.pugscode.org/changeset/$r">r$r</a>};
+}
+
+sub synopsis_links {
+	my $s = shift;
+	$s =~ m/^S(\d\d):(\d+)$/ or die 'Internal Error';
+	return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
+}
+
+sub linkify {
+	my $url = shift;
+	return qq{<a href="$url">} . break_words($url) . '</a>';
+}
+
+my %output_chain = (
+		links => {
+			re	=> "$RE{URI}{HTTP}(?:#[\w_%-]+)?",
+			match	=> \&linkify,
+			rest	=> 'revision_links',
+		},
+		revision_links => {
+			re 	=> qr/\br(\d+)\b/,
+			match	=> \&revision_links,
+			rest	=> 'synopsis_links',
+		},
+		synopsis_links => {
+			re	=> qr/\bS\d\d:\d+\b/,
+			match	=> \&synopsis_links,
+			rest	=> 'email_obfuscate',
+		},
+		email_obfuscate => {
+			re 	=> qr/(?<=\w)\@(?=\w)/,
+			match	=> '<img src="at.png">',
+			rest	=> 'break_words',
+		},
+		break_words	=> {
+			re	=> qr/\w{50,}/,
+			match	=> \&break_apart,
+			rest	=> 'encode',
+		},
+);
+
 # does all the output processing of ordinary output lines
 sub output_process {
 	my $str = shift;
-	return linkify($str);
+	return '' unless length $str;
+	my $rule = shift || "links";
+	my $res = "";
+	print STDERR "'$rule': <<$str>> \n";
+	if ($rule eq 'encode'){
+		return encode_entities($str, '<>&"');
+	} else {
+		my $re = $output_chain{$rule}{re};
+		while ($str =~ m/$re/){
+			my ($pre, $match, $post) = ($`, $&, $');
+			$res .= output_process($pre, $output_chain{$rule}{rest});
+			my $m = $output_chain{$rule}{match};
+			if (ref $m && ref $m eq 'CODE'){
+				$res .= &$m($match);
+			} else {
+				$res .= $m;
+			}
+			$str = $post;
+		}
+		$res .= output_process($str, $output_chain{$rule}{rest});
+	}
+}
 
+sub break_words {
+	my $str = shift;
+	$str =~ s/\w{50,}/break_apart($&)/e;
+	return $str;
 }
 
 # expects a string consisting of a single long word, and returns the same
@@ -83,57 +154,6 @@ sub break_apart {
     return $result;
 }
 
-# takes a valid UTF-8 string, turns URLs into links, and encodes unsafe
-# characters
-# nb there is no need to encode characters with high bits (encode_entities
-# does that by default, but we're using utf-8 as output, so who cares...)
-sub linkify {
-    my $str = shift;
-    my $result = "";
-    while ($str =~ m/$RE{URI}{HTTP}(?:#[\w_%-]+)?/){
-        my $linktext = $&;
-        $linktext =~ s/(\S{60,})/ break_apart($1, 60) /eg;
-        $result .= revision_linkify($`);
-        $result .= qq{<a href="$&">} . encode_entities($linktext, '<>&"') . '</a>';
-        $str = $';
-    }
-    return $result . revision_linkify($str);
-}
-
-#turns r\d+ into a link to the appropriate changeset.
-# this is #perl6-specific and therefore not very nice
-sub revision_linkify {
-    my $str = shift;
-    my $result = "";
-    while ($str =~ m/\br(\d+)\b/){
-        $result .= synopsis_linkify($`);
-        $result .= qq{<a href="http://dev.pugscode.org/changeset/$1">$&</a>};
-        $str = $';
-    }
-    return $result . synopsis_linkify($str);
-
-}
-
-sub synopsis_linkify {
-	my $str = shift;
-	my $result = "";
-	while ($str =~ m/\bS(\d\d):(\d+)\b/) {
-		$result .= email_obfuscate($`);
-		$result .= qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
-        $str = $';
-	}
-    return $result . email_obfuscate($str);
-
-
-}
-
-sub email_obfuscate {
-	my $str = shift;
-	$str =~ s/(\S{60,})/ break_apart($1, 60) /eg;
-	$str = encode_entities($str, '<>&');
-	$str =~  s/(?<=\w)\@(?=\w)/<img src="at.png">/g;
-	return $str;
-}
 
 sub message_line {
 	my ($nick, $timestamp, $message, $line_number, $c, 
@@ -178,7 +198,6 @@ NICK:    foreach (@$colors){
         $h{CLASS} = join " ", @classes;
     }
 	return \%h;
-
-
 }
+
 1;
