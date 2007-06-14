@@ -81,7 +81,7 @@ sub linkify {
 
 my %output_chain = (
 		links => {
-			re	=> "$RE{URI}{HTTP}(?:#[\w_%-]+)?",
+			re	=> qr/$RE{URI}{HTTP}(?:#[\w_%-]+)?/,
 			match	=> \&linkify,
 			rest	=> 'revision_links',
 		},
