@@ -101,7 +101,7 @@ my %output_chain = (
 			rest	=> 'break_words',
 		},
 		break_words	=> {
-			re	=> qr/\w{50,}/,
+			re	=> qr/\S{50,}/,
 			match	=> \&break_apart,
 			rest	=> 'encode',
 		},
@@ -135,7 +135,7 @@ sub output_process {
 
 sub break_words {
 	my $str = shift;
-	$str =~ s/\w{50,}/break_apart($&)/e;
+	$str =~ s/(\S{50,})/break_apart($1)/ge;
 	return $str;
 }
 
@@ -143,7 +143,7 @@ sub break_words {
 # string with spaces after each 50 bytes at least
 sub break_apart {
     my $str = shift;
-    my $max_chunk_size = shift || 50;
+    my $max_chunk_size = 50;
     my $l = length $str;
     my $chunk_size = ceil( $l / ceil($l/$max_chunk_size));
 
