@@ -35,6 +35,19 @@
 
 	<TMPL_IF NAME=DAYS>
 	<h1>Results</h1>
+	<p>Results from days <TMPL_VAR NAME=DAYS_LOWER> to <TMPL_VAR
+	NAME=DAYS_UPPER>, from overall <TMPL_VAR NAME=DAYS_COUNT> days</p>
+
+	<p>
+	Result pages:
+	<TMPL_LOOP NAME=RESULT_PAGES>
+		<a href="<TMPL_VAR NAME=BASE_URL>search.pl?nick=<TMPL_VAR
+		NAME=NICK ESCAPE=URL>;channel=<TMPL_VAR NAME=CURRENT_CHANNEL
+		ESCAPE=URL>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
+		NAME=PAGE></a>
+	</TMPL_LOOP>
+	</p>
+
 	<TMPL_LOOP NAME=DAYS>
 		<h2><a href="<TMPL_VAR NAME=URL>"><TMPL_VAR NAME=DAY></a></h2>
 		<table>
