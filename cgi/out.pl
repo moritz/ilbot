@@ -33,7 +33,7 @@ my @colors = (
         ['pasteling',   'bots'],
 	['moritz',	'nick_moritz'],
 	['agentzh',	'nick_agentzh'],
-	['Aankhen``',	'nick_aahnkhen'],
+	['Aankhen``',	'nick_aankhen'],
 	['dduncan',	'nick_dduncan'],
 	['fglock',	'nick_fglock'],
          );

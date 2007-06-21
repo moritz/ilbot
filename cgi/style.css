@@ -51,6 +51,10 @@ table {
 /*	table-layout: fixed; */
 }
 
+#log td {
+	font-family: Consolas, "Lucida Console", "Courier New", monospace;
+}
+
 label,input {
 	display: block;
 	width: 10em;
@@ -76,7 +80,7 @@ br {
 /* nick with the most lines, excluding the most import nicks */
 .nick_moritz 	{ color: #00AA33; }
 .nick_agentzh	{ color: #AA0000; }
-.nick_aahnkhen	{ color: #005500; }
+.nick_aankhen	{ color: #005500; }
 .nick_dduncan	{ color: #FF0077; }
 .nick_fglock	{ color: blue; }
 
