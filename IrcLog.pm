@@ -113,7 +113,6 @@ sub output_process {
 	return '' unless length $str;
 	my $rule = shift || "links";
 	my $res = "";
-	print STDERR "'$rule': <<$str>> \n";
 	if ($rule eq 'encode'){
 		return encode_entities($str, '<>&"');
 	} else {
