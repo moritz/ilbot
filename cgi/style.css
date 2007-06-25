@@ -54,7 +54,7 @@ tr, td {
 
 #log tr { border-top: 1px solid #efefef; }
 #log tr.head, tr.dark.new-nick { border-top-style: none; }
-#log tr.dark { border-top: 1px solid #fff; }
+#log tr.dark { border-top: 1px solid #dfdfdf; }
 
 #log td, th {
 	font-family: Consolas, "Lucida Console", "Courier New", monospace;
