@@ -45,14 +45,33 @@ tr, td {
 	color: gray;
 }
 
-table {
+#log {
+    border-collapse: collapse;
 	width: 100%;
 	overflow: hidden;
 /*	table-layout: fixed; */
 }
 
-#log td {
+#log tr { border-top: 1px solid #efefef; }
+#log tr.head, tr.dark.new-nick { border-top-style: none; }
+#log tr.dark { border-top: 1px solid #fff; }
+
+#log td, th {
 	font-family: Consolas, "Lucida Console", "Courier New", monospace;
+    padding: 0.2em 0.4em;
+}
+
+#log th {
+    border-bottom: 1px solid #C0C0C0;
+}
+
+td.nick {
+    text-align: right;
+    border-right: 1px solid #C0C0C0;
+}
+
+.log-index li {
+    display: inline;
 }
 
 label,input {
