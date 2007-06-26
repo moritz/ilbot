@@ -82,7 +82,7 @@ sub linkify {
 	if (length($display_url) >= 50){
 		$display_url 
 			= substr( $display_url, 0, 35 )
-			. '&hellip;'
+			. '…'
 			. substr( $display_url, -25 )
 			;
 	}
