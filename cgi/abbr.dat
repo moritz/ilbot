@@ -1,32 +1,33 @@
-YAPC --- Yet Another Perl Conference
-PCR --- Pugs::Compiler::Rule
-PGE --- Parser Grammar Engine
-PIR --- Parrot Intermediate Representation
-TPF --- The Perl Foundation
-(?i:SVN) --- Subversion --- SVN
-CPAN --- Comprehensive Perl Archive Network
-VM --- Virtual Machine
-PCRE --- Perl-Compatible Regular Expressions
-REPL --- Read-Eval-Print Loop
-MOP --- Meta-Object Protocol
-OO --- Object-Oriented
-ASM --- Assembler
-SML --- Standard ML
-(?i:KP6) --- KindaPerl6 --- KP6
-(?i:MP6) --- MiniPerl6 --- MP6
-HTML --- Hypertext Markup Language
-RAM --- Random Access Memory
-AST --- Abstract Syntax Tree
-MIME --- Multipurpose Internet Mail Extensions
-CGI --- Common Gateway Interface
-HTTP --- Hypertext Transfer Protocol
-LWP --- libwww-perl
-XML --- Extensible Markup Language
-FTP --- File Transfer Protocol
-p6l --- perl6-language mailing list
-p6c --- perl6-compiler mailing list
-URL --- Uniform Resource Locator
-URI --- Uniform Resource Identifier
-PAST --- Parrot Abstract Syntax Tree
-TGE --- Tree Grammar Engine
-POST --- Parrot Opcode Syntax Tree
+YAPC        --- Yet Another Perl Conference
+PCR         --- Pugs::Compiler::Rule
+PGE         --- Parser Grammar Engine
+PIR         --- Parrot Intermediate Representation
+TPF         --- The Perl Foundation
+(?i:SVN)    --- Subversion                                  --- SVN
+CPAN        --- Comprehensive Perl Archive Network
+VM          --- Virtual Machine
+PCRE        --- Perl-Compatible Regular Expressions
+REPL        --- Read-Eval-Print Loop
+MOP         --- Meta-Object Protocol
+OO          --- Object-Oriented
+ASM         --- Assembler
+SML         --- Standard ML
+(?i:KP6)    --- KindaPerl6                                  --- KP6
+(?i:MP6)    --- MiniPerl6                                   --- MP6
+HTML        --- Hypertext Markup Language
+RAM         --- Random Access Memory
+AST         --- Abstract Syntax Tree
+MIME        --- Multipurpose Internet Mail Extensions
+CGI         --- Common Gateway Interface
+HTTP        --- Hypertext Transfer Protocol
+LWP         --- libwww-perl
+XML         --- Extensible Markup Language
+FTP         --- File Transfer Protocol
+p6l         --- perl6-language mailing list
+p6c         --- perl6-compiler mailing list
+URL         --- Uniform Resource Locator
+URI         --- Uniform Resource Identifier
+PAST        --- Parrot Abstract Syntax Tree
+TGE         --- Tree Grammar Engine
+POST        --- Parrot Opcode Syntax Tree
+p5p         --- Perl 5 Porters Mailing List
