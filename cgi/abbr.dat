@@ -38,6 +38,7 @@ IRC         --- Internet Relay Chat
 p5p         --- perl5-porters
 (?i:PBP)    --- Perl Best Practices                          --- PBP
 (?i:P6)     --- Perl 6                                       --- P6
+(?i:P5)     --- Perl 5                                       --- P5
 RFC         --- Request For Comments
 UTF         --- Unicode Transformation Format
 UCS         --- Universal Character Set
@@ -47,5 +48,28 @@ TAP         --- Test Anything Protocol
 RSS         --- Rich Site Summary
 (?i:GHC)    --- Glasgow Haskell Compiler                     --- GHC
 RDBMS       --- Relational Database Management System
+DBMS        --- Database Management System
 API         --- Application Programming Interface
 (?i:win32)  --- Windows (32-bit)                             --- Win32
+STM         --- Software Transactional Memory
+(?i:I/?O)   --- Input/Output                                 --- I/O
+POD         --- Plain Old Documentation
+TDD         --- Test-Driven Development
+YAML        --- YAML Ain't Markup Language
+JIT         --- Just-In-Time
+CPU         --- Central Processing Unit
+TCP         --- Transmission Control Protocol
+IP          --- Internet Protocol
+(?i:JAPH)   --- Just Another Perl Hacker                     --- JAPH
+APL         --- A Programming Language
+OS          --- Operating Systems
+FBSD        --- FreeBSD
+(?i:RGB)    --- Red, Green, Blue                             --- RGB
+JPE?G       --- Joint Photographic Experts Group             --- JPEG
+MPE?G       --- Moving Picture Experts Group                 --- MPEG
+GB          --- Gigabyte
+MB          --- Megabyte
+KB          --- Kilobyte
+(?i:P2P)    --- Peer-To-Peer                                 --- P2P
+MS          --- Microsoft
+DB          --- Database
