@@ -83,8 +83,8 @@ sub linkify {
 	if (length($display_url) >= 50){
 		$display_url 
 			= substr( $display_url, 0, 30 )
-			. '…'
-			. substr( $display_url, -19 )
+			. '[…]'
+			. substr( $display_url, -17 )
 			;
 	}
 	return qq{<a href="$url" title="$url">} 
