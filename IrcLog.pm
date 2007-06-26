@@ -91,10 +91,10 @@ my $re_abbr;
         
         while (<$abbr_file>) {
             chomp;
-#            next unless length;
-#            next if /^#/;
+            next unless length;
+            next if /^#/;
             my ($pattern, $def, $key) = split(m/\s*---\s*/, $_, 3);
-#            next unless length $pattern && length $def;
+            next unless length $pattern && length $def;
             $key ||= $pattern;
             $abbrs{uc $key} = [ $pattern, $def ];
             push @patterns, $pattern;
