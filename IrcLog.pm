@@ -82,11 +82,11 @@ sub linkify {
 	if (length($display_url) >= 50){
 		$display_url 
 			= substr( $display_url, 0, 35 )
-			. '[...]'
+			. '&hellip;'
 			. substr( $display_url, -25 )
 			;
 	}
-	return qq{<a href="$url">} 
+	return qq{<a href="$url" title="$url">} 
 		   . encode_entities( $display_url, qr{<>"}) 
 		   . '</a>';
 }
