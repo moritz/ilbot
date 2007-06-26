@@ -3,13 +3,14 @@ PCR         --- Pugs::Compiler::Rule
 PGE         --- Parser Grammar Engine
 PIR         --- Parrot Intermediate Representation
 TPF         --- The Perl Foundation
-(?i:SVN)    --- Subversion                                  --- SVN
+SVN         --- Subversion
 CPAN        --- Comprehensive Perl Archive Network
 VM          --- Virtual Machine
 PCRE        --- Perl-Compatible Regular Expressions
 REPL        --- Read-Eval-Print Loop
 MOP         --- Meta-Object Protocol
 OO          --- Object-Oriented
+OOP         --- Object-Oriented Programming
 ASM         --- Assembler
 SML         --- Standard ML
 (?i:KP6)    --- KindaPerl6                                  --- KP6
@@ -31,3 +32,20 @@ PAST        --- Parrot Abstract Syntax Tree
 TGE         --- Tree Grammar Engine
 POST        --- Parrot Opcode Syntax Tree
 p5p         --- Perl 5 Porters Mailing List
+IRC         --- Internet Relay Chat
+(?i:CSS)    --- Cascading Stylesheets                        --- CSS
+(?i:SQL)    --- Structured Query Language                    --- SQL
+p5p         --- perl5-porters
+(?i:PBP)    --- Perl Best Practices                          --- PBP
+(?i:P6)     --- Perl 6                                       --- P6
+RFC         --- Request For Comments
+UTF         --- Unicode Transformation Format
+UCS         --- Universal Character Set
+ISO         --- International Organization for Standardization
+UTC         --- Coordinated Universal Timecode
+TAP         --- Test Anything Protocol
+RSS         --- Rich Site Summary
+(?i:GHC)    --- Glasgow Haskell Compiler                     --- GHC
+RDBMS       --- Relational Database Management System
+API         --- Application Programming Interface
+(?i:win32)  --- Windows (32-bit)                             --- Win32
