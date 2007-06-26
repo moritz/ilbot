@@ -163,16 +163,18 @@ sub message_line {
 		LINE_NUMBER => ++$line_number,
 		LINK_URL => $link_url,
     );
+
+    my @classes;
+    
     if ($nick ne $prev_nick){
         # $c++ is used to alternate the background color
         $$c++;
         $h{NICK} = $nick;
+        push @classes, 'new-nick';
     } else {
         # omit nick in successive lines from the same nick
         $h{NICK} = "";
     }
-
-    my @classes;
     # determine nick color:
     # perhaps do something more fancy, like count the number of lines per
     # nick, and give special colors to the $n most active nicks
