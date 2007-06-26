@@ -46,7 +46,7 @@ ISO         --- International Organization for Standardization
 UTC         --- Coordinated Universal Timecode
 TAP         --- Test Anything Protocol
 RSS         --- Rich Site Summary
-(?i:GHC)    --- Glasgow Haskell Compiler                     --- GHC
+GHC         --- Glasgow Haskell Compiler                     --- GHC
 RDBMS       --- Relational Database Management System
 DBMS        --- Database Management System
 API         --- Application Programming Interface
@@ -73,3 +73,10 @@ KB          --- Kilobyte
 (?i:P2P)    --- Peer-To-Peer                                 --- P2P
 MS          --- Microsoft
 DB          --- Database
+TBD         --- To Be Done
+HLL         --- High-Level Language
+PAUSE       --- Perl Authors Upload Server
+DNS         --- Domain Name Server
+(?i:poco-?irc) --- POE::Component::IRC                       --- PoCo-IRC
+CMS         --- Content Management System
+WML         --- Wireless Markup Language
