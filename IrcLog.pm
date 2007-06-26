@@ -8,6 +8,8 @@ use Encode;
 use Regexp::Common qw(URI);
 use HTML::Entities;
 use POSIX qw(ceil);
+use Carp;
+#use Regexp::MatchContext;
 
 require Exporter;
 
@@ -70,7 +72,7 @@ sub revision_links {
 
 sub synopsis_links {
 	my $s = shift;
-	$s =~ m/^S(\d\d):(\d+)$/ or die 'Internal Error';
+	$s =~ m/^S(\d\d):(\d+)$/ or confess( 'Internal Error' );
 	return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
 }
 
@@ -79,7 +81,40 @@ sub linkify {
 	return qq{<a href="$url">} . break_words($url) . '</a>';
 }
 
+my $re_abbr;
+
+{
+    my %abbrs;
+    
+    if (open(my $abbr_file, '<:utf8', 'abbr.dat')) {
+        my @patterns;
+        
+        while (<$abbr_file>) {
+            chomp;
+            next unless length;
+            my ($pattern, $def, $key) = split(m/\s*---\s*/, $_, 3);
+            $key ||= $pattern;
+            $abbrs{uc $key} = [ $pattern, $def ];
+            push @patterns, $pattern;
+        }
+        
+        close($abbr_file);
+        
+        $re_abbr = join '|', map { "(?:$_)" } @patterns;
+    }
+    
+    sub expand_abbrs {
+        my $abbr = shift;
+        return qq{<abbr title="} . encode_entities($abbrs{uc $abbr}[1], '<>&"') . qq{">} . encode_entities($abbr). qq{</abbr>};
+    }
+}
+
 my %output_chain = (
+        abbrs => {
+            re => $re_abbr,
+            match   => \&expand_abbrs,
+            rest    => 'links',
+        },
 		links => {
 			re	=> qr/$RE{URI}{HTTP}(?:#[\w_%-]+)?/,
 			match	=> \&linkify,
@@ -111,7 +146,7 @@ my %output_chain = (
 sub output_process {
 	my $str = shift;
 	return '' unless length $str;
-	my $rule = shift || "links";
+	my $rule = shift || "abbrs";
 	my $res = "";
 	if ($rule eq 'encode'){
 		return encode_entities($str, '<>&"');
