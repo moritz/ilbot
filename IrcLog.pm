@@ -113,16 +113,16 @@ my $re_abbr;
 }
 
 my %output_chain = (
-        abbrs => {
-            re => $re_abbr,
-            match   => \&expand_abbrs,
-            rest    => 'links',
-        },
 		links => {
 			re	=> qr/$RE{URI}{HTTP}(?:#[\w_%-]+)?/,
 			match	=> \&linkify,
-			rest	=> 'revision_links',
+			rest	=> 'abbrs',
 		},
+        abbrs => {
+            re => $re_abbr,
+            match   => \&expand_abbrs,
+            rest    => 'revision_links',
+        },
 		revision_links => {
 			re 	=> qr/\br(\d+)\b/,
 			match	=> \&revision_links,
@@ -149,7 +149,7 @@ my %output_chain = (
 sub output_process {
 	my $str = shift;
 	return '' unless length $str;
-	my $rule = shift || "abbrs";
+	my $rule = shift || "links";
 	my $res = "";
 	if ($rule eq 'encode'){
 		return encode_entities($str, '<>&"');
