@@ -80,3 +80,12 @@ DNS         --- Domain Name Server
 (?i:poco-?irc) --- POE::Component::IRC                       --- PoCo-IRC
 CMS         --- Content Management System
 WML         --- Wireless Markup Language
+SWIG        --- Simplified Wrapper and Interface Generator
+DOS         --- Disk Operating System
+QDOS        --- Quick and Dirty Operating System
+QDRDBMS     --- Quick and Dirty Relational Database Management System
+CLOS        --- Common Lisp Object System
+ORM         --- Object-Relational Mapping
+PMC         --- Parrot Magic Cookie
+FFI         --- Foreign Function Interface
+PDD         --- Parrot Design Document
