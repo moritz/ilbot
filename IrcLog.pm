@@ -125,7 +125,7 @@ my $re_abbr;
 
 my %output_chain = (
 		links => {
-			re	=> qr/$RE{URI}{HTTP}(?:#[\w_%-]+)?/,
+			re	=> qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
 			match	=> \&linkify,
 			rest	=> 'abbrs',
 		},
