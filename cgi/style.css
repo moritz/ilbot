@@ -111,3 +111,5 @@ br {
 .nick2 { color: #50507f; }
 .nick3 { color: #00008B; }
 .nick4 { color: #222222; }
+
+abbr { cursor: help; }
