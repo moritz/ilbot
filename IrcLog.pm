@@ -9,6 +9,7 @@ use Regexp::Common qw(URI);
 use HTML::Entities;
 use POSIX qw(ceil);
 use Carp;
+use utf8;
 #use Regexp::MatchContext;
 
 require Exporter;
@@ -81,9 +82,9 @@ sub linkify {
 	my $display_url = $url;
 	if (length($display_url) >= 50){
 		$display_url 
-			= substr( $display_url, 0, 35 )
+			= substr( $display_url, 0, 30 )
 			. '…'
-			. substr( $display_url, -25 )
+			. substr( $display_url, -19 )
 			;
 	}
 	return qq{<a href="$url" title="$url">} 
