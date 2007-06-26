@@ -78,7 +78,17 @@ sub synopsis_links {
 
 sub linkify {
 	my $url = shift;
-	return qq{<a href="$url">} . break_words($url) . '</a>';
+	my $display_url = $url;
+	if (length($display_url) >= 50){
+		$display_url 
+			= substr( $display_url, 0, 35 )
+			. '[...]'
+			. substr( $display_url, -25 )
+			;
+	}
+	return qq{<a href="$url">} 
+		   . encode_entities( $display_url, qr{<>"}) 
+		   . '</a>';
 }
 
 my $re_abbr;
