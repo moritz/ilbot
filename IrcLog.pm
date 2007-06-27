@@ -119,8 +119,9 @@ my $re_abbr;
     
     sub expand_abbrs {
         my ($abbr, $state) = @_;
-        if ($state->{$abbr}++) { return encode_entities($abbr); };
-        return qq{<abbr title="} . encode_entities($abbrs{uc $abbr}[1], '<>&"') . qq{">} . encode_entities($abbr). qq{</abbr>};
+        my $abbr_n = uc $abbr;
+        if ($state->{$abbr_n}++) { return encode_entities($abbr); };
+        return qq{<abbr title="} . encode_entities($abbrs{$abbr_n}[1], '<>&"') . qq{">} . encode_entities($abbr). qq{</abbr>};
     }
 }
 
