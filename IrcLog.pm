@@ -132,7 +132,7 @@ my %output_chain = (
         abbrs => {
             re => $re_abbr,
             #match   => \&expand_abbrs,
-            match   => sub { unless (++($_[1]->{$_[0]})) { goto &expand_abbrs } },
+            match   => sub { unless (++($_[1]->{$_[0]})) { goto &expand_abbrs }; $_[0] },
             rest    => 'revision_links',
         },
 		revision_links => {
