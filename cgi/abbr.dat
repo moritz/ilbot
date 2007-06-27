@@ -52,7 +52,8 @@ DBMS        --- Database Management System
 API         --- Application Programming Interface
 (?i:win32)  --- Windows (32-bit)                             --- Win32
 STM         --- Software Transactional Memory
-(?i:I/?O)   --- Input/Output                                 --- I/O
+(?i:IO)     --- Input/Output                                 --- IO
+(?i:I/O)    --- Input/Output                                 --- I/O
 POD         --- Plain Old Documentation
 TDD         --- Test-Driven Development
 YAML        --- YAML Ain't Markup Language
@@ -65,8 +66,10 @@ APL         --- A Programming Language
 OS          --- Operating Systems
 FBSD        --- FreeBSD
 (?i:RGB)    --- Red, Green, Blue                             --- RGB
-JPE?G       --- Joint Photographic Experts Group             --- JPEG
-MPE?G       --- Moving Picture Experts Group                 --- MPEG
+JPEG        --- Joint Photographic Experts Group
+MPEG        --- Moving Picture Experts Group
+JPG         --- Joint Photographic Experts Group
+MPG         --- Moving Picture Experts Group
 GB          --- Gigabyte
 MB          --- Megabyte
 KB          --- Kilobyte
@@ -77,7 +80,8 @@ TBD         --- To Be Done
 HLL         --- High-Level Language
 PAUSE       --- Perl Authors Upload Server
 DNS         --- Domain Name Server
-(?i:poco-?irc) --- POE::Component::IRC                       --- PoCo-IRC
+(?i:poco-irc) --- POE::Component::IRC                       --- PoCo-IRC
+(?i:pocoirc)  --- POE::Component::IRC                       --- PoCoIRC
 CMS         --- Content Management System
 WML         --- Wireless Markup Language
 SWIG        --- Simplified Wrapper and Interface Generator
@@ -88,3 +92,13 @@ ORM         --- Object-Relational Mapping
 PMC         --- Parrot Magic Cookie
 FFI         --- Foreign Function Interface
 PDD         --- Parrot Design Document
+GPL         --- GNU General Public License
+LGPL        --- GNU Lesser General Public License
+JSP         --- JavaServer Pages
+FQDN        --- Fully Qualified Domain Name
+IPv6        --- Internet Protocol version 6
+IPv4        --- Internet Protocol version 4
+DSL         --- Domain-Specific Language
+SSH         --- Secure Shell
+NCI         --- Native Call Interface
+CRLF        --- Carriage Return/Line Feed
