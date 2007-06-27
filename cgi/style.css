@@ -65,6 +65,7 @@ tr, td {
 
 #log .time { border-left:  1px solid #efefef; }
 #log .msg  { border-right: 1px solid #efefef; line-height: 1.3em; }
+#log .act  { font-style: italic; }
 
 .log-index li {
     display: inline;
