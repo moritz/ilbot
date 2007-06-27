@@ -131,7 +131,8 @@ my %output_chain = (
 		},
         abbrs => {
             re => $re_abbr,
-            match   => \&expand_abbrs,
+            #match   => \&expand_abbrs,
+            match   => sub { unless (++($_[1]->{$_[0]})) { goto &expand_abbrs } },
             rest    => 'revision_links',
         },
 		revision_links => {
@@ -166,12 +167,13 @@ sub output_process {
 		return encode_entities($str, '<>&"');
 	} else {
 		my $re = $output_chain{$rule}{re};
+        my $state = {};
 		while ($str =~ m/$re/){
 			my ($pre, $match, $post) = ($`, $&, $');
 			$res .= output_process($pre, $output_chain{$rule}{rest});
 			my $m = $output_chain{$rule}{match};
 			if (ref $m && ref $m eq 'CODE'){
-				$res .= &$m($match);
+				$res .= &$m($match, $state);
 			} else {
 				$res .= $m;
 			}
