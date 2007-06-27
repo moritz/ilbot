@@ -68,7 +68,7 @@ sub format_time {
 sub revision_links {
 	my $r = shift;
 	$r =~ s/^r//;
-	return qq{<a href="http://dev.pugscode.org/changeset/$r">r$r</a>};
+	return qq{<a href="http://dev.pugscode.org/changeset/$r" title="Changeset for r$r">r$r</a>};
 }
 
 sub synopsis_links {
