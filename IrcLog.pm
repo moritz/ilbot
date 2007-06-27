@@ -217,6 +217,7 @@ sub message_line {
     );
 
     my @classes;
+    my @msg_classes;
     
     if ($nick ne $prev_nick){
         # $c++ is used to alternate the background color
@@ -238,6 +239,10 @@ NICK:    foreach (@$colors){
         }
     }
 
+    if ($nick =~ /^\* /) {
+        push @msg_classes, 'act';
+    }
+
     if ($nick eq ""){
         # empty nick column means that nobody said anything, but 
         # it's a join, leave, topic etc.
@@ -250,6 +255,10 @@ NICK:    foreach (@$colors){
     if (@classes){
         $h{CLASS} = join " ", @classes;
     }
+    if (@msg_classes) {
+        $h{MSG_CLASS} = join " ", @msg_classes;
+    }
+    
 	return \%h;
 }
 
