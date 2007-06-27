@@ -25,11 +25,6 @@ h1, h2, h3,  #footer *
   font-size: 92%;
 }
 
-/*.nick, .time {
-	font-weight: bold; 
-	vertical-align: top;
-}*/
-
 tr, td {
 	vertical-align: top;
 }
@@ -61,14 +56,15 @@ tr, td {
     padding: 0.2em 0.4em;
 }
 
-#log th {
-    border-bottom: 1px solid #C0C0C0;
-}
+#log th { border-bottom: 1px solid #C0C0C0; }
 
-td.nick {
+#log .nick {
     text-align: right;
     border-right: 1px solid #C0C0C0;
 }
+
+#log .time { border-left:  1px solid #efefef; }
+#log .msg  { border-right: 1px solid #efefef; line-height: 1.3em; }
 
 .log-index li {
     display: inline;
