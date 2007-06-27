@@ -118,7 +118,8 @@ my $re_abbr;
     }
     
     sub expand_abbrs {
-        my $abbr = shift;
+        my ($abbr, $state) = @_;
+        if ($state->{$abbr}++) { return encode_entities($abbr); };
         return qq{<abbr title="} . encode_entities($abbrs{uc $abbr}[1], '<>&"') . qq{">} . encode_entities($abbr). qq{</abbr>};
     }
 }
@@ -131,8 +132,7 @@ my %output_chain = (
 		},
         abbrs => {
             re => $re_abbr,
-            #match   => \&expand_abbrs,
-            match   => sub { unless (++($_[1]->{$_[0]})) { goto &expand_abbrs }; $_[0] },
+            match   => \&expand_abbrs,
             rest    => 'revision_links',
         },
 		revision_links => {
