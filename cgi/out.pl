@@ -61,6 +61,8 @@ my $t = HTML::Template->new(
 		global_vars => 1,
         );
 
+$t->param(ADMIN => 1) if ($q->param("admin"));
+
 {
 	my $clf = "channels/$channel.tmpl";
 	if (-e $clf) {
@@ -70,7 +72,8 @@ my $t = HTML::Template->new(
 $t->param(BASE_URL => $base_url);
 $t->param(SEARCH_URL => $base_url . "search.pl?channel=$full_channel");
 my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
-my $db = $dbh->prepare("SELECT nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? ORDER BY id");
+my $db = $dbh->prepare("SELECT id, nick, timestamp, line FROM irclog "
+		. "WHERE day = ? AND channel = ? AND NOT spam ORDER BY id");
 $db->execute($date, $full_channel);
 
 # charset has to be utf-8, since we encode everything in utf-8
@@ -79,9 +82,9 @@ print "Content-Type: text/html; charset=UTF-8\n\n";
 # determine which colors to use for which nick:
 {
     my $count = scalar @nick_classes + scalar @colors + 1;
-    my $q1 = $dbh->prepare("SELECT nick, COUNT(nick) AS c FROM irclog" .
-            " WHERE day = ? " .
-            " GROUP BY nick ORDER BY c DESC LIMIT $count");
+    my $q1 = $dbh->prepare("SELECT nick, COUNT(nick) AS c FROM irclog"
+             . " WHERE day = ? AND not spam"
+             . " GROUP BY nick ORDER BY c DESC LIMIT $count");
     $q1->execute($date);
     while (my @row = $q1->fetchrow_array and @nick_classes){
         next if ($row[0] eq "");
@@ -103,11 +106,14 @@ my $c = 0;
 # populate the template
 my $line_number = 0;
 while (my @row = $db->fetchrow_array){
-    my $nick = my_encode($row[0]);
-	my $timestamp = $row[1];
-	my $message = $row[2];
+	my $id = $row[0];
+    my $nick = my_encode($row[1]);
+	my $timestamp = $row[2];
+	my $message = $row[3];
 
-	push @msg, message_line($nick, 
+	push @msg, message_line(
+			$id,
+			$nick, 
 			$timestamp, 
 			$message, 
 			++$line_number,
@@ -128,7 +134,8 @@ $t->param(
 
 # check if previous/next date exists in database
 {
-    my $q1 = $dbh->prepare("SELECT COUNT(*) FROM irclog WHERE channel = ? AND day = ?");
+    my $q1 = $dbh->prepare("SELECT COUNT(*) FROM irclog "
+			. "WHERE channel = ? AND day = ? AND NOT spam");
     # Date::Simple magic ;)
     my $tomorrow = date($date) + 1;
     $q1->execute($full_channel, $tomorrow);

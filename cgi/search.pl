@@ -61,9 +61,14 @@ if (my $nick = $t->param('nick')){
 
     my $channel = my_encode($q->param('channel')) || die "No channel provided";
 
-    my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog WHERE channel = ? AND (nick = ? OR nick = ?)");
-    my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog WHERE channel = ? AND ( nick = ? OR nick = ?) ORDER BY day DESC LIMIT $days_per_page OFFSET $offset");
-    my $q2 = $dbh->prepare("SELECT timestamp, line FROM irclog WHERE day = ? AND channel = ? AND (nick = ? OR nick = ?) ORDER BY id");
+    my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog "
+			. "WHERE channel = ? AND (nick = ? OR nick = ?) AND NOT spam");
+    my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog "
+			. "WHERE channel = ? AND ( nick = ? OR nick = ?) AND NOT spam "
+			. "ORDER BY day DESC LIMIT $days_per_page OFFSET $offset");
+    my $q2 = $dbh->prepare("SELECT id, timestamp, line FROM irclog "
+			. "WHERE day = ? AND channel = ? AND (nick = ? OR nick = ?) "
+			. "AND NOT spam ORDER BY id");
 
     $q0->execute($channel, $nick, "* $nick");
     my $result_count = ($q0->fetchrow_array);
@@ -89,9 +94,11 @@ if (my $nick = $t->param('nick')){
         $q2->execute($row[0], $channel, $nick, "* $nick");
         while (my @r2 = $q2->fetchrow_array){
             my $line_number = get_line_number($channel, $row[0], $r2[0]);
-            push @lines, message_line($nick, 
-                    $r2[0],  #timestamp
-                    $r2[1],  # message
+            push @lines, message_line(
+					$r2[0],  # id 
+					$nick, 
+                    $r2[1],  # timestamp
+                    $r2[2],  # message
                     $line_number, 
                     \$c, $prev_nick, 
                     [], 
@@ -113,7 +120,7 @@ print encode('utf-8', $t->output);
 sub get_line_number {
 #    my ($channel, $day, $timestamp) = @_;
     my $q1 = $dbh->prepare('SELECT COUNT(*) FROM irclog WHERE 
-            channel = ? AND day = ? and timestamp < ?');
+            channel = ? AND day = ? AND timestamp < ? AND NOT spam');
     $q1->execute(@_);
     my ($count) = $q1->fetchrow_array();
 #    warn $count, $/;

@@ -207,9 +207,10 @@ sub break_apart {
 
 
 sub message_line {
-	my ($nick, $timestamp, $message, $line_number, $c, 
+	my ($id, $nick, $timestamp, $message, $line_number, $c, 
 			$prev_nick, $colors, $link_url) = @_;
     my %h = (
+		ID			=> $id,
         TIME     	=> format_time($timestamp),
         MESSAGE  	=> output_process(my_encode($message)),
 		LINE_NUMBER => ++$line_number,
