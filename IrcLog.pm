@@ -1,10 +1,11 @@
 package IrcLog;
 use warnings;
 use strict;
+
 use DBI;
 use Config::File;
 use Encode::Guess;
-use Encode;
+use Encode qw(encode decode);
 use Regexp::Common qw(URI);
 use HTML::Entities;
 use POSIX qw(ceil);
@@ -16,7 +17,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
-        get_dbh 
+        get_dbh
         gmt_today
         my_encode
         message_line
@@ -34,7 +35,7 @@ sub get_dbh() {
     my $passwd = $conf->{PASSWORD} || "";
 
     my $db_dsn = "DBI:$dbs:database=$db_name;host=$host";
-    my $dbh = DBI->connect($db_dsn, $user, $passwd, 
+    my $dbh = DBI->connect($db_dsn, $user, $passwd,
             {RaiseError=>1, AutoCommit => 1});
     return $dbh;
 }
@@ -49,15 +50,42 @@ sub gmt_today {
 sub my_encode {
     my $str = shift;
     $str =~ s/[\x02\x16]//g;
-    my $enc = guess_encoding($str, qw(utf-8 latin1));
-    if (ref($enc)){
-        $str =  $enc->decode($str);
+    my @enc;
+    if ($str =~ /^([[:print:]]*[A-Za-z]+[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*)+$/ or
+        $str =~ /^[[:print:]]*[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*$/ ) {
+        @enc = qw(latin1 fr euc-cn big5-eten);
     } else {
-        $str = decode("utf-8", $str);
+        @enc = qw(euc-cn big5 latin1 fr);
+    }
+    my $utf8 = decode_by_guessing(
+        $str,
+        qw/ascii utf-8/, @enc,
+    );
+    if (!$utf8) {
+        #warn "Warning: $fname(line $.): malformed data: ", Dump($content);
+        $str =~ s/[^[:print:]]+/?/gs;
+        warn "\tadjusted to \"$str\"\n";
+    } else {
+        $str = encode('UTF-8', $utf8);
     }
     return $str;
 }
- 
+
+sub decode_by_guessing {
+    my $s = shift;
+    my @enc = @_;
+    for my $enc (@enc) {
+        my $decoder = guess_encoding($s, $enc);
+        if (ref $decoder) {
+            if ($enc ne 'ascii') {
+                #print "line $.: $enc message found: ", $decoder->decode($s), "\n";
+            }
+            return $decoder->decode($s);
+        }
+    }
+    undef;
+}
+
 # turns a timestap into a (GMT) time string
 sub format_time {
     my $d = shift;
@@ -66,40 +94,40 @@ sub format_time {
 }
 
 sub revision_links {
-	my $r = shift;
-	$r =~ s/^r//;
-	return qq{<a href="http://dev.pugscode.org/changeset/$r" title="Changeset for r$r">r$r</a>};
+    my $r = shift;
+    $r =~ s/^r//;
+    return qq{<a href="http://dev.pugscode.org/changeset/$r" title="Changeset for r$r">r$r</a>};
 }
 
 sub synopsis_links {
-	my $s = shift;
-	$s =~ m/^S(\d\d):(\d+)$/ or confess( 'Internal Error' );
-	return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
+    my $s = shift;
+    $s =~ m/^S(\d\d):(\d+)$/ or confess( 'Internal Error' );
+    return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
 }
 
 sub linkify {
-	my $url = shift;
-	my $display_url = $url;
-	if (length($display_url) >= 50){
-		$display_url 
-			= substr( $display_url, 0, 30 )
-			. '[…]'
-			. substr( $display_url, -17 )
-			;
-	}
-	return qq{<a href="$url" title="$url">} 
-		   . encode_entities( $display_url, qr{<>"}) 
-		   . '</a>';
+    my $url = shift;
+    my $display_url = $url;
+    if (length($display_url) >= 50){
+        $display_url
+            = substr( $display_url, 0, 30 )
+            . '[…]'
+            . substr( $display_url, -17 )
+            ;
+    }
+    return qq{<a href="$url" title="$url">}
+           . encode_entities( $display_url, qr{<>"})
+           . '</a>';
 }
 
 my $re_abbr;
 
 {
     my %abbrs;
-    
+
     if (open(my $abbr_file, '<:utf8', 'abbr.dat')) {
         my @patterns;
-        
+
         while (<$abbr_file>) {
             chomp;
             next unless length;
@@ -110,13 +138,13 @@ my $re_abbr;
             $abbrs{uc $key} = [ $pattern, $def ];
             push @patterns, $pattern;
         }
-        
+
         close($abbr_file);
-        
-		$re_abbr = join '|', map { "(?:$_)" } @patterns;
+
+        $re_abbr = join '|', map { "(?:$_)" } @patterns;
         $re_abbr = qr/\b(?:$re_abbr)\b/;
     }
-    
+
     sub expand_abbrs {
         my ($abbr, $state) = @_;
         my $abbr_n = uc $abbr;
@@ -126,68 +154,68 @@ my $re_abbr;
 }
 
 my %output_chain = (
-		links => {
-			re	=> qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
-			match	=> \&linkify,
-			rest	=> 'abbrs',
-		},
+        links => {
+            re    => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
+            match    => \&linkify,
+            rest    => 'abbrs',
+        },
         abbrs => {
             re => $re_abbr,
             match   => \&expand_abbrs,
             rest    => 'revision_links',
         },
-		revision_links => {
-			re 	=> qr/\br(\d+)\b/,
-			match	=> \&revision_links,
-			rest	=> 'synopsis_links',
-		},
-		synopsis_links => {
-			re	=> qr/\bS\d\d:\d+\b/,
-			match	=> \&synopsis_links,
-			rest	=> 'email_obfuscate',
-		},
-		email_obfuscate => {
-			re 	=> qr/(?<=\w)\@(?=\w)/,
-			match	=> '<img src="at.png">',
-			rest	=> 'break_words',
-		},
-		break_words	=> {
-			re	=> qr/\S{50,}/,
-			match	=> \&break_apart,
-			rest	=> 'encode',
-		},
+        revision_links => {
+            re     => qr/\br(\d+)\b/,
+            match    => \&revision_links,
+            rest    => 'synopsis_links',
+        },
+        synopsis_links => {
+            re    => qr/\bS\d\d:\d+\b/,
+            match    => \&synopsis_links,
+            rest    => 'email_obfuscate',
+        },
+        email_obfuscate => {
+            re     => qr/(?<=\w)\@(?=\w)/,
+            match    => '<img src="at.png">',
+            rest    => 'break_words',
+        },
+        break_words    => {
+            re    => qr/\S{50,}/,
+            match    => \&break_apart,
+            rest    => 'encode',
+        },
 );
 
 # does all the output processing of ordinary output lines
 sub output_process {
-	my $str = shift;
-	return '' unless length $str;
-	my $rule = shift || "links";
-	my $res = "";
-	if ($rule eq 'encode'){
-		return encode_entities($str, '<>&"');
-	} else {
-		my $re = $output_chain{$rule}{re};
+    my $str = shift;
+    return '' unless length $str;
+    my $rule = shift || "links";
+    my $res = "";
+    if ($rule eq 'encode'){
+        return encode_entities($str, '<>&"');
+    } else {
+        my $re = $output_chain{$rule}{re};
         my $state = {};
-		while ($str =~ m/$re/){
-			my ($pre, $match, $post) = ($`, $&, $');
-			$res .= output_process($pre, $output_chain{$rule}{rest});
-			my $m = $output_chain{$rule}{match};
-			if (ref $m && ref $m eq 'CODE'){
-				$res .= &$m($match, $state);
-			} else {
-				$res .= $m;
-			}
-			$str = $post;
-		}
-		$res .= output_process($str, $output_chain{$rule}{rest});
-	}
+        while ($str =~ m/$re/){
+            my ($pre, $match, $post) = ($`, $&, $');
+            $res .= output_process($pre, $output_chain{$rule}{rest});
+            my $m = $output_chain{$rule}{match};
+            if (ref $m && ref $m eq 'CODE'){
+                $res .= &$m($match, $state);
+            } else {
+                $res .= $m;
+            }
+            $str = $post;
+        }
+        $res .= output_process($str, $output_chain{$rule}{rest});
+    }
 }
 
 sub break_words {
-	my $str = shift;
-	$str =~ s/(\S{50,})/break_apart($1)/ge;
-	return $str;
+    my $str = shift;
+    $str =~ s/(\S{50,})/break_apart($1)/ge;
+    return $str;
 }
 
 # expects a string consisting of a single long word, and returns the same
@@ -207,19 +235,19 @@ sub break_apart {
 
 
 sub message_line {
-	my ($id, $nick, $timestamp, $message, $line_number, $c, 
-			$prev_nick, $colors, $link_url) = @_;
+    my ($id, $nick, $timestamp, $message, $line_number, $c,
+            $prev_nick, $colors, $link_url) = @_;
     my %h = (
-		ID			=> $id,
-        TIME     	=> format_time($timestamp),
-        MESSAGE  	=> output_process(my_encode($message)),
-		LINE_NUMBER => ++$line_number,
-		LINK_URL => $link_url,
+        ID            => $id,
+        TIME         => format_time($timestamp),
+        MESSAGE      => output_process(my_encode($message)),
+        LINE_NUMBER => ++$line_number,
+        LINK_URL => $link_url,
     );
 
     my @classes;
     my @msg_classes;
-    
+
     if ($nick ne $prev_nick){
         # $c++ is used to alternate the background color
         $$c++;
@@ -246,7 +274,7 @@ NICK:    foreach (@$colors){
     }
 
     if ($nick eq ""){
-        # empty nick column means that nobody said anything, but 
+        # empty nick column means that nobody said anything, but
         # it's a join, leave, topic etc.
         push @classes, "special";
         $h{SPECIAL} = 1;
@@ -260,8 +288,8 @@ NICK:    foreach (@$colors){
     if (@msg_classes) {
         $h{MSG_CLASS} = join " ", @msg_classes;
     }
-    
-	return \%h;
+
+    return \%h;
 }
 
 1;
