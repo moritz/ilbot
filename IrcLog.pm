@@ -1,7 +1,9 @@
-package IrcLog;
 use warnings;
 use strict;
 
+package IrcLog;
+
+#use Smart::Comments;
 use DBI;
 use Config::File;
 use Encode::Guess;
@@ -11,6 +13,7 @@ use HTML::Entities;
 use POSIX qw(ceil);
 use Carp;
 use utf8;
+use Data::Dumper;
 #use Regexp::MatchContext;
 
 require Exporter;
@@ -49,6 +52,7 @@ sub gmt_today {
 # my_encode takes a string and encodes it in utf-8
 sub my_encode {
     my $str = shift;
+    no utf8;
     $str =~ s/[\x02\x16]//g;
     my @enc;
     if ($str =~ /^([[:print:]]*[A-Za-z]+[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*)+$/ or
@@ -62,12 +66,15 @@ sub my_encode {
         qw/ascii utf-8/, @enc,
     );
     if (!$utf8) {
-        #warn "Warning: $fname(line $.): malformed data: ", Dump($content);
+        warn "Warning: malformed data: ", Dumper($str), "\n";
         $str =~ s/[^[:print:]]+/?/gs;
-        warn "\tadjusted to \"$str\"\n";
+        #warn "\tadjusted to \"$str\"\n";
+        warn "Converting to UTF-8 with force...\n";
+        $str = encode('utf8', $str);
     } else {
-        $str = encode('UTF-8', $utf8);
+        $str = encode('utf8', $utf8);
     }
+    ### $str
     return $str;
 }
 
