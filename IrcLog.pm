@@ -66,9 +66,8 @@ sub my_encode {
         qw/ascii utf-8/, @enc,
     );
     if (!$utf8) {
-        warn "Warning: malformed data: ", Dumper($str), "\n";
+        warn "Warning: malformed data: $str\n";
         $str =~ s/[^[:print:]]+/?/gs;
-        #warn "\tadjusted to \"$str\"\n";
         warn "Converting to UTF-8 with force...\n";
         $str = encode('utf8', $str);
     } else {
