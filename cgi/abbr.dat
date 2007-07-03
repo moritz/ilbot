@@ -127,3 +127,9 @@ SIP         --- Session Initiation Protocol
 VoIP        --- Voice over Internet Protocol
 LAMP        --- Linux, Apache, MySQL & Perl
 SBCL        --- Steel Bank Common Lisp
+EU::MM      --- ExtUtils::MakeMaker
+M::B        --- Module::Build
+M::I        --- Module::Install
+LLVM        --- Low Level Virtual Machine
+RHEL        --- Red Hat Enterprise Linux
+PHP         --- Pansies Hate Perl
