@@ -3,6 +3,7 @@ use warnings;
 use strict;
 use CGI::Carp qw(fatalsToBrowser);
 use IrcLog qw(get_dbh gmt_today my_encode message_line);
+use IrcLog::WWW 'http_header';
 use Date::Simple qw(date);
 use Encode::Guess;
 use CGI;
@@ -76,8 +77,7 @@ my $db = $dbh->prepare("SELECT id, nick, timestamp, line FROM irclog "
 		. "WHERE day = ? AND channel = ? AND NOT spam ORDER BY id");
 $db->execute($date, $full_channel);
 
-# charset has to be utf-8, since we encode everything in utf-8
-print "Content-Type: text/html; charset=UTF-8\n\n";
+print http_header();
 
 # determine which colors to use for which nick:
 {

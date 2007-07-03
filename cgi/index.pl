@@ -10,12 +10,13 @@ use HTML::Entities;
 use HTML::Template;
 use Config::File;
 use IrcLog qw(get_dbh);
+use IrcLog::WWW 'http_header';
 
 my $conf = Config::File::read_config_file("cgi.conf");
 my $base_url = $conf->{BASE_URL} || "/";
  
 my $q = new CGI;
-print "Content-Type: text/html; charset=UTF-8\n\n";
+print http_header();
 my $t = HTML::Template->new(filename => "index.tmpl");
 
 my $dbh = get_dbh();

@@ -9,6 +9,7 @@ use Encode;
 use HTML::Entities;
 use HTML::Template;
 use IrcLog qw(get_dbh my_encode message_line);
+use IrcLog::WWW 'http_header';
 use Config::File;
 use List::Util qw(min);
 
@@ -18,7 +19,7 @@ my $days_per_page = 10;
 my $lines_per_day = 50; # not yet used
  
 my $q = new CGI;
-print "Content-Type: text/html; charset=UTF-8\n\n";
+print http_header();
 my $t = HTML::Template->new(filename => "search.tmpl",
 		global_vars => 1);
 $t->param(BASE_URL => $base_url);

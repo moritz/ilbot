@@ -4,6 +4,7 @@ use strict;
 use CGI::Carp qw(fatalsToBrowser);
 use lib '..';
 use IrcLog qw(get_dbh);
+use IrcLog::WWW 'http_header';
 use CGI;
 use Config::File;
 use Data::Dumper;
@@ -51,6 +52,6 @@ $t->param(BASE_URL	=> $base_url);
 $t->param(CHANNEL	=> $channel);
 
 
-print "Content-Type: text/html; charset=utf-8\n\n";
+print http_header();
 
 print $t->output;
