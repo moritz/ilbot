@@ -224,10 +224,11 @@ sub message_line {
         # $c++ is used to alternate the background color
         $$c++;
         $h{NICK} = $nick;
-        push @classes, 'new-nick';
+        push @classes, 'new';
     } else {
         # omit nick in successive lines from the same nick
         $h{NICK} = "";
+        push @classes, 'cont';
     }
     # determine nick color:
     # perhaps do something more fancy, like count the number of lines per
