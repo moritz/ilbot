@@ -61,15 +61,15 @@ sub my_encode {
     } else {
         @enc = qw(euc-cn big5 latin1 fr);
     }
+    my $saved_str = $str;
     my $utf8 = decode_by_guessing(
         $str,
         qw/ascii utf-8/, @enc,
     );
     if (!$utf8) {
-        warn "Warning: malformed data: $str\n";
-        $str =~ s/[^[:print:]]+/?/gs;
-        warn "Converting to UTF-8 with force...\n";
-        $str = encode('utf8', $str);
+        warn "Warning: malformed data: \"$str\"\n";
+        $str = $saved_str;
+        #$str =~ s/[^[:print:]]+/?/gs;
     } else {
         $str = encode('utf8', $utf8);
     }
