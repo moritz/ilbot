@@ -30,7 +30,6 @@ URL         --- Uniform Resource Locator
 URI         --- Uniform Resource Identifier
 PAST        --- Parrot Abstract Syntax Tree
 TGE         --- Tree Grammar Engine
-POST        --- Parrot Opcode Syntax Tree
 p5p         --- Perl 5 Porters Mailing List
 IRC         --- Internet Relay Chat
 (?i:CSS)    --- Cascading Stylesheets                        --- CSS
@@ -133,3 +132,4 @@ M::I        --- Module::Install
 LLVM        --- Low Level Virtual Machine
 RHEL        --- Red Hat Enterprise Linux
 PHP         --- Pansies Hate Perl
+PAM         --- Pluggable Authentication Modules
