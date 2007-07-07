@@ -122,7 +122,7 @@ sub linkify {
             ;
     }
     return qq{<a href="$url" title="$url">}
-           . encode_entities( $display_url, qr{<>"})
+           . encode_entities( $display_url, qr{<>"&})
            . '</a>';
 }
 
