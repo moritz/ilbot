@@ -6,5 +6,6 @@ CREATE TABLE `irclog` (
         nick VARCHAR(40),
         timestamp INT,
         line TEXT,
+		spam BOOL default false,
         PRIMARY KEY(`id`)
         ) CHARSET=utf8;
