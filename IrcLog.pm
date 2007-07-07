@@ -22,7 +22,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
         get_dbh
         gmt_today
-        my_encode
+        my_decode
         message_line
         );
 
@@ -49,13 +49,25 @@ sub gmt_today {
     return sprintf("%04d-%02d-%02d", $d[5]+1900, $d[4] + 1, $d[3]);
 }
 
-# my_encode takes a string and encodes it in utf-8
-sub my_encode {
+# my_decode takes a string and encodes it in utf-8
+sub my_decode {
     my $str = shift;
+
+	my @encodings = qw(ascii utf-8 iso-8859-15 gb2312);
+	my $encoder = guess_encoding($str, @encodings);
+	if (ref $encoder){
+		return $encoder->decode($str);
+	} else {
+		return decode("utf-8", $str);
+	}
+
+	# XXX never reached
+
+
     no utf8;
 #  $str =~ s/[\x02\x16]//g;
     my @enc;
-    if ($str =~ /^([[:print:]]*[A-Za-z]+[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*)+$/ or
+    if ($str =~ /^(?:[[:print:]]*[A-Za-z]+[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*)+$/ or
         $str =~ /^[[:print:]]*[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*$/ ) {
         @enc = qw(latin1 fr euc-cn big5-eten);
     } else {
@@ -70,10 +82,7 @@ sub my_encode {
         warn "Warning: malformed data: \"$str\"\n";
         $str = $saved_str;
         #$str =~ s/[^[:print:]]+/?/gs;
-    } else {
-        $str = encode('utf8', $utf8);
-    }
-    ### $str
+    }     ### $str
     return $str;
 }
 
@@ -246,7 +255,7 @@ sub message_line {
     my %h = (
         ID            => $id,
         TIME         => format_time($timestamp),
-        MESSAGE      => output_process(my_encode($message)),
+        MESSAGE      => output_process(my_decode($message)),
         LINE_NUMBER => ++$line_number,
         LINK_URL => $link_url,
     );

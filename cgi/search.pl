@@ -8,7 +8,7 @@ use CGI;
 use Encode;
 use HTML::Entities;
 use HTML::Template;
-use IrcLog qw(get_dbh my_encode message_line);
+use IrcLog qw(get_dbh my_decode message_line);
 use IrcLog::WWW 'http_header';
 use Config::File;
 use List::Util qw(min);
@@ -58,9 +58,9 @@ $t->param(NICK => $q->param('nick'));
 
 if (my $nick = $t->param('nick')){
     # search for a nick, populate 'DAYS' and result page links
-    $nick = my_encode($nick);
+    $nick = my_decode($nick);
 
-    my $channel = my_encode($q->param('channel')) || die "No channel provided";
+    my $channel = my_decode($q->param('channel')) || die "No channel provided";
 
     my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog "
 			. "WHERE channel = ? AND (nick = ? OR nick = ?) AND NOT spam");
