@@ -53,7 +53,7 @@ sub gmt_today {
 sub my_encode {
     my $str = shift;
     no utf8;
-    $str =~ s/[\x02\x16]//g;
+#  $str =~ s/[\x02\x16]//g;
     my @enc;
     if ($str =~ /^([[:print:]]*[A-Za-z]+[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*)+$/ or
         $str =~ /^[[:print:]]*[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*$/ ) {
@@ -66,7 +66,7 @@ sub my_encode {
         $str,
         qw/ascii utf-8/, @enc,
     );
-    if (!$utf8) {
+    if (! defined($utf8)) {
         warn "Warning: malformed data: \"$str\"\n";
         $str = $saved_str;
         #$str =~ s/[^[:print:]]+/?/gs;

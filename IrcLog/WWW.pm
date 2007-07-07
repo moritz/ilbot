@@ -1,4 +1,4 @@
-package IrcLog::WebUtil;
+package IrcLog::WWW;
 use strict;
 use HTTP::Headers;
 
