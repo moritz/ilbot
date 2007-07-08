@@ -139,3 +139,5 @@ OLED        --- Organic Light Emitting Diode
 TT          --- Template Toolkit
 CL          --- Common Lisp
 PPI         --- Perl Parsing Interface
+RC          --- Release Candidate
+HTTPS       --- Secure Hypertext Transfer Protocol
