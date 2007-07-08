@@ -16,6 +16,9 @@ use utf8;
 use Data::Dumper;
 #use Regexp::MatchContext;
 
+use constant TAB_WIDTH => 4;
+use constant NBSP => decode_entities("&nbsp;");
+
 require Exporter;
 
 our @ISA = qw(Exporter);
@@ -197,8 +200,18 @@ my %output_chain = (
         break_words    => {
             re    => qr/\S{50,}/,
             match    => \&break_apart,
-            rest    => 'encode',
+            rest    => 'expand_tabs',
         },
+	expand_tabs => {
+	    re    => qr/\t/,
+	    match    => sub { " " x TAB_WIDTH },
+	    rest => 'preserve_spaces',
+	},
+	preserve_spaces => {
+            re    => qr/  /,
+	    match    => sub { " " . NBSP },
+	    rest     => 'encode',
+	},
 );
 
 # does all the output processing of ordinary output lines
