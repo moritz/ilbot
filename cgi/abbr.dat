@@ -16,6 +16,7 @@ SML         --- Standard ML
 (?i:KP6)    --- KindaPerl6                                  --- KP6
 (?i:MP6)    --- MiniPerl6                                   --- MP6
 HTML        --- Hypertext Markup Language
+XHTML       --- Extensible Hypertext Markup Language
 RAM         --- Random Access Memory
 AST         --- Abstract Syntax Tree
 MIME        --- Multipurpose Internet Mail Extensions
@@ -141,3 +142,13 @@ CL          --- Common Lisp
 PPI         --- Perl Parsing Interface
 RC          --- Release Candidate
 HTTPS       --- Secure Hypertext Transfer Protocol
+PASM        --- Parrot assembly language
+GMP         --- GNU Multi-Precision Library
+ABNF        --- Augmented Backus-Naur Form
+BNF         --- Backus-Naur Form
+IDE         --- Integrated Development Environment
+SAX         --- Simple API for XML
+StAX        --- Streaming API for XML
+DOM         --- Document Object Model
+SVG         --- Scalable Vector Graphics
+XSL         --- Extensible Stylesheet Language
