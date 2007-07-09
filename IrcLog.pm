@@ -197,7 +197,7 @@ my %output_chain = (
         },
         email_obfuscate => {
             re     => qr/(?<=\w)\@(?=\w)/,
-            match    => '<img src="at.png">',
+            match    => '<img src="at.png" />',
             rest    => 'break_words',
         },
         break_words    => {
