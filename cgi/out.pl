@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use CGI::Carp qw(fatalsToBrowser);
-use IrcLog qw(get_dbh gmt_today my_decode message_line);
+use IrcLog qw(get_dbh gmt_today my_decode message_line my_encode);
 use IrcLog::WWW qw(http_header);
 use Date::Simple qw(date);
 use Encode::Guess;
@@ -153,6 +153,6 @@ $t->param(
 
 }
     
-print encode("utf-8", $t->output);
+print my_encode($t->output);
 
 

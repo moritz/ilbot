@@ -8,7 +8,7 @@ use CGI;
 use Encode;
 use HTML::Entities;
 use HTML::Template;
-use IrcLog qw(get_dbh my_decode message_line);
+use IrcLog qw(get_dbh my_decode message_line my_encode);
 use IrcLog::WWW 'http_header';
 use Config::File;
 use List::Util qw(min);
@@ -116,7 +116,7 @@ if (my $nick = $t->param('nick')){
 
 }
 
-print encode('utf-8', $t->output);
+print my_encode($t->output);
 
 sub get_line_number {
 #    my ($channel, $day, $timestamp) = @_;
