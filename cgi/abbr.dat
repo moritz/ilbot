@@ -93,6 +93,7 @@ PMC         --- Parrot Magic Cookie
 FFI         --- Foreign Function Interface
 PDD         --- Parrot Design Document
 (?i:DWIM)   --- Do What I Mean                              --- DWIM
+(?i:pugs)   --- Perl 6 User's Golfing System                --- pugs
 GPL         --- GNU General Public License
 LGPL        --- GNU Lesser General Public License
 JSP         --- JavaServer Pages

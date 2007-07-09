@@ -329,7 +329,7 @@ sub my_encode {
 	my $s = shift;
 	$s = encode("utf-8", $s);
 	# valid xml characters: http://www.w3.org/TR/REC-xml/#charsets
-	$s =~ s/[^\x{90}\{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
+	$s =~ s/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
 	return $s;
 }
 
