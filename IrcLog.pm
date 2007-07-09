@@ -28,6 +28,7 @@ our @EXPORT = qw(
         gmt_today
         my_decode
         message_line
+		my_encode
         );
 
 
@@ -320,6 +321,16 @@ NICK:    foreach (@$colors){
     }
 
     return \%h;
+}
+
+# encode the argument (that has to be in perl's internal string format) as
+# utf-8 and remove non-SGML characters
+sub my_encode {
+	my $s = shift;
+	$s = encode("utf-8", $s);
+	# valid xml characters: http://www.w3.org/TR/REC-xml/#charsets
+	$s =~ s/[^\x{90}\{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
+	return $s;
 }
 
 1;
