@@ -16,9 +16,9 @@ sub http_header {
     
     my %qs = (html => 1, xhtml => 0);
     
-#    if ($accept =~ m{ application/xhtml\+xml (; q= ([\d.]+) )? }x) {
-#        $qs{xhtml} = ($2) ? $2 : 1;
-#    }
+    if ($accept =~ m{ application/xhtml\+xml (; q= ([\d.]+) )? }x) {
+        $qs{xhtml} = ($2) ? $2 : 1;
+    }
 
     if ($accept =~ m{ text/html (; q= ([\d.]+) )? }x) {
         $qs{html} = ($2) ? $2 : 1;

@@ -18,6 +18,7 @@ use Data::Dumper;
 
 use constant TAB_WIDTH => 4;
 use constant NBSP => decode_entities("&nbsp;");
+use constant ENTITIES => qr{<>"&};
 
 require Exporter;
 
@@ -133,8 +134,9 @@ sub linkify {
             . substr( $display_url, -17 )
             ;
     }
+	$url = encode_entities( $url, ENTITIES );
     return qq{<a href="$url" title="$url">}
-           . encode_entities( $display_url, qr{<>"&})
+           . encode_entities( $display_url, ENTITIES )
            . '</a>';
 }
 
@@ -166,8 +168,8 @@ my $re_abbr;
     sub expand_abbrs {
         my ($abbr, $state) = @_;
         my $abbr_n = uc $abbr;
-        if ($state->{$abbr_n}++) { return encode_entities($abbr); };
-        return qq{<abbr title="} . encode_entities($abbrs{$abbr_n}[1], '<>&"') . qq{">} . encode_entities($abbr). qq{</abbr>};
+        if ($state->{$abbr_n}++) { return encode_entities($abbr, ENTITIES); };
+        return qq{<abbr title="} . encode_entities($abbrs{$abbr_n}[1], ENTITIES) . qq{">} . encode_entities($abbr, ENTITIES). qq{</abbr>};
     }
 }
 
@@ -221,7 +223,7 @@ sub output_process {
     my $rule = shift || "links";
     my $res = "";
     if ($rule eq 'encode'){
-        return encode_entities($str, '<>&"');
+        return encode_entities( $str, ENTITIES );
     } else {
         my $re = $output_chain{$rule}{re};
         my $state = {};
