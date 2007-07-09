@@ -152,3 +152,5 @@ StAX        --- Streaming API for XML
 DOM         --- Document Object Model
 SVG         --- Scalable Vector Graphics
 XSL         --- Extensible Stylesheet Language
+CVS         --- Concurrent Versions System
+UML         --- Unified Modelling Language
