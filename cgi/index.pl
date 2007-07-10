@@ -34,7 +34,7 @@ my @channels;
 # date
 my $q2 = $dbh->prepare("SELECT MIN(day), MAX(day) FROM irclog WHERE channel = ?");
 
-my $q3 = $dbh->prepare("SELECT COUNT(day) FROM irclog WHERE day = ?");
+my $q3 = $dbh->prepare("SELECT DISTINCT day FROM irclog WHERE channel = ?");
 sub date_exists_in_db {
     my $date = shift;
     $q3->execute($date);
@@ -48,58 +48,57 @@ foreach my $ch (@channels){
     my @dates;
     my $short_channel = substr $ch, 1;
     $q2->execute($ch);
-    my ($min_day, $max_day) = $q2->fetchrow_array;
     push @t_channels, {
         CHANNEL   => $ch, 
-        CALENDAR  => calendar_for_range($min_day, $max_day, $ch),
-		TODAY_URL => $base_url . "out.pl?channel=$short_channel",
+        CALENDAR  => calendar_for_channel($ch),
+        TODAY_URL => $base_url . "out.pl?channel=$short_channel",
     }
 }
 $t->param(CHANNELS => \@t_channels);
 print $t->output;
 
-sub calendar_for_range {
-    my ($min_day, $max_day, $channel) = @_;
+sub calendar_for_channel {
+    my $channel = shift;
+    $q3->execute($channel);
     $channel =~ s/^#//;
+    my %cals;
+    while (my ($day) = $q3->fetchrow_array){
+        # extract year and month part: (YYYY-MM)
+        my $key = substr $day, 0, 7;
+        # day
+        my $d = substr $day, 8;
 
-    my ($current_year, $current_month) = split /-/, $min_day;
-    my ($max_year, $max_month) = split /-/, $max_day;
+        # create calendar
+        if (not exists $cals{$key}){
+            my ($year, $month) = split m/-/, $key;
+            $cals{$key} = HTML::Calendar::Simple->new({
+                    year  => $year,
+                    month => $month,
+                    });
+        }
 
-    my $cal_str = qq{};
-
-    my $current_day = date($min_day);
-    while ($current_year + 12 * $current_month <= $max_year + 12 * $max_month){
-        # generate calendar for this month;
-        my $cal = HTML::Calendar::Simple->new({
-                year  => $current_year,
-                month => $current_month,
+        # populate calendar with links
+        $cals{$key}->daily_info({
+                day      => $d,
+                day_link => $base_url . "out.pl?channel=$channel;date=$day",
                 });
-
-        while ($current_day->month == $current_month){
-            if (date_exists_in_db($current_day)){
-                $cal->daily_info({
-                        day      => $current_day->day,
-                        day_link => $base_url . "out.pl?channel=$channel;date=$current_day",
-                        });
-
-            }
-            $current_day++;
-        }
-
-        $cal_str = qq{<div class="calendar">} 
-                  . $cal->calendar_month
-                  . qq{</div>\n}
-                  . $cal_str;
-
-        # move on to next month
-        $current_month++;
-        if ($current_month == 13){
-            $current_month = 1;
-            $current_year++;
-        }
     }
 
-    return $cal_str;
+    # now generate the HTML output
+    my $html = qq{};
+    my $sorter = sub {
+        my ($l, $r) = @_;
+        return 12 * $cals{$l}->year + $cals{$l}->month 
+            <=> 12 * $cals{$r}->year + $cals{$r}->month;
+    };
+
+    for my $cal (reverse sort { &$sorter($a, $b) } keys %cals){
+        $html .= qq{\n<div class="calendar">} 
+              . $cals{$cal}->calendar_month
+              . qq{</div>\n}
+    }
+
+    return $html;
 }
 
-#vim: syn=perl;sw=4;ts=4;expandtab
+# vim: syn=perl sw=4 ts=4 expandtab
