@@ -15,11 +15,8 @@
 
     <TMPL_LOOP NAME=CHANNELS>
         <h2 id="<TMPL_VAR NAME=CHANNEL>"><TMPL_VAR NAME=CHANNEL></h2>
-        <TMPL_IF NAME=DATES>
-        <ul class="log-index"><TMPL_LOOP NAME=DATES>
-            <li><a href="<TMPL_VAR NAME=URL>"><TMPL_VAR NAME=DATE></a></li>
-        </TMPL_LOOP></ul>
-        </TMPL_IF>
+
+		<TMPL_VAR NAME=CALENDAR>
     </TMPL_LOOP>
 
     <TMPL_INCLUDE NAME="footer.tmpl">

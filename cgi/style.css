@@ -3,8 +3,10 @@ body {
 	color: black;
 }
 
-h1, h2, h3,  #footer *
-{ color: #70709f; }
+h1, h2, h3,  #footer * { 
+    color: #70709f; 
+    clear: left;
+}
 
 
 #footer {
@@ -88,6 +90,12 @@ br {
 	clear: left;
 }
 
+/* index page */
+
+.calendar {
+    float: left;
+}
+
 /* most important channel members. This is subjective, if you have a different
  * opinion, feel free to change */
 .nick_timtoady 	{ color: green; font-weight: bold; }
@@ -110,3 +118,4 @@ br {
 .nick4 { color: #222222; }
 
 abbr { cursor: help; }
+

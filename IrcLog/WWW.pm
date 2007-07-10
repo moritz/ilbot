@@ -25,9 +25,35 @@ sub http_header {
     }
     
     my $type = ($qs{xhtml} >= $qs{html}) ? 'application/xhtml+xml' : 'text/html';
-    $h->header('Content-Type' => "$type; charset=utf-8");
+    $h->header(
+			'Content-Type'     => "$type; charset=utf-8",
+			'Content-Language' => 'en',
+			);
     
     return $h->as_string . "\n";
 }
+
+=head1 NAME
+
+IrcLog::WWW
+
+=head1 SYNOPSIS
+
+   use IrcLog::WWW qw(http_header);
+   # print header
+   print http_header();
+
+=head1 METHODS
+
+* http_header
+
+This methods takes no argument, and returns a HTTP header. The settings are:
+
+    Content-Type:     application/xhtml+xml if the browser accepts it, 
+                      otherwise text/html
+    Charset:          UTF-8
+    Content-Language: en
+
+=cut
 
 1;

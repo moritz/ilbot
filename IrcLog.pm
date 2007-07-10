@@ -269,11 +269,11 @@ sub message_line {
     my ($id, $nick, $timestamp, $message, $line_number, $c,
             $prev_nick, $colors, $link_url) = @_;
     my %h = (
-        ID            => $id,
-        TIME         => format_time($timestamp),
-        MESSAGE      => output_process(my_decode($message)),
+        ID          => $id,
+        TIME        => format_time($timestamp),
+        MESSAGE     => output_process(my_decode($message)),
         LINE_NUMBER => ++$line_number,
-        LINK_URL => $link_url,
+        LINK_URL    => $link_url,
     );
 
     my @classes;
@@ -290,8 +290,6 @@ sub message_line {
         push @classes, 'cont';
     }
     # determine nick color:
-    # perhaps do something more fancy, like count the number of lines per
-    # nick, and give special colors to the $n most active nicks
 NICK:    foreach (@$colors){
         my $n = quotemeta $_->[0];
         if ($nick =~ m/^$n/ or $nick =~ m/^\* $n/){
@@ -306,7 +304,7 @@ NICK:    foreach (@$colors){
 
     if ($nick eq ""){
         # empty nick column means that nobody said anything, but
-        # it's a join, leave, topic etc.
+        # it's a join, part, topic change etc.
         push @classes, "special";
         $h{SPECIAL} = 1;
     }
@@ -332,5 +330,64 @@ sub my_encode {
 	$s =~ s/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
 	return $s;
 }
+
+=head1 NAME
+
+IrcLog - common subroutines for ilbot
+
+=head1 SYNOPSIS
+
+there is no synopsis, since the module has no unified API, but is a loose 
+collection of subs that are usefull for the irc log bot and the 
+corresponding CGI scripts.
+
+=head1 METHODS
+
+* get_dbh
+
+returns a DBI handle to a database. To achieve that, it reads the file 
+C<database.conf>.
+
+* gmt_today
+
+returns the current date in the format YYYY-MM-DD, and uses UTC (GMT) to 
+dermine the date.
+
+* my_decode 
+
+takes a single string as its argument, and tries to guess the string's 
+encoding/charset, converts it into perl's internal format (which is close to 
+Unicode), and returns that converted string.
+
+* message_line
+	
+this sub takes a whole bunch of mandatory arguments (and should therefore 
+be refactored).
+It takes the database entries for one line of the irc log and returns 
+a hash ref that is suitable to be used with the C<line.tmpl> HTML::Template 
+file.
+
+The arguments are:
+	- id
+	- nick
+	- timestamp (in GMT)
+	- message
+	- line number (for the id_l1234-anchors)
+	- a pointer to a counter to determine which background color to use.
+	- nick of the previous line (set to "" if none)
+	- a ref to an array of the form
+	  [ ['nick1', 'css_class_for_nick1'],
+	    ['nick2], 'css_class_for_nick2'],
+		...
+	  ]
+	- The URL of the current page
+
+* my_encode
+
+takes a single string as its argument (in perl's internal Unicode format),
+decodes it into UTF-8, and strips all characters that may no appear in 
+valid XML
+
+=cut
 
 1;
