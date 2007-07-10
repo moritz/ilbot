@@ -50,8 +50,9 @@ foreach my $ch (@channels){
     $q2->execute($ch);
     my ($min_day, $max_day) = $q2->fetchrow_array;
     push @t_channels, {
-        CHANNEL  => $ch, 
-        CALENDAR => calendar_for_range($min_day, $max_day, $ch),
+        CHANNEL   => $ch, 
+        CALENDAR  => calendar_for_range($min_day, $max_day, $ch),
+		TODAY_URL => $base_url . "out.pl?channel=$short_channel",
     }
 }
 $t->param(CHANNELS => \@t_channels);
