@@ -155,3 +155,8 @@ SVG         --- Scalable Vector Graphics
 XSL         --- Extensible Stylesheet Language
 CVS         --- Concurrent Versions System
 UML         --- Unified Modelling Language
+NYI         --- Not Yet Implemented
+LHS         --- Left Hand Side
+RHS         --- Right Hand Side
+TZ          --- Timezone
+SDL         --- Simple DirectMedia Layer
