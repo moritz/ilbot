@@ -28,7 +28,7 @@ our @EXPORT = qw(
         gmt_today
         my_decode
         message_line
-		my_encode
+        my_encode
         );
 
 
@@ -58,15 +58,15 @@ sub gmt_today {
 sub my_decode {
     my $str = shift;
 
-	my @encodings = qw(ascii utf-8 iso-8859-15 gb2312);
-	my $encoder = guess_encoding($str, @encodings);
-	if (ref $encoder){
-		return $encoder->decode($str);
-	} else {
-		return decode("utf-8", $str);
-	}
+    my @encodings = qw(ascii utf-8 iso-8859-15 gb2312);
+    my $encoder = guess_encoding($str, @encodings);
+    if (ref $encoder){
+     return $encoder->decode($str);
+    } else {
+        return decode("utf-8", $str);
+    }
 
-	# XXX never reached
+    # XXX never reached, reenable when the code below is fixed
 
 
     no utf8;
@@ -143,6 +143,8 @@ sub linkify {
 
 my $re_abbr;
 
+# read abbreviations from abbr.dat, store a regex in $re_abbr and create 
+# a closure named expand_abbrs 
 {
     my %abbrs;
 
@@ -174,11 +176,47 @@ my $re_abbr;
     }
 }
 
+my $re_links;
+
+# read links.dat, store a regex to recognize them in $re_links, and create a
+# closure named expand_links to do the actual linkification
+# this looks like a lot of duplicated code, d'oh
+
+{
+	my %links;
+	my @patterns;
+    if (open(my $links_file, '<:utf8', 'links.dat')) {
+		while (<$links_file>){
+			chomp;
+			next if m/^\s*$/smx;
+			my ($key, $url) = split m/\s*---\s*/, $_, 2;
+			# XXX do a quotemeta or not?
+			push @patterns, quotemeta $key;
+			$links{$key} = encode_entities($url, ENTITIES);
+		}
+        $re_links = join '|', map { "(?:$_)" } @patterns;
+        $re_links = qr/\b(?:$re_links)\b/;
+	}
+    sub expand_links {
+        my ($key, $state) = @_;
+        if ($state->{$key}++) { return encode_entities($key, ENTITIES); };
+        return qq{<a href="$links{$key}">} 
+			   . encode_entities($key, ENTITIES) 
+			   . qq{</a>};
+    }
+
+}
+
 my %output_chain = (
         links => {
-            re    => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
-            match    => \&linkify,
-            rest    => 'abbrs',
+            re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
+            match   => \&linkify,
+            rest    => 'static_links',
+        },
+        static_links => {
+             re     => $re_links,
+             match  => \&expand_links,
+             rest   => 'abbrs'
         },
         abbrs => {
             re => $re_abbr,
@@ -186,35 +224,35 @@ my %output_chain = (
             rest    => 'revision_links',
         },
         revision_links => {
-            re     => qr/\br(\d+)\b/,
-            match    => \&revision_links,
+            re      => qr/\br(\d+)\b/,
+            match   => \&revision_links,
             rest    => 'synopsis_links',
         },
         synopsis_links => {
-            re    => qr/\bS\d\d:\d+\b/,
-            match    => \&synopsis_links,
+            re      => qr/\bS\d\d:\d+\b/,
+            match   => \&synopsis_links,
             rest    => 'email_obfuscate',
         },
         email_obfuscate => {
-            re     => qr/(?<=\w)\@(?=\w)/,
-            match    => '<img src="at.png" />',
+            re      => qr/(?<=\w)\@(?=\w)/,
+            match   => '<img src="at.png" />',
             rest    => 'break_words',
         },
-        break_words    => {
-            re    => qr/\S{50,}/,
-            match    => \&break_apart,
+        break_words => {
+            re      => qr/\S{50,}/,
+            match   => \&break_apart,
             rest    => 'expand_tabs',
         },
-	expand_tabs => {
-	    re    => qr/\t/,
-	    match    => sub { " " x TAB_WIDTH },
-	    rest => 'preserve_spaces',
-	},
-	preserve_spaces => {
-            re    => qr/  /,
-	    match    => sub { " " . NBSP },
-	    rest     => 'encode',
-	},
+    expand_tabs => {
+        re          => qr/\t/,
+        match       => sub { " " x TAB_WIDTH },
+        rest        => 'preserve_spaces',
+    },
+    preserve_spaces => {
+        re       => qr/  /,
+        match    => sub { " " . NBSP },
+        rest     => 'encode',
+    },
 );
 
 # does all the output processing of ordinary output lines
@@ -324,11 +362,11 @@ NICK:    foreach (@$colors){
 # encode the argument (that has to be in perl's internal string format) as
 # utf-8 and remove non-SGML characters
 sub my_encode {
-	my $s = shift;
-	$s = encode("utf-8", $s);
-	# valid xml characters: http://www.w3.org/TR/REC-xml/#charsets
-	$s =~ s/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
-	return $s;
+    my $s = shift;
+    $s = encode("utf-8", $s);
+    # valid xml characters: http://www.w3.org/TR/REC-xml/#charsets
+    $s =~ s/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
+    return $s;
 }
 
 =head1 NAME
@@ -360,7 +398,7 @@ encoding/charset, converts it into perl's internal format (which is close to
 Unicode), and returns that converted string.
 
 * message_line
-	
+
 this sub takes a whole bunch of mandatory arguments (and should therefore 
 be refactored).
 It takes the database entries for one line of the irc log and returns 
@@ -368,19 +406,19 @@ a hash ref that is suitable to be used with the C<line.tmpl> HTML::Template
 file.
 
 The arguments are:
-	- id
-	- nick
-	- timestamp (in GMT)
-	- message
-	- line number (for the id_l1234-anchors)
-	- a pointer to a counter to determine which background color to use.
-	- nick of the previous line (set to "" if none)
-	- a ref to an array of the form
-	  [ ['nick1', 'css_class_for_nick1'],
-	    ['nick2], 'css_class_for_nick2'],
-		...
-	  ]
-	- The URL of the current page
+    - id
+    - nick
+    - timestamp (in GMT)
+    - message
+    - line number (for the id_l1234-anchors)
+    - a pointer to a counter to determine which background color to use.
+    - nick of the previous line (set to "" if none)
+    - a ref to an array of the form
+      [ ['nick1', 'css_class_for_nick1'],
+        ['nick2], 'css_class_for_nick2'],
+        ...
+      ]
+    - The URL of the current page
 
 * my_encode
 
