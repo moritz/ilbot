@@ -214,7 +214,7 @@ my %output_chain = (
             rest    => 'synopsis_links',
         },
         synopsis_links => {
-            re      => qr/\bS\d\d:\d+(?:-\d+)\b/,
+            re      => qr/\bS\d\d:\d+(?:-\d+)?\b/,
             match   => \&synopsis_links,
             rest    => 'static_links',
         },
