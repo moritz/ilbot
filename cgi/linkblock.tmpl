@@ -4,5 +4,8 @@
     <TMPL_IF NAME=NEXT_URL><a href="<TMPL_VAR NAME=NEXT_URL>">Next
     day</a> |</TMPL_IF>
     <a href="<TMPL_VAR NAME=SEARCH_URL>">Search</a> |
-    <a href="http://www.google.com/search?q=site%3Amoritz.faui2k3.org+inurl%3Airclog+inurl%3A<TMPL_VAR NAME=CHANNEL ESCAPE=URL>">Google Search</a>
-    </p>
+    <a href="http://www.google.com/search?q=site%3Amoritz.faui2k3.org+inurl%3Airclog+inurl%3A<TMPL_VAR NAME=CHANNEL ESCAPE=URL>">Google Search</a> |
+	<!-- XXX this is #perl6-specific! -->
+	<a href="http://colabti.de/irclogger/irclogger_log/perl6?date=<TMPL_VAR
+	NAME=DATE>">Searchable logs</a>
+	</p>
