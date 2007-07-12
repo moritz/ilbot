@@ -211,6 +211,11 @@ my %output_chain = (
         links => {
             re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
             match   => \&linkify,
+            rest    => 'synopsis_links',
+        },
+        synopsis_links => {
+            re      => qr/\bS\d\d:\d+\b/,
+            match   => \&synopsis_links,
             rest    => 'static_links',
         },
         static_links => {
@@ -226,11 +231,6 @@ my %output_chain = (
         revision_links => {
             re      => qr/\br(\d+)\b/,
             match   => \&revision_links,
-            rest    => 'synopsis_links',
-        },
-        synopsis_links => {
-            re      => qr/\bS\d\d:\d+\b/,
-            match   => \&synopsis_links,
             rest    => 'email_obfuscate',
         },
         email_obfuscate => {
