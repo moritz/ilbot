@@ -121,7 +121,7 @@ sub revision_links {
 
 sub synopsis_links {
     my $s = shift;
-    $s =~ m/^S(\d\d):(\d+)-(?:\d+)?$/ or confess( 'Internal Error' );
+    $s =~ m/^S(\d\d):(\d+)(?:-\d+)?$/ or confess( 'Internal Error' );
     return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
 }
 
