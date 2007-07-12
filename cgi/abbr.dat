@@ -25,8 +25,6 @@ HTTP        --- Hypertext Transfer Protocol
 LWP         --- libwww-perl
 XML         --- Extensible Markup Language
 FTP         --- File Transfer Protocol
-p6l         --- perl6-language mailing list
-p6c         --- perl6-compiler mailing list
 URL         --- Uniform Resource Locator
 URI         --- Uniform Resource Identifier
 PAST        --- Parrot Abstract Syntax Tree
