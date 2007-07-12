@@ -25,18 +25,18 @@ my $base_url = $conf->{BASE_URL} || "/";
  
 # map nicks to CSS classes.
 my @colors = (
-        ['TimToady',	'nick_timtoady'],
+        ['TimToady',    'nick_timtoady'],
         ['audreyt',     'nick_audreyt'],
         ['evalbot',     'bots'],
         ['lambdabot',   'bots'],
-        ['svnbot6',     'bots'],
+        ['pugs_svnbot', 'bots'],
         ['specbot',     'bots'],
         ['pasteling',   'bots'],
-	['moritz',	'nick_moritz'],
-	['agentzh',	'nick_agentzh'],
-	['Aankhen``',	'nick_aankhen'],
-	['dduncan',	'nick_dduncan'],
-	['fglock',	'nick_fglock'],
+        ['moritz',      'nick_moritz'],
+        ['agentzh',     'nick_agentzh'],
+        ['Aankhen``',   'nick_aankhen'],
+        ['dduncan',     'nick_dduncan'],
+        ['fglock',      'nick_fglock'],
          );
 # additional classes for nicks, sorted by frequency of speech:
 my @nick_classes = qw(nick1 nick2 nick3 nick4);
@@ -156,3 +156,4 @@ $t->param(
 print my_encode($t->output);
 
 
+# vim: expandtab
