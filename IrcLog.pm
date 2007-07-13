@@ -298,7 +298,7 @@ sub break_apart {
     for (my $i = $chunk_size; $i < $l; $i += $chunk_size){
         $result .= " " . substr $str, $i, $chunk_size;
     }
-    return $result;
+    return encode_entities($result, ENTITIES);
 }
 
 
