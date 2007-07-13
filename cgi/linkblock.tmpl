@@ -1,8 +1,9 @@
-    <p><TMPL_IF NAME=PREV_URL><a href="<TMPL_VAR NAME=PREV_URL>">Previous
+    <p><TMPL_IF NAME=PREV_URL><a href="<TMPL_VAR NAME=PREV_URL>">&larr; Previous
     day</a> |</TMPL_IF> 
     <a href="<TMPL_VAR NAME=INDEX_URL>">Index</a> |
     <TMPL_IF NAME=NEXT_URL><a href="<TMPL_VAR NAME=NEXT_URL>">Next
-    day</a> |</TMPL_IF>
+    day &rarr;</a> |
+	<a href="<TMPL_VAR NAME=BASE_URL>out.pl?channel=<TMPL_VAR NAME=STRIPPED_CHANNEL>">Today</a> |</TMPL_IF>
     <a href="<TMPL_VAR NAME=SEARCH_URL>">Search</a> |
     <a href="http://www.google.com/search?q=site%3Amoritz.faui2k3.org+inurl%3Airclog+inurl%3A<TMPL_VAR NAME=CHANNEL ESCAPE=URL>">Google Search</a> |
 	<!-- XXX this is #perl6-specific! -->

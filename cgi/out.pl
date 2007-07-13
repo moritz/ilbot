@@ -129,6 +129,7 @@ while (my @row = $db->fetchrow_array){
 
 $t->param(
         CHANNEL		=> $full_channel,
+        STRIPPED_CHANNEL => $channel,
         MESSAGES    => \@msg,
         DATE        => $date,
         INDEX_URL   => $base_url,
