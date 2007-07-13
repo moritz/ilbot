@@ -9,7 +9,8 @@ use Config::File;
 
 my $irc = new Net::IRC;
 
-my $conf = Config::File::read_config_file("bot.conf");
+my $config_filename = shift @ARGV || "bot.conf";
+my $conf = Config::File::read_config_file($config_filename);
 my $nick = shift @ARGV || $conf->{NICK} || "ilbot6";
 
 my $conn = $irc->newconn(
