@@ -114,7 +114,6 @@ sub format_time {
 
 sub revision_links {
 	my ($r, $state, $channel) = @_;
-	warn "Channel: $channel\n";
 	my %prefixes = (
 			'perl6'	=> 'http://dev.pugscode.org/changeset/',
 			'parrot'	=> 'http://perlcabal.org/svn/parrot/revision/?rev=',
