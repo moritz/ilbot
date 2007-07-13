@@ -158,3 +158,4 @@ LHS         --- Left Hand Side
 RHS         --- Right Hand Side
 TZ          --- Timezone
 SDL         --- Simple DirectMedia Layer
+MMD         --- Multimethod Dispatch
