@@ -18,7 +18,7 @@ use Data::Dumper;
 
 use constant TAB_WIDTH => 4;
 use constant NBSP => decode_entities("&nbsp;");
-use constant ENTITIES => qr{<>"&};
+use constant ENTITIES => qq{<>"&};
 
 require Exporter;
 
@@ -30,7 +30,6 @@ our @EXPORT = qw(
         message_line
         my_encode
         );
-
 
 # get a database handle.
 # you will have to modify that routine to fit your needs
