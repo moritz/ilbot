@@ -111,16 +111,18 @@ while (my @row = $db->fetchrow_array){
 	my $timestamp = $row[2];
 	my $message = $row[3];
 
-	push @msg, message_line(
-			$id,
-			$nick, 
-			$timestamp, 
-			$message, 
-			++$line_number,
+	push @msg, message_line( {
+            id           => $id,
+            nick        => $nick, 
+            timestamp   => $timestamp, 
+            message     => $message, 
+            line_number =>  ++$line_number,
+            prev_nick   => $prev_nick,
+            colors      => \@colors,
+            self_url    => $self_url,
+            channel     => $channel,
+            },
 			\$c,
-			$prev_nick,
-			\@colors,
-			$self_url,
 			);
 	$prev_nick = $nick;
 }
@@ -129,7 +131,7 @@ $t->param(
         CHANNEL		=> $full_channel,
         MESSAGES    => \@msg,
         DATE        => $date,
-        INDEX_URL    => $base_url,
+        INDEX_URL   => $base_url,
      );
 
 # check if previous/next date exists in database
@@ -156,4 +158,4 @@ $t->param(
 print my_encode($t->output);
 
 
-# vim: expandtab
+# vim: sw=4 ts=4 expandtab

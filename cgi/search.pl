@@ -95,15 +95,18 @@ if (my $nick = $t->param('nick')){
         $q2->execute($row[0], $channel, $nick, "* $nick");
         while (my @r2 = $q2->fetchrow_array){
             my $line_number = get_line_number($channel, $row[0], $r2[0]);
-            push @lines, message_line(
-					$r2[0],  # id 
-					$nick, 
-                    $r2[1],  # timestamp
-                    $r2[2],  # message
-                    $line_number, 
-                    \$c, $prev_nick, 
-                    [], 
-                    $base_url . "out.pl?channel=$short_channel;date=$row[0]",
+            push @lines, message_line({
+						id			=> $r2[0],
+						nick		=> $nick, 
+                    	timestamp	=> $r2[1], 
+                    	message		=> $r2[2],
+                    	line_number => $line_number, 
+						prev_nick	=> $prev_nick, 
+                    	colors		=> [], 
+                    	link_url	=> $base_url . "out.pl?channel=$short_channel;date=$row[0]",
+						channel		=> $channel,
+					},
+                    \$c, 
                     );   
         }
         push @days, { 

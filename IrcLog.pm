@@ -113,9 +113,16 @@ sub format_time {
 }
 
 sub revision_links {
-    my $r = shift;
+	my ($r, $state, $channel) = @_;
+	warn "Channel: $channel\n";
+	my %prefixes = (
+			'perl6'	=> 'http://dev.pugscode.org/changeset/',
+			'parrot'	=> 'http://perlcabal.org/svn/parrot/revision/?rev=',
+			);
+	my $url_prefix = $prefixes{$channel};
+	return $r unless $url_prefix;
     $r =~ s/^r//;
-    return qq{<a href="http://dev.pugscode.org/changeset/$r" title="Changeset for r$r">r$r</a>};
+    return qq{<a href="$url_prefix$r" title="Changeset for r$r">r$r</a>};
 }
 
 sub synopsis_links {
@@ -242,23 +249,22 @@ my %output_chain = (
             match   => \&break_apart,
             rest    => 'expand_tabs',
         },
-    expand_tabs => {
-        re          => qr/\t/,
-        match       => sub { " " x TAB_WIDTH },
-        rest        => 'preserve_spaces',
-    },
-    preserve_spaces => {
-        re       => qr/  /,
-        match    => sub { " " . NBSP },
-        rest     => 'encode',
-    },
+		expand_tabs => {
+			re          => qr/\t/,
+			match       => sub { " " x TAB_WIDTH },
+			rest        => 'preserve_spaces',
+		},
+		preserve_spaces => {
+			re       => qr/  /,
+			match    => sub { " " . NBSP },
+			rest     => 'encode',
+		},
 );
 
 # does all the output processing of ordinary output lines
 sub output_process {
-    my $str = shift;
+    my ($str, $rule, $channel) = @_;
     return '' unless length $str;
-    my $rule = shift || "links";
     my $res = "";
     if ($rule eq 'encode'){
         return encode_entities( $str, ENTITIES );
@@ -267,16 +273,16 @@ sub output_process {
         my $state = {};
         while ($str =~ m/$re/){
             my ($pre, $match, $post) = ($`, $&, $');
-            $res .= output_process($pre, $output_chain{$rule}{rest});
+            $res .= output_process($pre, $output_chain{$rule}{rest}, $channel);
             my $m = $output_chain{$rule}{match};
             if (ref $m && ref $m eq 'CODE'){
-                $res .= &$m($match, $state);
+                $res .= &$m($match, $state, $channel);
             } else {
                 $res .= $m;
             }
             $str = $post;
         }
-        $res .= output_process($str, $output_chain{$rule}{rest});
+        $res .= output_process($str, $output_chain{$rule}{rest}, $channel);
     }
 }
 
@@ -303,20 +309,23 @@ sub break_apart {
 
 
 sub message_line {
-    my ($id, $nick, $timestamp, $message, $line_number, $c,
-            $prev_nick, $colors, $link_url) = @_;
+	my ($args_ref, $c) = @_;
+#    my ($id, $nick, $timestamp, $message, $line_number, $c,
+#            $prev_nick, $colors, $link_url) = @_;
+	my $nick = $args_ref->{nick};
+	my $colors = $args_ref->{colors};
     my %h = (
-        ID          => $id,
-        TIME        => format_time($timestamp),
-        MESSAGE     => output_process(my_decode($message)),
-        LINE_NUMBER => ++$line_number,
-        LINK_URL    => $link_url,
+        ID          => $args_ref->{id},
+        TIME        => format_time($args_ref->{timestamp}),
+        MESSAGE     => output_process(my_decode($args_ref->{message}), "links", $args_ref->{channel}),
+        LINE_NUMBER => ++$args_ref->{line_number},
+        LINK_URL    => $args_ref->{link_url},
     );
 
     my @classes;
     my @msg_classes;
 
-    if ($nick ne $prev_nick){
+    if ($nick ne $args_ref->{prev_nick}){
         # $c++ is used to alternate the background color
         $$c++;
         $h{NICK} = $nick;
