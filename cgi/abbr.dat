@@ -159,3 +159,4 @@ RHS         --- Right Hand Side
 TZ          --- Timezone
 SDL         --- Simple DirectMedia Layer
 MMD         --- Multimethod Dispatch
+HPC         --- Haskell Program Coverage
