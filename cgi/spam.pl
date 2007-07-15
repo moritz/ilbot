@@ -52,6 +52,6 @@ $t->param(BASE_URL	=> $base_url);
 $t->param(CHANNEL	=> $channel);
 
 
-print http_header();
+print http_header({no_xhtml => 1});
 
 print $t->output;

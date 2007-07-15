@@ -7,6 +7,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(http_header);
 
 sub http_header {
+	my $config = shift || {};
     my $h = HTTP::Headers->new;
     
     $h->header(Status => '200 OK');
@@ -16,7 +17,7 @@ sub http_header {
     
     my %qs = (html => 1, xhtml => 0);
     
-    if ($accept =~ m{ application/xhtml\+xml (; q= ([\d.]+) )? }x) {
+    if ($accept =~ m{ application/xhtml\+xml (; q= ([\d.]+) )? }x && !$config->{no_xhtml}) {
         $qs{xhtml} = ($2) ? $2 : 1;
     }
 
