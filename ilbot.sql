@@ -6,6 +6,8 @@ CREATE TABLE `irclog` (
         nick VARCHAR(40),
         timestamp INT,
         line TEXT,
-		spam BOOL default false,
+        spam BOOL default false,
         PRIMARY KEY(`id`)
         ) CHARSET=utf8;
+
+-- vim: sw=4 ts=4 expandtab

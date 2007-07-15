@@ -104,7 +104,7 @@ NCI         --- Native Call Interface
 CRLF        --- Carriage Return/Line Feed
 FLOSS       --- Free/Libre/Open-Source Software
 FOSS        --- Free/Open-Source Software
-(?i:OSCON)  --- O'Reilly Open Source Convention
+(?i:OSCON)  --- O'Reilly Open Source Convention             --- OSCON
 JVM         --- Java Virtual Machine
 PDP         --- Personal Data Processor
 ASCII       --- American Standard Code for Information Interchange

@@ -113,21 +113,32 @@ sub format_time {
 }
 
 sub revision_links {
-	my ($r, $state, $channel) = @_;
-	my %prefixes = (
-			'perl6'	=> 'http://dev.pugscode.org/changeset/',
-			'parrot'	=> 'http://perlcabal.org/svn/parrot/revision/?rev=',
-			);
-	my $url_prefix = $prefixes{$channel};
-	return $r unless $url_prefix;
+    my ($r, $state, $channel) = @_;
+    my %prefixes = (
+             'perl6'    => 'http://dev.pugscode.org/changeset/',
+             'parrot'    => 'http://perlcabal.org/svn/parrot/revision/?rev=',
+            );
+    my $url_prefix = $prefixes{$channel};
+    return $r unless $url_prefix;
     $r =~ s/^r//;
     return qq{<a href="$url_prefix$r" title="Changeset for r$r">r$r</a>};
 }
 
 sub synopsis_links {
     my $s = shift;
-    $s =~ m/^S(\d\d):(\d+)(?:-\d+)?$/ or confess( 'Internal Error' );
-    return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$&</a>};
+    if ($s =~ m/^S(\d\d)$/i){
+        return qq{<a href="http://perlcabal.org/syn/S$1.html">$s</a>};
+    } elsif ($s =~ m/^S(\d\d):(\d+)(?:-\d+)?$/smi){
+        return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$s</a>};
+    } elsif ( $s =~ m{^S(\d\d)/\"([^"]+)\"$}msi ) {
+        my ($syn, $anchor) = ($1, $2);
+        $s = encode_entities($s, ENTITIES);
+        $anchor =~ s{[^A-Za-z1-9_-]}{_}g;
+        return qq{<a href="http://perlcabal.org/syn/S$syn.html#$anchor">$s</a>};
+    } else {
+        warn "Internal error in synopsis link handling (string: $s)";
+        return encode_entities($s, ENTITIES);
+    }
 }
 
 sub linkify {
@@ -140,7 +151,7 @@ sub linkify {
             . substr( $display_url, -17 )
             ;
     }
-	$url = encode_entities( $url, ENTITIES );
+    $url = encode_entities( $url, ENTITIES );
     return qq{<a href="$url" title="$url">}
            . encode_entities( $display_url, ENTITIES )
            . '</a>';
@@ -176,6 +187,7 @@ my $re_abbr;
     sub expand_abbrs {
         my ($abbr, $state) = @_;
         my $abbr_n = uc $abbr;
+        confess("Abbreviation '$abbr_n' not found") unless ($abbrs{$abbr_n});
         if ($state->{$abbr_n}++) { return encode_entities($abbr, ENTITIES); };
         return qq{<abbr title="} . encode_entities($abbrs{$abbr_n}[1], ENTITIES) . qq{">} . encode_entities($abbr, ENTITIES). qq{</abbr>};
     }
@@ -188,26 +200,26 @@ my $re_links;
 # this looks like a lot of duplicated code, d'oh
 
 {
-	my %links;
-	my @patterns;
+    my %links;
+    my @patterns;
     if (open(my $links_file, '<:utf8', 'links.dat')) {
-		while (<$links_file>){
-			chomp;
-			next if m/^\s*$/smx;
-			my ($key, $url) = split m/\s*---\s*/, $_, 2;
-			# XXX do a quotemeta or not?
-			push @patterns, quotemeta $key;
-			$links{$key} = encode_entities($url, ENTITIES);
-		}
+        while (<$links_file>){
+            chomp;
+            next if m/^\s*$/smx;
+            my ($key, $url) = split m/\s*---\s*/, $_, 2;
+            # XXX do a quotemeta or not?
+            push @patterns, quotemeta $key;
+            $links{$key} = encode_entities($url, ENTITIES);
+        }
         $re_links = join '|', map { "(?:$_)" } @patterns;
         $re_links = qr/\b(?:$re_links)\b/;
-	}
+    }
     sub expand_links {
         my ($key, $state) = @_;
         if ($state->{$key}++) { return encode_entities($key, ENTITIES); };
         return qq{<a href="$links{$key}">} 
-			   . encode_entities($key, ENTITIES) 
-			   . qq{</a>};
+             . encode_entities($key, ENTITIES) 
+             . qq{</a>};
     }
 
 }
@@ -219,7 +231,14 @@ my %output_chain = (
             rest    => 'synopsis_links',
         },
         synopsis_links => {
-            re      => qr/\bS\d\d:\d+(?:-\d+)?\b/,
+            re      => qr{
+                \bS\d\d             # S05
+                (?: (?: : \d+       # S05:123
+                    (?:-\d+)? )     # S05:123-456
+                | /"[^"]+"          # S05/Nothing is illegal/
+                )?
+                }xmsi,
+
             match   => \&synopsis_links,
             rest    => 'static_links',
         },
@@ -327,7 +346,9 @@ sub message_line {
     if ($nick ne $args_ref->{prev_nick}){
         # $c++ is used to alternate the background color
         $$c++;
-        $h{NICK} = $nick;
+        my $display_nick = $nick;
+        $display_nick =~ s/\A\*\ /'*' . NBSP/exms;
+        $h{NICK} = encode_entities($display_nick, ENTITIES);
         push @classes, 'new';
     } else {
         # omit nick in successive lines from the same nick
@@ -343,7 +364,7 @@ NICK:    foreach (@$colors){
         }
     }
 
-    if ($nick =~ /^\* /) {
+    if ($nick =~ /\A\*\ /smx) {
         push @msg_classes, 'act';
     }
 
@@ -435,4 +456,5 @@ valid XML
 
 =cut
 
+# vim: ts=4 sw=4 expandtab
 1;
