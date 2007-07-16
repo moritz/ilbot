@@ -2,8 +2,8 @@
 use warnings;
 use strict;
 use CGI::Carp qw(fatalsToBrowser);
-use IrcLog qw(get_dbh gmt_today my_decode message_line my_encode);
-use IrcLog::WWW qw(http_header);
+use IrcLog qw(get_dbh gmt_today);
+use IrcLog::WWW qw(http_header my_decode message_line my_encode);
 use Date::Simple qw(date);
 use Encode::Guess;
 use CGI;

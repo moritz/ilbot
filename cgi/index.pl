@@ -10,7 +10,7 @@ use HTML::Entities;
 use HTML::Template;
 use Config::File;
 use IrcLog qw(get_dbh);
-use IrcLog::WWW 'http_header';
+use IrcLog::WWW qw(http_header);
 use HTML::Calendar::Simple;
 
 my $conf = Config::File::read_config_file("cgi.conf");

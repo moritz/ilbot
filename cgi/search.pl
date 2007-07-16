@@ -8,8 +8,8 @@ use CGI;
 use Encode;
 use HTML::Entities;
 use HTML::Template;
-use IrcLog qw(get_dbh my_decode message_line my_encode);
-use IrcLog::WWW 'http_header';
+use IrcLog qw(get_dbh);
+use IrcLog::WWW qw(http_header my_decode message_line my_encode);
 use Config::File;
 use List::Util qw(min);
 
