@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 BEGIN { use_ok('IrcLog::WWW'); }
 
@@ -21,7 +21,6 @@ sub link_length {
             \$c
         );
     my $msg = $h->{MESSAGE};
-#    print "# $msg\n";
     if ($msg =~ m{<a [^>]+>([^<]*)</a>}){
         return length $1;
     } else {
@@ -37,4 +36,9 @@ is( link_length('S05:123'), 7,       qq{'S05:123' linkifies} );
 is( link_length('S05:1-2'), 7,       qq{'S05:1-2' (ranges) linkify} );
 
 # " is turned into &quot;
-is( link_length('S05/"foo b"'), 21,  qq{'S05/foo bar/ linkifies} );
+is( link_length('S05/"foo b"'), 21,  qq{'S05/"foo b" linkifies} );
+
+TODO: {
+    local $TODO = "NYI";
+    is( link_length('S05/foo'), 7,   qq{'S05/foo' linkifies} );
+}
