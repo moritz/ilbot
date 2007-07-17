@@ -156,7 +156,7 @@ sub linkify {
            . '</a>';
 }
 
-my $re_abbr;
+my $re_abbr = qr/(?!)/;
 
 # read abbreviations from abbr.dat, store a regex in $re_abbr and create 
 # a closure named expand_abbrs 
@@ -179,13 +179,11 @@ my $re_abbr;
 
         close($abbr_file);
 
-        $re_abbr = join '|', map { "(?:$_)" } @patterns;
-        $re_abbr = qr/\b(?:$re_abbr)\b/;
-    } else {
-		# may never match
-		$re_abbr = qr/(?!)/;
-	}
-
+		if (@patterns){
+			$re_abbr = join '|', map { "(?:$_)" } @patterns;
+			$re_abbr = qr/\b(?:$re_abbr)\b/;
+		}
+    }
     sub expand_abbrs {
         my ($abbr, $state) = @_;
         my $abbr_n = uc $abbr;
@@ -195,7 +193,7 @@ my $re_abbr;
     }
 }
 
-my $re_links;
+my $re_links = qr/(?!)/;
 
 # read links.dat, store a regex to recognize them in $re_links, and create a
 # closure named expand_links to do the actual linkification
@@ -213,13 +211,13 @@ my $re_links;
             push @patterns, quotemeta $key;
             $links{$key} = encode_entities($url, ENTITIES);
         }
-        $re_links = join '|', map { "(?:$_)" } @patterns;
-        $re_links = qr/\b(?:$re_links)\b/;
-    } else {
-		# may never match
-		$re_links = qr/(?!)/;
-	}
-    sub expand_links {
+		if (@patterns){
+			$re_links = join '|', map { "(?:$_)" } @patterns;
+			$re_links = qr/\b(?:$re_links)\b/;
+		}
+    }     
+	
+	sub expand_links {
         my ($key, $state) = @_;
         if ($state->{$key}++) { return encode_entities($key, ENTITIES); };
         return qq{<a href="$links{$key}">} 
