@@ -240,7 +240,7 @@ my %output_chain = (
                 \bS\d\d             # S05
                 (?: (?: : \d+       # S05:123
                     (?:-\d+)? )     # S05:123-456
-                | /"[^"]+"          # S05/Nothing is illegal/
+                | /"[^"]+"          # S05/"Nothing is illegal"
                 )?
                 }xmsi,
 
@@ -258,7 +258,7 @@ my %output_chain = (
             rest    => 'revision_links',
         },
         revision_links => {
-            re      => qr/\br(\d+)\b/,
+            re      => qr/\br[1-9]\d*\b/,
             match   => \&revision_links,
             rest    => 'email_obfuscate',
         },

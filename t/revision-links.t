@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 BEGIN { use_ok('IrcLog::WWW'); }
 
@@ -43,6 +43,11 @@ my @tests = (
             test    => 'br123',
             result  => undef,
             desc    => qq{revision links within words don't linkify},
+        },
+        {
+            test    => 'r0123',
+            result  => undef,
+            desc    => 'r0\d+ does not linkify',
         },
         );
 
