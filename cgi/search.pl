@@ -12,6 +12,8 @@ use IrcLog qw(get_dbh);
 use IrcLog::WWW qw(http_header my_decode message_line my_encode);
 use Config::File;
 use List::Util qw(min);
+#use Data::Dumper;
+#$DATA::Dumper::indent = 0;
 
 my $conf = Config::File::read_config_file("cgi.conf");
 my $base_url = $conf->{BASE_URL} || "/";
@@ -94,7 +96,7 @@ if (my $nick = $t->param('nick')){
         my @lines;
         $q2->execute($row[0], $channel, $nick, "* $nick");
         while (my @r2 = $q2->fetchrow_array){
-            my $line_number = get_line_number($channel, $row[0], $r2[0]);
+            my $line_number = get_line_number($channel, $row[0], $r2[1]);
             push @lines, message_line({
 						id			=> $r2[0],
 						nick		=> $nick, 
@@ -122,7 +124,6 @@ if (my $nick = $t->param('nick')){
 print my_encode($t->output);
 
 sub get_line_number {
-#    my ($channel, $day, $timestamp) = @_;
     my $q1 = $dbh->prepare('SELECT COUNT(*) FROM irclog WHERE 
             channel = ? AND day = ? AND timestamp < ? AND NOT spam');
     $q1->execute(@_);
