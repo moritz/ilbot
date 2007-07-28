@@ -55,6 +55,7 @@ sub http_header {
 # my_decode takes a string and encodes it in utf-8
 sub my_decode {
     my $str = shift;
+	return '' if (!defined $str or $str eq qq{});
 
     my @encodings = qw(ascii utf-8 iso-8859-15 gb2312);
     my $encoder = guess_encoding($str, @encodings);

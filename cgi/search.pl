@@ -58,11 +58,10 @@ my $dbh = get_dbh();
 $t->param(NICK => $q->param('nick'));
 
 
-my ($nick, $qs) = ($q->param('nick'), $q->param('q'));
+my $nick = my_decode($q->param('nick')) || '';
+my $qs = my_decode($q->param('q')) || '';
 
-if (length $nick or length $qs){
-    $nick = my_decode($nick);
-	$qs = my_decode($qs);
+if (length($nick) or length($qs)){
 
     my $channel = my_decode($q->param('channel')) || '#perl6';
 
