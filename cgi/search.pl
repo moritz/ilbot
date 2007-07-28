@@ -36,7 +36,7 @@ my $dbh = get_dbh();
     my @channels; 
     my $q1 = $dbh->prepare("SELECT DISTINCT channel FROM irclog ORDER BY channel");
     $q1->execute();
-    my $ch = $q->param('channel') || '';
+    my $ch = $q->param('channel') || '#perl6';
     $t->param(CURRENT_CHANNEL => $ch);
     while (my @row = $q1->fetchrow_array){
         if ($ch eq $row[0]){
@@ -58,22 +58,36 @@ my $dbh = get_dbh();
 $t->param(NICK => $q->param('nick'));
 
 
-if (my $nick = $t->param('nick')){
-    # search for a nick, populate 'DAYS' and result page links
+my ($nick, $qs) = ($q->param('nick'), $q->param('q'));
+
+if (length $nick or length $qs){
     $nick = my_decode($nick);
+	$qs = my_decode($qs);
 
-    my $channel = my_decode($q->param('channel')) || die "No channel provided";
+    my $channel = my_decode($q->param('channel')) || '#perl6';
 
-    my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog "
-			. "WHERE channel = ? AND (nick = ? OR nick = ?) AND NOT spam");
-    my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog "
-			. "WHERE channel = ? AND ( nick = ? OR nick = ?) AND NOT spam "
+	my @sql_conds = ('channel = ? AND NOT spam');
+	my @args = ($channel);
+	if (length $nick){
+		push @sql_conds, '(nick = ? OR nick = ?)';
+		push @args, $nick, "* $nick";
+	}
+	if (length $qs) {
+		push @sql_conds, 'MATCH(line) AGAINST(?)';
+		push @args, $qs;
+	}
+	my $sql_cond = 'WHERE ' . join(' AND ', @sql_conds);
+
+#	warn $sql_cond;
+#	warn join '|', @args;
+
+    my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog $sql_cond");
+    my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog $sql_cond "
 			. "ORDER BY day DESC LIMIT $days_per_page OFFSET $offset");
     my $q2 = $dbh->prepare("SELECT id, timestamp, line FROM irclog "
-			. "WHERE day = ? AND channel = ? AND (nick = ? OR nick = ?) "
-			. "AND NOT spam ORDER BY id");
+			. $sql_cond . ' AND day = ? ORDER BY id');
 
-    $q0->execute($channel, $nick, "* $nick");
+    $q0->execute(@args);
     my $result_count = ($q0->fetchrow_array);
     $t->param(DAYS_COUNT => $result_count);
     $t->param(DAYS_LOWER => $offset + 1);
@@ -86,7 +100,7 @@ if (my $nick = $t->param('nick')){
     }
     $t->param(RESULT_PAGES => \@result_pages);
 
-    $q1->execute($channel, $nick, "* $nick");
+    $q1->execute(@args);
     my $short_channel = $channel;
     $short_channel =~ s/^#//;
     my @days;
@@ -94,7 +108,7 @@ if (my $nick = $t->param('nick')){
     while (my @row = $q1->fetchrow_array){
         my $prev_nick = "";
         my @lines;
-        $q2->execute($row[0], $channel, $nick, "* $nick");
+        $q2->execute(@args, $row[0]);
         while (my @r2 = $q2->fetchrow_array){
             my $line_number = get_line_number($channel, $row[0], $r2[1]);
             push @lines, message_line({
