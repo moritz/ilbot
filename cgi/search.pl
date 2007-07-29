@@ -104,18 +104,18 @@ if (length($nick) or length($qs)){
     $short_channel =~ s/^#//;
     my @days;
     my $c = 0;
+	my $line_number = 1; # not really needed any more
     while (my @row = $q1->fetchrow_array){
         my $prev_nick = "";
         my @lines;
         $q2->execute(@args, $row[0]);
         while (my @r2 = $q2->fetchrow_array){
-            my $line_number = get_line_number($channel, $row[0], $r2[1]);
             push @lines, message_line({
 						id			=> $r2[0],
 						nick		=> $nick, 
                     	timestamp	=> $r2[1], 
                     	message		=> $r2[2],
-                    	line_number => $line_number, 
+                    	line_number => $line_number++, 
 						prev_nick	=> $prev_nick, 
                     	colors		=> [], 
                     	link_url	=> $base_url . "out.pl?channel=$short_channel;date=$row[0]",
@@ -135,12 +135,3 @@ if (length($nick) or length($qs)){
 }
 
 print my_encode($t->output);
-
-sub get_line_number {
-    my $q1 = $dbh->prepare('SELECT COUNT(*) FROM irclog WHERE 
-            channel = ? AND day = ? AND timestamp < ? AND NOT spam');
-    $q1->execute(@_);
-    my ($count) = $q1->fetchrow_array();
-#    warn $count, $/;
-    return $count + 1;
-}
