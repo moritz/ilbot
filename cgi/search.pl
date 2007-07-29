@@ -56,6 +56,7 @@ my $dbh = get_dbh();
 }
 
 $t->param(NICK => $q->param('nick'));
+$t->param(Q => $q->param('q'));
 
 
 my $nick = my_decode($q->param('nick')) || '';
@@ -83,7 +84,7 @@ if (length($nick) or length($qs)){
     my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog $sql_cond");
     my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog $sql_cond "
 			. "ORDER BY day DESC LIMIT $days_per_page OFFSET $offset");
-    my $q2 = $dbh->prepare("SELECT id, timestamp, line FROM irclog "
+    my $q2 = $dbh->prepare("SELECT id, timestamp, nick, line FROM irclog "
 			. $sql_cond . ' AND day = ? ORDER BY id');
 
     $q0->execute(@args);
@@ -112,9 +113,9 @@ if (length($nick) or length($qs)){
         while (my @r2 = $q2->fetchrow_array){
             push @lines, message_line({
 						id			=> $r2[0],
-						nick		=> $nick, 
+						nick		=> my_decode($r2[2]),
                     	timestamp	=> $r2[1], 
-                    	message		=> $r2[2],
+                    	message		=> $r2[3],
                     	line_number => $line_number++, 
 						prev_nick	=> $prev_nick, 
                     	colors		=> [], 

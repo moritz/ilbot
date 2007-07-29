@@ -31,7 +31,7 @@
 
         <label for="q">Text</label>
 		<input type="text" size="10" maxlength="30" name="q"
-		value="<TMPL_VAR NAME=TEXT>" id="text"></input>
+		value="<TMPL_VAR NAME=Q>" id="text"></input>
 		<br />
 
 		<input type="submit"></input><br />
@@ -48,7 +48,7 @@
 	<TMPL_LOOP NAME=RESULT_PAGES>
 		<a href="<TMPL_VAR NAME=BASE_URL>search.pl?nick=<TMPL_VAR
 		NAME=NICK ESCAPE=URL>;channel=<TMPL_VAR NAME=CURRENT_CHANNEL
-		ESCAPE=URL>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
+		ESCAPE=URL>;q=<TMPL_VAR NAME=Q>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
 		NAME=PAGE></a>
 	</TMPL_LOOP>
 	</p>
