@@ -115,8 +115,9 @@ sub format_time {
 sub revision_links {
     my ($r, $state, $channel) = @_;
     my %prefixes = (
-             'perl6'    => 'http://dev.pugscode.org/changeset/',
+             'perl6'     => 'http://dev.pugscode.org/changeset/',
              'parrot'    => 'http://perlcabal.org/svn/parrot/revision/?rev=',
+			 'bioclipse' => 'http://bioclipse.svn.sourceforge.net/viewvc/bioclipse?view=rev;revision=',
             );
     my $url_prefix = $prefixes{$channel};
     return $r unless $url_prefix;
@@ -332,8 +333,6 @@ sub break_apart {
 
 sub message_line {
 	my ($args_ref, $c) = @_;
-#    my ($id, $nick, $timestamp, $message, $line_number, $c,
-#            $prev_nick, $colors, $link_url) = @_;
 	my $nick = $args_ref->{nick};
 	my $colors = $args_ref->{colors};
     my %h = (

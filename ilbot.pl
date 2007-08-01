@@ -28,6 +28,16 @@ for (qw(caction msg chat join umode part topic notopic leaving error nick)){
     $conn->add_handler($_, \&on_other);
 }
 
+sub dbwrite {
+	my @args = @_;
+	if ($dbh->ping){
+		$q->execute(@args);
+	} else {
+		$dbh = get_dbh();
+		$q = $dbh->prepare("INSERT INTO irclog (channel, day, nick, timestamp, line) VALUES(?, ?, ?, ?, ?)");
+		$q->execute(@args);
+	}
+}
 
 $irc->start;
 
@@ -36,7 +46,7 @@ sub on_public {
     my $event = shift;
     return if (is_ignored($event->args));    
 #    print $event->nick, ": ", $event->args, "\n";
-    $q->execute($channel, gmt_today(), $event->nick, time, $event->args);
+    dbwrite($channel, gmt_today(), $event->nick, time, $event->args);
     
 }
 
@@ -65,15 +75,15 @@ sub on_other {
 #        print Dumper([$event]);
         my @a = @{ $event->{args} };
 #        print Dumper(\@a);
-        $q->execute($channel, gmt_today(), "", time, "topic for $channel is: " . $a[$#a]);
+        dbwrite($channel, gmt_today(), "", time, "topic for $channel is: " . $a[$#a]);
     } elsif ($e_type eq "join"){
-        $q->execute($channel, gmt_today(), "", time, "$e_nick joined $channel");
+        dbwrite($channel, gmt_today(), "", time, "$e_nick joined $channel");
     } elsif ($e_type eq "part" || $e_type eq "leaving"){
-        $q->execute($channel, gmt_today(), "", time, "$e_nick left $channel");
+        dbwrite($channel, gmt_today(), "", time, "$e_nick left $channel");
     } elsif ($e_type eq "nick") {
-        $q->execute($channel, gmt_today(), "", time, "$e_nick changed the nick to $str");
+        dbwrite($channel, gmt_today(), "", time, "$e_nick changed the nick to $str");
     } elsif ($e_type eq "caction"){
-        $q->execute($channel, gmt_today(), "* $e_nick", time , $str);
+        dbwrite($channel, gmt_today(), "* $e_nick", time , $str);
     } else {
         print "nick: '$e_nick', type: '$e_type', rest:' $str';\n";
     }
