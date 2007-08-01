@@ -121,7 +121,7 @@ sub revision_links {
             );
     my $url_prefix = $prefixes{$channel};
     return $r unless $url_prefix;
-    $r =~ s/^r//;
+    $r =~ s/^r\x{02}?//;
     return qq{<a href="$url_prefix$r" title="Changeset for r$r">r$r</a>};
 }
 
@@ -258,7 +258,10 @@ my %output_chain = (
             rest    => 'revision_links',
         },
         revision_links => {
-            re      => qr/\br[1-9]\d*\b/,
+			# regex cludge: on #bioclipse the revision numbers by some
+			# weird bot contain non-printable characters for formating
+			# purposes
+            re      => qr/\br\x{02}?[1-9]\d*\b/,
             match   => \&revision_links,
             rest    => 'email_obfuscate',
         },
