@@ -32,7 +32,7 @@ for (qw(caction msg chat join umode part topic notopic leaving error nick)){
 
 sub dbwrite {
 	my @args = @_;
-	$args[-1] = encode('utf8', my_decode($args[-1]));
+	$args[-1] = my_decode($args[-1]);
 #	my $line = $args[-1];
 #	$line = encode('utf8', my_decode($line));
 #	print "$args[2]: $line\n";

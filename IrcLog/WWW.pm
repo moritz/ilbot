@@ -230,6 +230,11 @@ my $re_links = qr/(?!)/;
 }
 
 my %output_chain = (
+		nonprint_clean => {
+			re 		=> qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
+			match	=> q{},
+			rest	=> 'links',
+		},
         links => {
             re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
             match   => \&linkify,
@@ -341,7 +346,7 @@ sub message_line {
     my %h = (
         ID          => $args_ref->{id},
         TIME        => format_time($args_ref->{timestamp}),
-        MESSAGE     => output_process(my_decode($args_ref->{message}), "links", $args_ref->{channel}),
+        MESSAGE     => output_process(my_decode($args_ref->{message}), "nonprint_clean", $args_ref->{channel}),
         LINE_NUMBER => ++$args_ref->{line_number},
         LINK_URL    => $args_ref->{link_url},
     );

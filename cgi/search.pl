@@ -58,7 +58,9 @@ my $dbh = get_dbh();
 }
 
 my $nick = decode('utf8', $q->param('nick') || '');
-my $qs = decode('utf8', $q->param('q') || '');
+#my $qs = decode('utf8', $q->param('q') || '');
+my $qs = $q->param('q') || '';
+warn "Search string: <$qs>\n";
 
 $t->param(NICK => encode('utf8', $nick));
 $t->param(Q => encode('utf8', $qs));
