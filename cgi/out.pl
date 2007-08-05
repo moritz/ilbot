@@ -3,7 +3,7 @@ use warnings;
 use strict;
 use CGI::Carp qw(fatalsToBrowser);
 use IrcLog qw(get_dbh gmt_today);
-use IrcLog::WWW qw(http_header my_decode message_line my_encode);
+use IrcLog::WWW qw(http_header message_line my_encode);
 use Date::Simple qw(date);
 use Encode::Guess;
 use CGI;
@@ -107,7 +107,7 @@ my $c = 0;
 my $line_number = 0;
 while (my @row = $db->fetchrow_array){
 	my $id = $row[0];
-    my $nick = my_decode($row[1]);
+    my $nick = decode('utf8', ($row[1]));
 	my $timestamp = $row[2];
 	my $message = $row[3];
 

@@ -9,7 +9,7 @@ use Encode;
 use HTML::Entities;
 use HTML::Template;
 use IrcLog qw(get_dbh);
-use IrcLog::WWW qw(http_header my_decode message_line my_encode);
+use IrcLog::WWW qw(http_header message_line my_encode);
 use Config::File;
 use List::Util qw(min);
 #use Data::Dumper;
@@ -55,16 +55,15 @@ my $dbh = get_dbh();
     }
 }
 
-$t->param(NICK => $q->param('nick'));
-$t->param(Q => $q->param('q'));
+my $nick = decode('utf8', $q->param('nick') || '');
+my $qs = decode('utf8', $q->param('q') || '');
 
-
-my $nick = my_decode($q->param('nick')) || '';
-my $qs = my_decode($q->param('q')) || '';
+$t->param(NICK => encode('utf8', $nick));
+$t->param(Q => encode('utf8', $qs));
 
 if (length($nick) or length($qs)){
 
-    my $channel = my_decode($q->param('channel')) || '#perl6';
+    my $channel = decode('utf8', $q->param('channel') || '#perl6');
 
 	my @sql_conds = ('channel = ? AND NOT spam');
 	my @args = ($channel);
@@ -113,7 +112,7 @@ if (length($nick) or length($qs)){
         while (my @r2 = $q2->fetchrow_array){
             push @lines, message_line({
 						id			=> $r2[0],
-						nick		=> my_decode($r2[2]),
+						nick		=> decode('utf8', $r2[2]),
                     	timestamp	=> $r2[1], 
                     	message		=> $r2[3],
                     	line_number => $line_number++, 

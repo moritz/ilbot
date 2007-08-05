@@ -4,7 +4,9 @@ use strict;
 
 use Net::IRC;
 use Data::Dumper;
+use Encode qw(encode);
 use IrcLog qw(get_dbh gmt_today);
+use IrcLog::WWW qw(my_decode);
 use Config::File;
 
 my $irc = new Net::IRC;
@@ -30,6 +32,11 @@ for (qw(caction msg chat join umode part topic notopic leaving error nick)){
 
 sub dbwrite {
 	my @args = @_;
+	$args[-1] = encode('utf8', my_decode($args[-1]));
+#	my $line = $args[-1];
+#	$line = encode('utf8', my_decode($line));
+#	print "$args[2]: $line\n";
+#	$args[-1] = $line;
 	if ($dbh->ping){
 		$q->execute(@args);
 	} else {
