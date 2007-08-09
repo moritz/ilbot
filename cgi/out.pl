@@ -71,7 +71,7 @@ $t->param(ADMIN => 1) if ($q->param("admin"));
 	}
 }
 $t->param(BASE_URL => $base_url);
-$t->param(SEARCH_URL => $base_url . "search.pl?channel=$full_channel");
+$t->param(SEARCH_URL => $base_url . "search.pl?channel=$channel");
 my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
 my $db = $dbh->prepare("SELECT id, nick, timestamp, line FROM irclog "
 		. "WHERE day = ? AND channel = ? AND NOT spam ORDER BY id");

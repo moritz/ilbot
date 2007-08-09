@@ -9,9 +9,10 @@ use Encode;
 use HTML::Entities;
 use HTML::Template;
 use IrcLog qw(get_dbh);
-use IrcLog::WWW qw(http_header message_line my_encode);
+use IrcLog::WWW qw(http_header message_line my_encode my_decode);
 use Config::File;
 use List::Util qw(min);
+use utf8;
 #use Data::Dumper;
 #$DATA::Dumper::indent = 0;
 
@@ -60,11 +61,14 @@ my $dbh = get_dbh();
 my $nick = decode('utf8', $q->param('nick') || '');
 #my $qs = decode('utf8', $q->param('q') || '');
 my $qs = $q->param('q') || '';
-warn "Search string: <$qs>\n";
+$qs = my_decode($qs);
+
 
 $t->param(NICK => encode('utf8', $nick));
-$t->param(Q => encode('utf8', $qs));
+$t->param(Q => $qs);
 my $short_channel = decode('utf8', $q->param('channel') || 'perl6');
+# guard against old URLs:
+$short_channel =~ s/^#//;
 my $channel = '#' .$short_channel;
 
 
@@ -140,3 +144,15 @@ if (length($nick) or length($qs)){
 }
 
 print my_encode($t->output);
+#print $t->output;
+
+sub hexdump {
+	my $str = shift;
+	my $res = q{};
+	for (0 .. length($str) - 1){
+		$res .= sprintf "%%%x", ord(substr $str, $_, 1);
+	}
+	return $res;
+
+}
+
