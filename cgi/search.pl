@@ -11,7 +11,7 @@ use HTML::Template;
 use IrcLog qw(get_dbh);
 use IrcLog::WWW qw(http_header message_line my_encode my_decode);
 use Config::File;
-use List::Util qw(min);
+use List::Util qw(min max);
 use utf8;
 #use Data::Dumper;
 #$DATA::Dumper::indent = 0;
@@ -20,7 +20,9 @@ my $conf = Config::File::read_config_file("cgi.conf");
 my $base_url = $conf->{BASE_URL} || "/";
 my $days_per_page = 10;
 my $lines_per_day = 50; # not yet used
- 
+
+my $lines_of_context = 2;
+
 my $q = new CGI;
 print http_header();
 my $t = HTML::Template->new(filename => "search.tmpl",
@@ -94,8 +96,10 @@ if (length($nick) or length($qs)){
     my $q0 = $dbh->prepare("SELECT COUNT(DISTINCT day) FROM irclog $sql_cond");
     my $q1 = $dbh->prepare("SELECT DISTINCT day FROM irclog $sql_cond "
 			. "ORDER BY day DESC LIMIT $days_per_page OFFSET $offset");
-    my $q2 = $dbh->prepare("SELECT id, timestamp, nick, line FROM irclog "
+    my $q2 = $dbh->prepare("SELECT id, day FROM irclog "
 			. $sql_cond . ' AND day = ? ORDER BY id');
+	my $q3 = $dbh->prepare('SELECT id, timestamp, nick, line FROM irclog '
+			. 'WHERE day = ? AND id >= ? AND id <= ? ORDER BY id ASC');
 
     $q0->execute(@args);
     my $result_count = ($q0->fetchrow_array);
@@ -113,25 +117,45 @@ if (length($nick) or length($qs)){
     $q1->execute(@args);
     my @days;
     my $c = 0;
+
 	my $line_number = 1; # not really needed any more
+
     while (my @row = $q1->fetchrow_array){
+
+		# should be smaller than any index in the `id` column:
+		my $last_context = -5e10;
+
         my $prev_nick = "";
         my @lines;
         $q2->execute(@args, $row[0]);
-        while (my @r2 = $q2->fetchrow_array){
-            push @lines, message_line({
-						id			=> $r2[0],
-						nick		=> decode('utf8', $r2[2]),
-                    	timestamp	=> $r2[1], 
-                    	message		=> $r2[3],
-                    	line_number => $line_number++, 
-						prev_nick	=> $prev_nick, 
-                    	colors		=> [], 
-                    	link_url	=> $base_url . "out.pl?channel=$short_channel;date=$row[0]",
-						channel		=> $channel,
-					},
-                    \$c, 
-                    );   
+        while (my ($found_id, $found_day) = $q2->fetchrow_array){
+
+			# determine the context range:
+			my $lower = max($last_context + 1, $found_id - $lines_of_context);
+			my $upper = $found_id + $lines_of_context;
+			$last_context = $upper;
+
+			# retrieve context from database
+			$q3->execute( $found_day, $lower, $upper );
+			while (my @r2 = $q3->fetchrow_array){
+				my %args = (
+							id			=> $r2[0],
+							nick		=> decode('utf8', $r2[2]),
+							timestamp	=> $r2[1], 
+							message		=> $r2[3],
+							line_number => $line_number++, 
+							prev_nick	=> $prev_nick, 
+							colors		=> [], 
+							link_url	=> $base_url . "out.pl?channel=$short_channel;date=$row[0]",
+							channel		=> $channel,
+						);
+				$args{search_found} = 'search_found' if $r2[0] == $found_id;
+			
+				push @lines, message_line(
+						\%args,
+						\$c, 
+						);   
+			}
         }
         push @days, { 
             URL     => $base_url . "out.pl?channel=$short_channel;date=$row[0]",

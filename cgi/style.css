@@ -118,3 +118,7 @@ br {
 
 abbr { cursor: help; }
 
+.search_found {
+	font-weight: bold;
+}
+

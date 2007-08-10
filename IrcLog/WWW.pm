@@ -350,6 +350,7 @@ sub message_line {
         LINE_NUMBER => ++$args_ref->{line_number},
         LINK_URL    => $args_ref->{link_url},
     );
+	$h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
 
     my @classes;
     my @msg_classes;
