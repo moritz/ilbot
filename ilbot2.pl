@@ -14,21 +14,36 @@ use IrcLog qw(get_dbh gmt_today);
 
     my $dbh = get_dbh();
 
-    my $q = $dbh->prepare("INSERT INTO irclog VALUES(?, ?, ?, ?, ?)");
+	sub prepare {
+		my $dbh = shift;
+		return $dbh->prepare("INSERT INTO irclog (channel, day, nick, timestamp, line) VALUES(?, ?, ?, ?, ?)");
+	}
+	my $q = prepare();
+	sub dbwrite {
+		my ($channel, $who, $line) = @_;
+		my @sql_args = ($channel, gmt_today(), $who, time, $line);
+		if ($dbh->ping){
+			$q->execute(@sql_args);
+		} else {
+			$q = prepare(get_dbh());
+			$q->execute(@sql_args);
+		}
+		return;
+	}
 
     use base 'Bot::BasicBot';
 
     sub said {
         my $self = shift;
         my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), $e->{who}, time, $e->{body});
+		dbwrite($e->{channel}, $e->{who}, $e->{body});
         return undef;
     }
 
     sub emoted {
         my $self = shift;
         my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), "* " . $e->{who}, time, $e->{body});
+		dbwrite($e->{channel}, '* ' . $e->{who}, $e->{body});
         return undef;
 
     }
@@ -36,14 +51,14 @@ use IrcLog qw(get_dbh gmt_today);
     sub chanjoin {
         my $self = shift;
         my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), "", time, $e->{who} . " joined " . $e->{channel});
+		dbwrite($e->{channel}, '',  $e->{who} . ' joined ' . $e->{channel});
         return undef;
     }
 
     sub chanpart {
         my $self = shift;
         my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), "", time, $e->{who} . " left " . $e->{channel});
+		dbwrite($e->{channel}, '',  $e->{who} . ' left ' . $e->{channel});
         return undef;
     }
 
@@ -51,28 +66,23 @@ use IrcLog qw(get_dbh gmt_today);
         my $self = shift;
         my $e = shift;
         $q->execute($e->{channel}, gmt_today(), "", time, 'Topic for ' . $e->{channel} . 'is now ' . $e->{topic});
+        dbwrite($e->{channel}, "", 'Topic for ' . $e->{channel} . 'is now ' . $e->{topic});
         return undef;
     }
 
     sub nick_change {
-        #BUGGY!
-#Can't use string ("nipotan") as a HASH ref while "strict refs" in use at ilbot2.pl line 60.
-	return undef;
-
-        my $self = shift;
-        my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), "", time, $e->{from} . ' is now known as ' . $e->{to});
-        return undef;
+		my ($self, $e) = @_;
+		print Dumper($e);
+		# XXX TODO
+		return undef;
     }
 
     sub kicked {
         my $self = shift;
         my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), "", time, $e->{nick} . ' was kicked by ' . $e->{who} . ': ' . $e->{reason});
+        dbwrite($e->{channel}, "", $e->{nick} . ' was kicked by ' . $e->{who} . ': ' . $e->{reason});
         return undef;
-
     }
-
 }
 
 package main;
@@ -94,3 +104,4 @@ my $bot = IrcLogBot->new(
         );
 $bot->run();
 
+# vim: ts=4 sw=4 expandtab
