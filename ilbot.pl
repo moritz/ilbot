@@ -44,6 +44,7 @@ sub dbwrite {
 		$q = $dbh->prepare("INSERT INTO irclog (channel, day, nick, timestamp, line) VALUES(?, ?, ?, ?, ?)");
 		$q->execute(@args);
 	}
+	return;
 }
 
 $irc->start;
@@ -54,7 +55,7 @@ sub on_public {
     return if (is_ignored($event->args));    
 #    print $event->nick, ": ", $event->args, "\n";
     dbwrite($channel, gmt_today(), $event->nick, time, $event->args);
-    
+	return;
 }
 
 
@@ -67,7 +68,7 @@ sub is_ignored {
     my $str = shift;
     return 1 unless ($str);
     return 1 if ($str =~ m/^\[off\]/i);
-    return undef;
+    return ;
 }
 
 sub on_other {
@@ -82,7 +83,7 @@ sub on_other {
 #        print Dumper([$event]);
         my @a = @{ $event->{args} };
 #        print Dumper(\@a);
-        dbwrite($channel, gmt_today(), "", time, "topic for $channel is: " . $a[$#a]);
+        dbwrite($channel, gmt_today(), "", time, "topic for $channel is: " . $a[-1]);
     } elsif ($e_type eq "join"){
         dbwrite($channel, gmt_today(), "", time, "$e_nick joined $channel");
     } elsif ($e_type eq "part" || $e_type eq "leaving"){

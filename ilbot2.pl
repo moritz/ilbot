@@ -1,11 +1,16 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
+use Config::File;
+use Bot::BasicBot;
+use Carp qw(confess);
 
 # this is a cleaner reimplementation of ilbot, with Bot::BasicBot which 
 # in turn is based POE::* stuff
 package IrcLogBot;
 use IrcLog qw(get_dbh gmt_today);
+use Data::Dumper;
+
 {
 
     my $dbh = get_dbh();
@@ -81,15 +86,11 @@ use IrcLog qw(get_dbh gmt_today);
     }
 }
 
-use Config::File;
-use Bot::BasicBot;
-use Carp qw(confess);
-
 
 package main;
 my $conf = Config::File::read_config_file($ARGV[0] || "bot.conf");
 my $nick = shift @ARGV || $conf->{NICK} || "ilbot6";
-my $server = $conf->{SERVER} || "irc.freenode.org";
+my $server = $conf->{SERVER} || "irc.freenode.net";
 my $port = $conf->{PORT} || 6667;
 my $channels = [ split m/\s+/, $conf->{CHANNEL}];
 

@@ -177,6 +177,15 @@ sub hexdump {
 		$res .= sprintf "%%%x", ord(substr $str, $_, 1);
 	}
 	return $res;
+}
+
+sub search_with_context {
+    my ($q2, $q3) = @_;
+    my @ids;
+    my $day;
+    ($ids[0], $day) = $q2->fetchrow_array();
+
+
 
 }
 

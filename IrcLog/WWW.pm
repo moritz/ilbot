@@ -1,5 +1,6 @@
 package IrcLog::WWW;
 use strict;
+use warnings;
 use HTTP::Headers;
 use Encode qw(encode decode);
 use Encode::Guess;
@@ -10,14 +11,13 @@ use Config::File;
 use Carp qw(confess cluck);
 use utf8;
 
-require Exporter;
-our @ISA = qw(Exporter);
+use base 'Exporter';
 our @EXPORT_OK = qw(
-		http_header
+        http_header
         my_decode
         message_line
         my_encode
-		);
+        );
 
 use constant TAB_WIDTH => 4;
 use constant NBSP => decode_entities("&nbsp;");
@@ -25,7 +25,7 @@ use constant ENTITIES => qq{<>"&};
 
 
 sub http_header {
-	my $config = shift || {};
+    my $config = shift || {};
     my $h = HTTP::Headers->new;
     
     $h->header(Status => '200 OK');
@@ -45,9 +45,9 @@ sub http_header {
     
     my $type = ($qs{xhtml} >= $qs{html}) ? 'application/xhtml+xml' : 'text/html';
     $h->header(
-			'Content-Type'     => "$type; charset=utf-8",
-			'Content-Language' => 'en',
-			);
+            'Content-Type'     => "$type; charset=utf-8",
+            'Content-Language' => 'en',
+            );
     
     return $h->as_string . "\n";
 }
@@ -55,7 +55,7 @@ sub http_header {
 # my_decode takes a string and encodes it in utf-8
 sub my_decode {
     my $str = shift;
-	return '' if (!defined $str or $str eq qq{});
+    return '' if (!defined $str or $str eq qq{});
 
     my @encodings = qw(ascii utf-8 iso-8859-15 gb2312);
     my $encoder = guess_encoding($str, @encodings);
@@ -71,8 +71,19 @@ sub my_decode {
     no utf8;
 #  $str =~ s/[\x02\x16]//g;
     my @enc;
-    if ($str =~ /^(?:[[:print:]]*[A-Za-z]+[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*)+$/ or
-        $str =~ /^[[:print:]]*[^[:print:]]{1,5}[A-Za-z]+[[:print:]]*$/ ) {
+    if ($str =~ m/\A
+            (?:
+             [[:print:]]* [A-Za-z]+ [^[:print:]]{1,5} 
+             [A-Za-z]+
+             [[:print:]]*
+             )+
+            \z/smx 
+            or $str =~ m/\A
+                [[:print:]]*
+                [^[:print:]]{1,5}
+                [A-Za-z]+
+                [[:print:]]*
+                \z/smxg ) {
         @enc = qw(latin1 fr euc-cn big5-eten);
     } else {
         @enc = qw(euc-cn big5 latin1 fr);
@@ -96,13 +107,13 @@ sub decode_by_guessing {
     for my $enc (@enc) {
         my $decoder = guess_encoding($s, $enc);
         if (ref $decoder) {
-            if ($enc ne 'ascii') {
-                #print "line $.: $enc message found: ", $decoder->decode($s), "\n";
-            }
+#            if ($enc ne 'ascii') {
+#                print "line $.: $enc message found: ", $decoder->decode($s), "\n";
+#            }
             return $decoder->decode($s);
         }
     }
-    undef;
+    return;
 }
 
 # turns a timestap into a (GMT) time string
@@ -117,11 +128,11 @@ sub revision_links {
     my %prefixes = (
              'perl6'     => 'http://dev.pugscode.org/changeset/',
              'parrot'    => 'http://perlcabal.org/svn/parrot/revision/?rev=',
-			 'bioclipse' => 'http://bioclipse.svn.sourceforge.net/viewvc/bioclipse?view=rev;revision=',
+             'bioclipse' => 'http://bioclipse.svn.sourceforge.net/viewvc/bioclipse?view=rev;revision=',
             );
     my $url_prefix = $prefixes{$channel};
     return $r unless $url_prefix;
-    $r =~ s/^r\x{02}?//;
+    $r =~ s/[^\d]//smxg;
     return qq{<a href="$url_prefix$r" title="Changeset for r$r">r$r</a>};
 }
 
@@ -181,10 +192,10 @@ my $re_abbr = qr/(?!)/;
 
         close($abbr_file);
 
-		if (@patterns){
-			$re_abbr = join '|', map { "(?:$_)" } @patterns;
-			$re_abbr = qr/\b(?:$re_abbr)\b/;
-		}
+        if (@patterns){
+            $re_abbr = join '|', map { "(?:$_)" } @patterns;
+            $re_abbr = qr/\b(?:$re_abbr)\b/;
+        }
     }
     sub expand_abbrs {
         my ($abbr, $state) = @_;
@@ -213,13 +224,13 @@ my $re_links = qr/(?!)/;
             push @patterns, quotemeta $key;
             $links{$key} = encode_entities($url, ENTITIES);
         }
-		if (@patterns){
-			$re_links = join '|', map { "(?:$_)" } @patterns;
-			$re_links = qr/\b(?:$re_links)\b/;
-		}
+        if (@patterns){
+            $re_links = join '|', map { "(?:$_)" } @patterns;
+            $re_links = qr/\b(?:$re_links)\b/;
+        }
     }     
-	
-	sub expand_links {
+
+    sub expand_links {
         my ($key, $state) = @_;
         if ($state->{$key}++) { return encode_entities($key, ENTITIES); };
         return qq{<a href="$links{$key}">} 
@@ -230,11 +241,11 @@ my $re_links = qr/(?!)/;
 }
 
 my %output_chain = (
-		nonprint_clean => {
-			re 		=> qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
-			match	=> q{},
-			rest	=> 'links',
-		},
+        nonprint_clean => {
+            re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
+            match   => q{},
+            rest    => 'links',
+        },
         links => {
             re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
             match   => \&linkify,
@@ -258,14 +269,14 @@ my %output_chain = (
              rest   => 'abbrs'
         },
         abbrs => {
-            re 		=> $re_abbr,
+            re      => $re_abbr,
             match   => \&expand_abbrs,
             rest    => 'revision_links',
         },
         revision_links => {
-			# regex cludge: on #bioclipse the revision numbers by some
-			# weird bot contain non-printable characters for formating
-			# purposes
+            # regex cludge: on #bioclipse the revision numbers by some
+            # weird bot contain non-printable characters for formating
+            # purposes
             re      => qr/\br\x{02}?[1-9]\d*\b/,
             match   => \&revision_links,
             rest    => 'email_obfuscate',
@@ -280,16 +291,16 @@ my %output_chain = (
             match   => \&break_apart,
             rest    => 'expand_tabs',
         },
-		expand_tabs => {
-			re          => qr/\t/,
-			match       => sub { " " x TAB_WIDTH },
-			rest        => 'preserve_spaces',
-		},
-		preserve_spaces => {
-			re       => qr/  /,
-			match    => sub { " " . NBSP },
-			rest     => 'encode',
-		},
+        expand_tabs => {
+            re          => qr/\t/,
+            match       => sub { " " x TAB_WIDTH },
+            rest        => 'preserve_spaces',
+        },
+        preserve_spaces => {
+            re       => qr/  /,
+            match    => sub { " " . NBSP },
+            rest     => 'encode',
+        },
 );
 
 # does all the output processing of ordinary output lines
@@ -315,6 +326,7 @@ sub output_process {
         }
         $res .= output_process($str, $output_chain{$rule}{rest}, $channel);
     }
+    return $res;
 }
 
 sub break_words {
@@ -467,4 +479,5 @@ valid XML
 
 =cut
 
+# vim: sw=4 ts=4 expandtab
 1;

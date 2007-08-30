@@ -11,17 +11,17 @@ use IrcLog qw(get_dbh);
 use IrcLog::WWW qw(http_header);
 use HTML::Calendar::Simple;
 
-my $conf = Config::File::read_config_file("cgi.conf");
-my $base_url = $conf->{BASE_URL} || "/";
- 
+my $conf = Config::File::read_config_file('cgi.conf');
+my $base_url = $conf->{BASE_URL} || q{/};
+
 my $q = new CGI;
 print http_header();
-my $t = HTML::Template->new(filename => "index.tmpl");
+my $t = HTML::Template->new(filename => 'index.tmpl');
 
 my $dbh = get_dbh();
-my @channels; 
+my @channels;
 {
-    my $q1 = $dbh->prepare("SELECT DISTINCT channel FROM irclog ORDER BY channel");
+    my $q1 = $dbh->prepare('SELECT DISTINCT channel FROM irclog ORDER BY channel');
     $q1->execute();
     while (my @row = $q1->fetchrow_array){
         push @channels, $row[0];
@@ -30,9 +30,9 @@ my @channels;
 
 # we are evil and create a calendar entry for month between the first and last
 # date
-my $q2 = $dbh->prepare("SELECT MIN(day), MAX(day) FROM irclog WHERE channel = ?");
+my $q2 = $dbh->prepare('SELECT MIN(day), MAX(day) FROM irclog WHERE channel = ?');
 
-my $q3 = $dbh->prepare("SELECT DISTINCT day FROM irclog WHERE channel = ?");
+my $q3 = $dbh->prepare('SELECT DISTINCT day FROM irclog WHERE channel = ?');
 sub date_exists_in_db {
     my $date = shift;
     $q3->execute($date);
@@ -47,7 +47,7 @@ foreach my $ch (@channels){
     my $short_channel = substr $ch, 1;
     $q2->execute($ch);
     push @t_channels, {
-        CHANNEL   => $ch, 
+        CHANNEL   => $ch,
         CALENDAR  => calendar_for_channel($ch),
         TODAY_URL => $base_url . "out.pl?channel=$short_channel",
     }
@@ -58,7 +58,7 @@ print $t->output;
 sub calendar_for_channel {
     my $channel = shift;
     $q3->execute($channel);
-    $channel =~ s/^#//;
+    $channel =~ s/\A\#//smx;
     my %cals;
     while (my ($day) = $q3->fetchrow_array){
         # extract year and month part: (YYYY-MM)
@@ -68,7 +68,7 @@ sub calendar_for_channel {
 
         # create calendar
         if (not exists $cals{$key}){
-            my ($year, $month) = split m/-/, $key;
+            my ($year, $month) = split m/-/smx, $key;
             $cals{$key} = HTML::Calendar::Simple->new({
                     year  => $year,
                     month => $month,
@@ -83,15 +83,15 @@ sub calendar_for_channel {
     }
 
     # now generate the HTML output
-    my $html = qq{};
+    my $html = q{};
     my $sorter = sub {
         my ($l, $r) = @_;
-        return 12 * $cals{$l}->year + $cals{$l}->month 
+        return 12 * $cals{$l}->year + $cals{$l}->month
             <=> 12 * $cals{$r}->year + $cals{$r}->month;
     };
 
     for my $cal (reverse sort { &$sorter($a, $b) } keys %cals){
-        $html .= qq{\n<div class="calendar">} 
+        $html .= qq{\n<div class="calendar">}
               . $cals{$cal}->calendar_month
               . qq{</div>\n}
     }

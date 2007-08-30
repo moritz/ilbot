@@ -1,8 +1,7 @@
+package IrcLog;
 use warnings;
 use strict;
 use DBI;
-
-package IrcLog;
 
 #use Smart::Comments;
 use Config::File;
@@ -11,15 +10,15 @@ use utf8;
 
 require Exporter;
 
-our @ISA = qw(Exporter);
-our @EXPORT = qw(
+use base 'Exporter';
+our @EXPORT_OK = qw(
         get_dbh
         gmt_today
         );
 
 # get a database handle.
 # you will have to modify that routine to fit your needs
-sub get_dbh() {
+sub get_dbh {
     my $conf = Config::File::read_config_file("database.conf");
     my $dbs = $conf->{DSN} || "mysql";
     my $db_name = $conf->{DATABASE} || "irclog";

@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
+use Carp qw(confess);
 use CGI::Carp qw(fatalsToBrowser);
 use IrcLog qw(get_dbh gmt_today);
 use IrcLog::WWW qw(http_header message_line my_encode);
@@ -17,12 +18,12 @@ use File::Slurp;
 # Configuration
 # $base_url is the absoulte URL to the directoy where index.pl and out.pl live
 # If they live in the root of their own virtual host, set it to "/".
-my $conf = Config::File::read_config_file("cgi.conf");
-my $base_url = $conf->{BASE_URL} || "/";
+my $conf = Config::File::read_config_file('cgi.conf');
+my $base_url = $conf->{BASE_URL} || q{/};
 
 # I'm to lazy right to move this to  a config file, because Config::File seems
 # unable to handle arrays, just hashes.
- 
+
 # map nicks to CSS classes.
 my @colors = (
         ['TimToady',    'nick_timtoady'],
@@ -41,40 +42,40 @@ my @colors = (
 # additional classes for nicks, sorted by frequency of speech:
 my @nick_classes = qw(nick1 nick2 nick3 nick4);
 # Default channel: this channel will be shown if no channel=... arg is given
-my $default_channel = "perl6";
+my $default_channel = 'perl6';
 
 # End of config
 
 my $q = new CGI;
 my $dbh = get_dbh();
-my $channel = $q->param("channel") || $default_channel;
+my $channel = $q->param('channel') || $default_channel;
 
 
-unless ($channel =~ m/^\w+$/){
-	# guard againt channel=../../../etc/passwd or so
-	die "Invalid channel name";
+if ($channel !~ m/\A\w+\z/smx){
+    # guard against channel=../../../etc/passwd or so
+    confess 'Invalid channel name';
 }
-my $full_channel = "#" . $channel;
-my $date = $q->param("date") || gmt_today();
+my $full_channel = q{#} . $channel;
+my $date = $q->param('date') || gmt_today();
 my $t = HTML::Template->new(
-        filename => "day.tmpl",
-        loop_context_vars => 1,
-		global_vars => 1,
+        filename            => 'day.tmpl',
+        loop_context_vars   => 1,
+        global_vars         => 1,
         );
 
-$t->param(ADMIN => 1) if ($q->param("admin"));
+$t->param(ADMIN => 1) if ($q->param('admin'));
 
 {
-	my $clf = "channels/$channel.tmpl";
-	if (-e $clf) {
-		$t->param(CHANNEL_LINKS =>"" .  read_file($clf));
-	}
+    my $clf = "channels/$channel.tmpl";
+    if (-e $clf) {
+        $t->param(CHANNEL_LINKS => q{} . read_file($clf));
+    }
 }
 $t->param(BASE_URL => $base_url);
 $t->param(SEARCH_URL => $base_url . "search.pl?channel=$channel");
 my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
-my $db = $dbh->prepare("SELECT id, nick, timestamp, line FROM irclog "
-		. "WHERE day = ? AND channel = ? AND NOT spam ORDER BY id");
+my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
+        . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
 $db->execute($date, $full_channel);
 
 print http_header();
@@ -82,53 +83,52 @@ print http_header();
 # determine which colors to use for which nick:
 {
     my $count = scalar @nick_classes + scalar @colors + 1;
-    my $q1 = $dbh->prepare("SELECT nick, COUNT(nick) AS c FROM irclog"
-             . " WHERE day = ? AND not spam"
+    my $q1 = $dbh->prepare('SELECT nick, COUNT(nick) AS c FROM irclog'
+             . ' WHERE day = ? AND not spam'
              . " GROUP BY nick ORDER BY c DESC LIMIT $count");
     $q1->execute($date);
     while (my @row = $q1->fetchrow_array and @nick_classes){
-        next if ($row[0] eq "");
+        next unless length $row[0];
         my $n = quotemeta $row[0];
-        unless (grep { $_->[0] =~ m/^$n/ } @colors){
+        unless (grep { $_->[0] =~ m/\A$n/smx } @colors){
             push @colors, [$row[0], shift @nick_classes];
         }
     }
 #    $t->param(DEBUG => Dumper(\@colors));
-    
 }
 
 my @msg;
 
 my $line = 1;
-my $prev_nick ="";
+my $prev_nick = q{};
 my $c = 0;
 
 # populate the template
 my $line_number = 0;
 while (my @row = $db->fetchrow_array){
-	my $id = $row[0];
+    my $id = $row[0];
     my $nick = decode('utf8', ($row[1]));
-	my $timestamp = $row[2];
-	my $message = $row[3];
+    my $timestamp = $row[2];
+    my $message = $row[3];
 
-	push @msg, message_line( {
+    push @msg, message_line( {
             id           => $id,
-            nick        => $nick, 
-            timestamp   => $timestamp, 
-            message     => $message, 
+            nick        => $nick,
+            timestamp   => $timestamp,
+            message     => $message,
             line_number =>  ++$line_number,
             prev_nick   => $prev_nick,
             colors      => \@colors,
             self_url    => $self_url,
             channel     => $channel,
             },
-			\$c,
-			);
-	$prev_nick = $nick;
+            \$c,
+            );
+    $prev_nick = $nick;
 }
 
 $t->param(
-        CHANNEL		=> $full_channel,
+        CHANNEL     => $full_channel,
         STRIPPED_CHANNEL => $channel,
         MESSAGES    => \@msg,
         DATE        => $date,
@@ -137,8 +137,8 @@ $t->param(
 
 # check if previous/next date exists in database
 {
-    my $q1 = $dbh->prepare("SELECT COUNT(*) FROM irclog "
-			. "WHERE channel = ? AND day = ? AND NOT spam");
+    my $q1 = $dbh->prepare('SELECT COUNT(*) FROM irclog '
+            . 'WHERE channel = ? AND day = ? AND NOT spam');
     # Date::Simple magic ;)
     my $tomorrow = date($date) + 1;
     $q1->execute($full_channel, $tomorrow);
@@ -155,7 +155,7 @@ $t->param(
     }
 
 }
-    
+
 print my_encode($t->output);
 
 
