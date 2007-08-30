@@ -247,7 +247,11 @@ my %output_chain = (
             rest    => 'links',
         },
         links => {
-            re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?/,
+            # the negative lookbehind at the end ensures that 
+            # trailing punctuation like http://foo.com/, is not included 
+            # in the link. This means that not all valid URLs are recognized
+            # in full, but that's an acceptable tradeoff
+            re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?(?<![.,])/,
             match   => \&linkify,
             rest    => 'synopsis_links',
         },
