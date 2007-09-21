@@ -30,7 +30,16 @@ my $db = $dbh->prepare('SELECT nick, timestamp, line FROM irclog '
 $db->execute($date, '#' . $channel);
 
 
-print "Content-Type: text/plain;charset=utf-8\n\n";
+print "Content-Type: text/html;charset=utf-8\n\n";
+print <<HTML_HEADER;
+<html>
+<head>
+<title>IRC Logs</title>
+</head>
+<body>
+<pre>
+HTML_HEADER
+
 my $table = Text::Table->new(qw(Time Nick Message));
 
 while (my $row = $db->fetchrow_hashref){
@@ -44,6 +53,7 @@ while (my $row = $db->fetchrow_hashref){
 }
 print encode("utf-8", $table);
 
+print "</body></html>
 
 
 
