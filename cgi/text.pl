@@ -7,6 +7,7 @@ use IrcLog qw(get_dbh gmt_today);
 use IrcLog::WWW qw(my_encode);
 use CGI;
 use Encode;
+use HTML::Entities;
 # evil hack: Text::Table lies somewhere near /irclog/ on the server...
 use lib '../lib';
 use Text::Table;
@@ -51,7 +52,8 @@ while (my $row = $db->fetchrow_hashref){
             $row->{line},
             );
 }
-print encode("utf-8", $table);
+my $text = encode_entities($table, '<>&');
+print encode("utf-8", $text);
 
 print "</body></html>\n"
 
