@@ -55,7 +55,7 @@ while (my $row = $db->fetchrow_hashref){
 my $text = encode_entities($table, '<>&');
 print encode("utf-8", $text);
 
-print "</body></html>\n"
+print "</pre></body></html>\n"
 
 
 
