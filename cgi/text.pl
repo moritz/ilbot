@@ -53,7 +53,7 @@ while (my $row = $db->fetchrow_hashref){
 }
 print encode("utf-8", $table);
 
-print "</body></html>
+print "</body></html>\n"
 
 
 
