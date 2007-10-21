@@ -59,7 +59,7 @@ if ($channel !~ m/\A\w+\z/smx){
 my $full_channel = q{#} . $channel;
 my $date = $q->param('date') || gmt_today();
 my $t = HTML::Template->new(
-        filename            => 'day.tmpl',
+        filename            => 'template/day.tmpl',
         loop_context_vars   => 1,
         global_vars         => 1,
         );

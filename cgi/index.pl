@@ -17,7 +17,7 @@ my $base_url = $conf->{BASE_URL} || q{/};
 
 my $q = new CGI;
 print http_header();
-my $t = HTML::Template->new(filename => 'index.tmpl');
+my $t = HTML::Template->new(filename => 'template/index.tmpl');
 
 my $dbh = get_dbh();
 my @channels;

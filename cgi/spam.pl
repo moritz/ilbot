@@ -41,7 +41,7 @@ for my $id (@single){
     $count += $d2->execute($id);
 }
 
-my $t = HTML::Template->new(filename => 'spam.tmpl');
+my $t = HTML::Template->new(filename => 'template/spam.tmpl');
 
 my $conf = Config::File::read_config_file("cgi.conf");
 my $base_url = $conf->{BASE_URL} || "/";
