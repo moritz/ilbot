@@ -4,12 +4,13 @@ use strict;
 use CGI::Carp qw(fatalsToBrowser);
 use Carp qw(confess);
 use lib '..';
-use IrcLog qw(get_dbh);
-use IrcLog::WWW 'http_header';
 use CGI;
 use Config::File;
 use Data::Dumper;
 use HTML::Template;
+use lib 'lib';
+use IrcLog qw(get_dbh);
+use IrcLog::WWW 'http_header';
 
 my $q = CGI->new();
 

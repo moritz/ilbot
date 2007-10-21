@@ -3,8 +3,8 @@ use warnings;
 use Encode qw(encode decode);
 
 #use Smart::Comments;
-use Test::Base tests => 11;
-BEGIN { use_ok('IrcLog'); }
+use Test::Base tests => 10;
+use IrcLog::WWW qw(my_encode);
 
 run {
     my $block = shift;
@@ -14,7 +14,7 @@ run {
         my $utf8 = decode('utf8', $str);
         my $bytes = encode($enc, $utf8);
         ### $bytes
-        my $got = IrcLog::my_encode($bytes);
+        my $got = my_encode($bytes);
         is $got, $str, "$name - $enc";
     }
 };

@@ -60,7 +60,7 @@ sub my_decode {
     my @encodings = qw(ascii utf-8 iso-8859-15 gb2312);
     my $encoder = guess_encoding($str, @encodings);
     if (ref $encoder){
-     return $encoder->decode($str);
+        return $encoder->decode($str);
     } else {
         return decode("utf-8", $str);
     }
@@ -356,9 +356,9 @@ sub break_apart {
 
 
 sub message_line {
-	my ($args_ref, $c) = @_;
-	my $nick = $args_ref->{nick};
-	my $colors = $args_ref->{colors};
+    my ($args_ref, $c) = @_;
+    my $nick = $args_ref->{nick};
+    my $colors = $args_ref->{colors};
     my %h = (
         ID          => $args_ref->{id},
         TIME        => format_time($args_ref->{timestamp}),
@@ -366,7 +366,7 @@ sub message_line {
         LINE_NUMBER => ++$args_ref->{line_number},
         LINK_URL    => $args_ref->{link_url},
     );
-	$h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
+    $h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
 
     my @classes;
     my @msg_classes;

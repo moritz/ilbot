@@ -72,8 +72,8 @@ use Data::Dumper;
     }
 
     sub nick_change {
-        my ($self, $e) = @_;
-        print Dumper($e);
+        my $self = shift;
+        print Dumper(\@_);
         # XXX TODO
         return undef;
     }
@@ -83,6 +83,11 @@ use Data::Dumper;
         my $e = shift;
         dbwrite($e->{channel}, "", $e->{nick} . ' was kicked by ' . $e->{who} . ': ' . $e->{reason});
         return undef;
+    }
+
+    sub help {
+        my $self = shift;
+        return "This is a passive irc logging bot. Homepage: http://moritz.faui2k3.org/en/ilbot";
     }
 }
 

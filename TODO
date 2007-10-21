@@ -1,8 +1,9 @@
-* maybe add context to search results?
 * links to colabti irclogs - but how to know for which channels?
+* fix context in search results for adjacent hits
 
 Already done:
 * import of colabti irclogs
+* add context to search results?
 * full text search
 
 15:29 < [particle]> if you're in the mood for adding more, processing 

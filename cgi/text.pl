@@ -3,13 +3,14 @@ use warnings;
 use strict;
 use Carp qw(confess);
 use CGI::Carp qw(fatalsToBrowser);
-use IrcLog qw(get_dbh gmt_today);
-use IrcLog::WWW qw(my_encode);
 use CGI;
 use Encode;
 use HTML::Entities;
 # evil hack: Text::Table lies somewhere near /irclog/ on the server...
 use lib '../lib';
+use lib 'lib';
+use IrcLog qw(get_dbh gmt_today);
+use IrcLog::WWW qw(my_encode);
 use Text::Table;
 
 my $default_channel = 'perl6';

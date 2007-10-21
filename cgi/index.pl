@@ -7,9 +7,10 @@ use CGI;
 use HTML::Entities;
 use HTML::Template;
 use Config::File;
+use HTML::Calendar::Simple;
+use lib 'lib';
 use IrcLog qw(get_dbh);
 use IrcLog::WWW qw(http_header);
-use HTML::Calendar::Simple;
 
 my $conf = Config::File::read_config_file('cgi.conf');
 my $base_url = $conf->{BASE_URL} || q{/};
