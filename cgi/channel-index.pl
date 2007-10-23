@@ -44,51 +44,51 @@ sub get_channel_index {
     $t->param(CHANNEL  => $channel);
     $t->param(BASE_URL => $base_url);
     $t->param(CALENDAR => calendar_for_channel($channel, $q3, $base_url)); 
-    print $t->output;
+    return; $t->output;
+}
 
-    sub calendar_for_channel {
-        my ($channel, $query, $base_url)  = @_;
-        $query->execute('#' . $channel);
-        $channel =~ s/\A\#//smx;
-        my %cals;
-        while (my ($day) = $query->fetchrow_array){
-            # extract year and month part: (YYYY-MM)
-            my $key = substr $day, 0, 7;
-            # day
-            my $d = substr $day, 8;
+sub calendar_for_channel {
+    my ($channel, $query, $base_url)  = @_;
+    $query->execute('#' . $channel);
+    $channel =~ s/\A\#//smx;
+    my %cals;
+    while (my ($day) = $query->fetchrow_array){
+        # extract year and month part: (YYYY-MM)
+        my $key = substr $day, 0, 7;
+        # day
+        my $d = substr $day, 8;
 
-            # create calendar
-            if (not exists $cals{$key}){
-                my ($year, $month) = split m/-/smx, $key;
-                $cals{$key} = HTML::Calendar::Simple->new({
-                        year  => $year,
-                        month => $month,
-                        });
-            }
-
-            # populate calendar with links
-            $cals{$key}->daily_info({
-                    day      => $d,
-                    day_link => "$base_url$channel/$day",
+        # create calendar
+        if (not exists $cals{$key}){
+            my ($year, $month) = split m/-/smx, $key;
+            $cals{$key} = HTML::Calendar::Simple->new({
+                    year  => $year,
+                    month => $month,
                     });
         }
 
-        # now generate the HTML output
-        my $html = q{};
-        my $sorter = sub {
-            my ($l, $r) = @_;
-            return 12 * $cals{$l}->year + $cals{$l}->month
-                <=> 12 * $cals{$r}->year + $cals{$r}->month;
-        };
-
-        for my $cal (reverse sort { &$sorter($a, $b) } keys %cals){
-            $html .= qq{\n<div class="calendar">}
-                . $cals{$cal}->calendar_month
-                . qq{</div>\n}
-        }
-
-        return $html;
+        # populate calendar with links
+        $cals{$key}->daily_info({
+                day      => $d,
+                day_link => "$base_url$channel/$day",
+                });
     }
+
+    # now generate the HTML output
+    my $html = q{};
+    my $sorter = sub {
+        my ($l, $r) = @_;
+        return 12 * $cals{$l}->year + $cals{$l}->month
+            <=> 12 * $cals{$r}->year + $cals{$r}->month;
+    };
+
+    for my $cal (reverse sort { &$sorter($a, $b) } keys %cals){
+        $html .= qq{\n<div class="calendar">}
+            . $cals{$cal}->calendar_month
+            . qq{</div>\n}
+    }
+
+    return $html;
 }
 
 # vim: syn=perl sw=4 ts=4 expandtab
