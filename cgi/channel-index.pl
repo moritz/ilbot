@@ -11,11 +11,10 @@ use HTML::Calendar::Simple;
 use Cache::FileCache;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
-use IrcLog::WWW qw(http_header);
 
 my $q = new CGI;
 my $channel = $q->url_param('channel');
-print http_header();
+print "Content-Type: text/html; charset=utf-8\n\n";
 
 my $cache_name = $channel . '|' . gmt_today();
 
