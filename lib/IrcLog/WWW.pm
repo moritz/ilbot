@@ -364,8 +364,8 @@ sub message_line {
         TIME        => format_time($args_ref->{timestamp}),
         MESSAGE     => output_process(my_decode($args_ref->{message}), "nonprint_clean", $args_ref->{channel}),
         LINE_NUMBER => ++$args_ref->{line_number},
-        LINK_URL    => $args_ref->{link_url},
     );
+    $h{DATE}         = $args_ref->{date} if $args_ref->{date}; 
     $h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
 
     my @classes;

@@ -16,49 +16,26 @@ my $conf = Config::File::read_config_file('cgi.conf');
 my $base_url = $conf->{BASE_URL} || q{/};
 
 my $q = new CGI;
+my $channel = $q->url_param('channel');
 print http_header();
-my $t = HTML::Template->new(filename => 'template/index.tmpl');
+my $t = HTML::Template->new(filename => 'template/channel-index.tmpl');
 
 my $dbh = get_dbh();
-my @channels;
-{
-    my $q1 = $dbh->prepare('SELECT DISTINCT channel FROM irclog ORDER BY channel');
-    $q1->execute();
-    while (my @row = $q1->fetchrow_array){
-        push @channels, $row[0];
-    }
-}
 
 # we are evil and create a calendar entry for month between the first and last
 # date
-my $q2 = $dbh->prepare('SELECT MIN(day), MAX(day) FROM irclog WHERE channel = ?');
+#my $q2 = $dbh->prepare('SELECT MIN(day), MAX(day) FROM irclog WHERE channel = ?');
 
 my $q3 = $dbh->prepare('SELECT DISTINCT day FROM irclog WHERE channel = ?');
-sub date_exists_in_db {
-    my $date = shift;
-    $q3->execute($date);
-    my ($count) = $q3->fetchrow_array();
-    return scalar $count;
-}
 
-my @t_channels;
-
-foreach my $ch (@channels){
-    my @dates;
-    my $short_channel = substr $ch, 1;
-    $q2->execute($ch);
-    push @t_channels, {
-        CHANNEL   => $ch,
-        CALENDAR  => calendar_for_channel($ch),
-        TODAY_URL => $base_url . "out.pl?channel=$short_channel",
-    }
-}
-$t->param(CHANNELS => \@t_channels);
+$t->param(CHANNEL  => $channel);
+$t->param(BASE_URL => $base_url);
+$t->param(CALENDAR  => calendar_for_channel($channel)); 
 print $t->output;
 
 sub calendar_for_channel {
     my $channel = shift;
-    $q3->execute($channel);
+    $q3->execute('#' . $channel);
     $channel =~ s/\A\#//smx;
     my %cals;
     while (my ($day) = $q3->fetchrow_array){
@@ -79,7 +56,7 @@ sub calendar_for_channel {
         # populate calendar with links
         $cals{$key}->daily_info({
                 day      => $d,
-                day_link => $base_url . "out.pl?channel=$channel;date=$day",
+                day_link => "$base_url$channel/$day",
                 });
     }
 

@@ -58,6 +58,9 @@ if ($channel !~ m/\A\w+\z/smx){
 }
 my $full_channel = q{#} . $channel;
 my $date = $q->param('date') || gmt_today();
+if ($date eq 'today') {
+    $date = gmt_today();
+}
 my $t = HTML::Template->new(
         filename            => 'template/day.tmpl',
         loop_context_vars   => 1,
@@ -72,7 +75,7 @@ $t->param(ADMIN => 1) if ($q->param('admin'));
         $t->param(CHANNEL_LINKS => q{} . read_file($clf));
     }
 }
-$t->param(BASE_URL => $base_url);
+$t->param(BASE_URL  => $base_url);
 $t->param(SEARCH_URL => $base_url . "search.pl?channel=$channel");
 my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
 my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
@@ -129,8 +132,7 @@ while (my @row = $db->fetchrow_array){
 }
 
 $t->param(
-        CHANNEL     => $full_channel,
-        STRIPPED_CHANNEL => $channel,
+        CHANNEL     => $channel,
         MESSAGES    => \@msg,
         DATE        => $date,
         INDEX_URL   => $base_url,

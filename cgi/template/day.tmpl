@@ -3,10 +3,10 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <meta name="description" content="IRC LOG for channel <TMPL_VAR NAME=CHANNEL>" />
+    <meta name="description" content="IRC LOG for channel #<TMPL_VAR NAME=CHANNEL>" />
     <link rel="stylesheet" type="text/css" href="<TMPL_VAR NAME=BASE_URL>style.css" title="Irclog Stylesheet" />
     <link rel="shortcut icon" href="<TMPL_VAR NAME=BASE_URL>moose1.ico" type="image/x-icon" />
-    <title>IRC log for <TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></title>
+    <title>IRC log for #<TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></title>
 	<TMPL_IF NAME=ADMIN>
 	<script type="text/javascript">
 	<!--
@@ -21,10 +21,10 @@
 	</TMPL_IF>
 </head>
 <body>
-    <p><img style="float:right" src="moosecamel.png" width="400" height="194"
+    <p><img style="float:right" src="<TMPL_VAR NAME=BASE_URL>moosecamel.png" width="400" height="194"
     alt="A Camel and a Moose"/></p>
     
-    <h1>IRC log for <TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></h1>
+    <h1>IRC log for #<TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></h1>
 
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
     <TMPL_INCLUDE NAME='linkblock.tmpl'>

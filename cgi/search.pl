@@ -40,9 +40,9 @@ my $dbh = get_dbh();
     my @channels; 
     my $q1 = $dbh->prepare("SELECT DISTINCT channel FROM irclog ORDER BY channel");
     $q1->execute();
-    my $ch = $q->param('channel') || '#perl6';
+    my $ch = $q->param('channel') || 'perl6';
 	$ch =~ s/^\#//;
-    $t->param(CURRENT_CHANNEL => $ch);
+    $t->param(CURRENT_CHANNEL => $ch, CHANNEL => $ch);
     while (my @row = $q1->fetchrow_array){
 		$row[0] =~ s/^\#//;
         if ($ch eq $row[0]){
@@ -149,6 +149,7 @@ if (length($nick) or length($qs)){
 							colors		=> [], 
 							link_url	=> $base_url . "out.pl?channel=$short_channel;date=$row[0]",
 							channel		=> $channel,
+							date		=> $found_day,
 						);
 				$args{search_found} = 'search_found' if $r2[0] == $found_id;
 			
