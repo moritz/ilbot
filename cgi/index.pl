@@ -8,19 +8,19 @@ use lib 'lib';
 use IrcLog qw(get_dbh);
 use IrcLog::WWW qw(http_header);
 
-#use Cache::FileCache;
+use Cache::FileCache;
 
 print http_header();
-#my $cache = new Cache::FileCache( { 
-#		namespace 		=> 'irclog',
-#		} );
+my $cache = new Cache::FileCache( { 
+		namespace 		=> 'irclog',
+		} );
 
 my $data;
-#$data = $cache->get('index');
-#if ( ! defined $data){
+$data = $cache->get('index');
+if ( ! defined $data){
 	$data = get_index();
-#	$cache->set('index', $data, '5 hours');
-#}
+	$cache->set('index', $data, '5 hours');
+}
 print $data;
 
 sub get_index {
