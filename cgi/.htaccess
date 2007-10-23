@@ -1,3 +1,7 @@
+Options +ExecCGI
+AddHandler cgi-script .pl
+
+DirectoryIndex index.pl
 RewriteEngine on
 
 RewriteCond %{HTTP_REQUEST} !^search
