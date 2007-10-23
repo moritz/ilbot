@@ -44,7 +44,7 @@ sub get_channel_index {
     $t->param(CHANNEL  => $channel);
     $t->param(BASE_URL => $base_url);
     $t->param(CALENDAR => calendar_for_channel($channel, $q3, $base_url)); 
-    return; $t->output;
+    return $t->output;
 }
 
 sub calendar_for_channel {
