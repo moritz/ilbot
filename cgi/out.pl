@@ -135,7 +135,6 @@ $t->param(
         CHANNEL     => $channel,
         MESSAGES    => \@msg,
         DATE        => $date,
-        INDEX_URL   => $base_url,
      );
 
 # check if previous/next date exists in database
