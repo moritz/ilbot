@@ -21,6 +21,7 @@ use IrcLog::WWW qw(http_header message_line my_encode);
 # If they live in the root of their own virtual host, set it to "/".
 my $conf = Config::File::read_config_file('cgi.conf');
 my $base_url = $conf->{BASE_URL} || q{/};
+print http_header();
 
 # I'm to lazy right to move this to  a config file, because Config::File seems
 # unable to handle arrays, just hashes.
@@ -34,14 +35,10 @@ my @colors = (
         ['pugs_svnbot', 'bots'],
         ['specbot',     'bots'],
         ['pasteling',   'bots'],
-        ['moritz',      'nick_moritz'],
-        ['agentzh',     'nick_agentzh'],
-        ['Aankhen``',   'nick_aankhen'],
-        ['dduncan',     'nick_dduncan'],
-        ['fglock',      'nick_fglock'],
          );
 # additional classes for nicks, sorted by frequency of speech:
-my @nick_classes = qw(nick1 nick2 nick3 nick4);
+my @nick_classes = map { "nick$_" } (1 .. 9);
+
 # Default channel: this channel will be shown if no channel=... arg is given
 my $default_channel = 'perl6';
 
@@ -82,7 +79,6 @@ my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
         . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
 $db->execute($date, $full_channel);
 
-print http_header();
 
 # determine which colors to use for which nick:
 {

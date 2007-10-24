@@ -100,21 +100,20 @@ br {
 .nick_timtoady 	{ color: green; font-weight: bold; }
 .nick_audreyt 	{ color: red;  font-weight: bold;}
 
-/* nick with the most lines, excluding the most import nicks */
-.nick_moritz 	{ color: #00AA33; }
-.nick_agentzh	{ color: #AA0000; }
-.nick_aankhen	{ color: #005500; }
-.nick_dduncan	{ color: #FF0077; }
-.nick_fglock	{ color: blue; }
 
 /* all "active" bots, (svnbot6, lambdabot, specbot etc.) */
 .bots  {color: #FFA500; font-style: italic}
 
 /* The rest gets dynamically allocated colors */
-.nick1 { color: #8B008B; }
-.nick2 { color: #50507f; }
-.nick3 { color: #00008B; }
-.nick4 { color: #222222; }
+.nick1 { color: #00AA33; }
+.nick2 { color: #AA0000; }
+.nick3 { color: #005500; }
+.nick4 { color: #FF0077; }
+.nick5 { color: blue; }
+.nick6 { color: #8B008B; }
+.nick7 { color: #50507f; }
+.nick8 { color: #00008B; }
+.nick9 { color: #222222; }
 
 abbr { cursor: help; }
 
