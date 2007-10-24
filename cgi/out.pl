@@ -13,6 +13,7 @@ use File::Slurp;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
 use IrcLog::WWW qw(http_header message_line my_encode);
+use Cache::FileCache;
 #use Data::Dumper;
 
 
@@ -47,114 +48,137 @@ my $default_channel = 'perl6';
 my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param('channel') || $default_channel;
+my $date = $q->param('date') || gmt_today();
 
 
 if ($channel !~ m/\A\w+\z/smx){
     # guard against channel=../../../etc/passwd or so
     confess 'Invalid channel name';
 }
-my $full_channel = q{#} . $channel;
-my $date = $q->param('date') || gmt_today();
-if ($date eq 'today') {
-    $date = gmt_today();
-}
-my $t = HTML::Template->new(
-        filename            => 'template/day.tmpl',
-        loop_context_vars   => 1,
-        global_vars         => 1,
-        );
 
-$t->param(ADMIN => 1) if ($q->param('admin'));
-
-{
-    my $clf = "channels/$channel.tmpl";
-    if (-e $clf) {
-        $t->param(CHANNEL_LINKS => q{} . read_file($clf));
+my $cache_key = $channel . '|' . $date;
+if ($date eq gmt_today()){
+    # no caching here
+    print irclog_output($date, $channel);
+} else {
+    my $cache = new Cache::FileCache( { 
+            namespace 		=> 'irclog',
+            } );
+    my $data = $cache->get($cache_key);
+    if (defined $data){
+        print $data;
+    } else {
+        $data = irclog_output($date, $channel);
+        $cache->set($cache_key, $data, '1 day');
+        print $data;
     }
 }
-$t->param(BASE_URL  => $base_url);
-$t->param(SEARCH_URL => $base_url . "search.pl?channel=$channel");
-my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
-my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
-        . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
-$db->execute($date, $full_channel);
+
+sub irclog_output {
+    my ($date, $channel) = @_;
+
+    my $full_channel = q{#} . $channel;
+    if ($date eq 'today') {
+        $date = gmt_today();
+    }
+    my $t = HTML::Template->new(
+            filename            => 'template/day.tmpl',
+            loop_context_vars   => 1,
+            global_vars         => 1,
+            );
+
+    $t->param(ADMIN => 1) if ($q->param('admin'));
+
+    {
+        my $clf = "channels/$channel.tmpl";
+        if (-e $clf) {
+            $t->param(CHANNEL_LINKS => q{} . read_file($clf));
+        }
+    }
+    $t->param(BASE_URL  => $base_url);
+    $t->param(SEARCH_URL => $base_url . "search.pl?channel=$channel");
+    my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
+    my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
+            . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
+    $db->execute($date, $full_channel);
 
 
 # determine which colors to use for which nick:
-{
-    my $count = scalar @nick_classes + scalar @colors + 1;
-    my $q1 = $dbh->prepare('SELECT nick, COUNT(nick) AS c FROM irclog'
-             . ' WHERE day = ? AND not spam'
-             . " GROUP BY nick ORDER BY c DESC LIMIT $count");
-    $q1->execute($date);
-    while (my @row = $q1->fetchrow_array and @nick_classes){
-        next unless length $row[0];
-        my $n = quotemeta $row[0];
-        unless (grep { $_->[0] =~ m/\A$n/smx } @colors){
-            push @colors, [$row[0], shift @nick_classes];
+    {
+        my $count = scalar @nick_classes + scalar @colors + 1;
+        my $q1 = $dbh->prepare('SELECT nick, COUNT(nick) AS c FROM irclog'
+                . ' WHERE day = ? AND not spam'
+                . " GROUP BY nick ORDER BY c DESC LIMIT $count");
+        $q1->execute($date);
+        while (my @row = $q1->fetchrow_array and @nick_classes){
+            next unless length $row[0];
+            my $n = quotemeta $row[0];
+            unless (grep { $_->[0] =~ m/\A$n/smx } @colors){
+                push @colors, [$row[0], shift @nick_classes];
+            }
         }
-    }
 #    $t->param(DEBUG => Dumper(\@colors));
-}
+    }
 
-my @msg;
+    my @msg;
 
-my $line = 1;
-my $prev_nick = q{};
-my $c = 0;
+    my $line = 1;
+    my $prev_nick = q{};
+    my $c = 0;
 
 # populate the template
-my $line_number = 0;
-while (my @row = $db->fetchrow_array){
-    my $id = $row[0];
-    my $nick = decode('utf8', ($row[1]));
-    my $timestamp = $row[2];
-    my $message = $row[3];
+    my $line_number = 0;
+    while (my @row = $db->fetchrow_array){
+        my $id = $row[0];
+        my $nick = decode('utf8', ($row[1]));
+        my $timestamp = $row[2];
+        my $message = $row[3];
 
-    push @msg, message_line( {
-            id           => $id,
-            nick        => $nick,
-            timestamp   => $timestamp,
-            message     => $message,
-            line_number =>  ++$line_number,
-            prev_nick   => $prev_nick,
-            colors      => \@colors,
-            self_url    => $self_url,
-            channel     => $channel,
-            },
-            \$c,
-            );
-    $prev_nick = $nick;
-}
+        push @msg, message_line( {
+                id           => $id,
+                nick        => $nick,
+                timestamp   => $timestamp,
+                message     => $message,
+                line_number =>  ++$line_number,
+                prev_nick   => $prev_nick,
+                colors      => \@colors,
+                self_url    => $self_url,
+                channel     => $channel,
+                },
+                \$c,
+                );
+        $prev_nick = $nick;
+    }
 
-$t->param(
-        CHANNEL     => $channel,
-        MESSAGES    => \@msg,
-        DATE        => $date,
-     );
+    $t->param(
+            CHANNEL     => $channel,
+            MESSAGES    => \@msg,
+            DATE        => $date,
+        );
 
 # check if previous/next date exists in database
-{
-    my $q1 = $dbh->prepare('SELECT COUNT(*) FROM irclog '
-            . 'WHERE channel = ? AND day = ? AND NOT spam');
-    # Date::Simple magic ;)
-    my $tomorrow = date($date) + 1;
-    $q1->execute($full_channel, $tomorrow);
-    my ($res) = $q1->fetchrow_array();
-    if ($res){
-        $t->param(NEXT_URL => $base_url . "out.pl?channel=$channel;date=$tomorrow");
+    {
+        my $q1 = $dbh->prepare('SELECT COUNT(*) FROM irclog '
+                . 'WHERE channel = ? AND day = ? AND NOT spam');
+        # Date::Simple magic ;)
+        my $tomorrow = date($date) + 1;
+        $q1->execute($full_channel, $tomorrow);
+        my ($res) = $q1->fetchrow_array();
+        if ($res){
+            $t->param(NEXT_URL => $base_url . "out.pl?channel=$channel;date=$tomorrow");
+        }
+
+        my $yesterday = date($date) - 1;
+        $q1->execute($full_channel, $yesterday);
+        ($res) = $q1->fetchrow_array();
+        if ($res){
+            $t->param(PREV_URL => $base_url . "out.pl?channel=$channel;date=$yesterday");
+        }
+
     }
 
-    my $yesterday = date($date) - 1;
-    $q1->execute($full_channel, $yesterday);
-    ($res) = $q1->fetchrow_array();
-    if ($res){
-        $t->param(PREV_URL => $base_url . "out.pl?channel=$channel;date=$yesterday");
-    }
-
+    return my_encode($t->output);
 }
-
-print my_encode($t->output);
 
 
 # vim: sw=4 ts=4 expandtab
