@@ -49,6 +49,9 @@ my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param('channel') || $default_channel;
 my $date = $q->param('date') || gmt_today();
+if ($date eq 'today') {
+    $date = gmt_today();
+}
 
 
 if ($channel !~ m/\A\w+\z/smx){
@@ -78,9 +81,6 @@ sub irclog_output {
     my ($date, $channel) = @_;
 
     my $full_channel = q{#} . $channel;
-    if ($date eq 'today') {
-        $date = gmt_today();
-    }
     my $t = HTML::Template->new(
             filename            => 'template/day.tmpl',
             loop_context_vars   => 1,
