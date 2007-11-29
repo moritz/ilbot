@@ -24,7 +24,7 @@ my $conf = Config::File::read_config_file('cgi.conf');
 my $base_url = $conf->{BASE_URL} || q{/};
 print http_header();
 
-# I'm to lazy right to move this to  a config file, because Config::File seems
+# I'm too lazy right to move this to  a config file, because Config::File seems
 # unable to handle arrays, just hashes.
 
 # map nicks to CSS classes.
@@ -32,8 +32,10 @@ my @colors = (
         ['TimToady',    'nick_timtoady'],
         ['audreyt',     'nick_audreyt'],
         ['evalbot',     'bots'],
+        ['exp_evalbot', 'bots'],
         ['lambdabot',   'bots'],
         ['pugs_svnbot', 'bots'],
+        ['pugs_svn',    'bots'],
         ['specbot',     'bots'],
         ['pasteling',   'bots'],
          );
