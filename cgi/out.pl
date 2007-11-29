@@ -97,7 +97,7 @@ sub irclog_output {
     }
     $t->param(BASE_URL  => $base_url);
     $t->param(SEARCH_URL => $base_url . "search.pl?channel=$channel");
-    my $self_url = $base_url . "out.pl?channel=$channel;date=$date";
+    my $self_url = $base_url . "/$channel/$date";
     my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
             . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
     $db->execute($date, $full_channel);
@@ -165,14 +165,14 @@ sub irclog_output {
         $q1->execute($full_channel, $tomorrow);
         my ($res) = $q1->fetchrow_array();
         if ($res){
-            $t->param(NEXT_URL => $base_url . "out.pl?channel=$channel;date=$tomorrow");
+            $t->param(NEXT_URL => $base_url . "/$channel/$tomorrow");
         }
 
         my $yesterday = date($date) - 1;
         $q1->execute($full_channel, $yesterday);
         ($res) = $q1->fetchrow_array();
         if ($res){
-            $t->param(PREV_URL => $base_url . "out.pl?channel=$channel;date=$yesterday");
+            $t->param(PREV_URL => $base_url . "/$channel/$yesterday");
         }
 
     }
