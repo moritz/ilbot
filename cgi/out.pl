@@ -167,14 +167,14 @@ sub irclog_output {
         $q1->execute($full_channel, $tomorrow);
         my ($res) = $q1->fetchrow_array();
         if ($res){
-            $t->param(NEXT_URL => $base_url . "/$channel/$tomorrow");
+            $t->param(NEXT_URL => $base_url . "$channel/$tomorrow");
         }
 
         my $yesterday = date($date) - 1;
         $q1->execute($full_channel, $yesterday);
         ($res) = $q1->fetchrow_array();
         if ($res){
-            $t->param(PREV_URL => $base_url . "/$channel/$yesterday");
+            $t->param(PREV_URL => $base_url . "$channel/$yesterday");
         }
 
     }
