@@ -106,6 +106,7 @@ FLOSS       --- Free/Libre/Open-Source Software
 FOSS        --- Free/Open-Source Software
 (?i:OSCON)  --- O'Reilly Open Source Convention             --- OSCON
 (?i:DBC)    --- Design By Contract                          --- DBC
+(?i:SMOP)   --- Simple Meta Object Programming              --- SMOP
 JVM         --- Java Virtual Machine
 PDP         --- Personal Data Processor
 ASCII       --- American Standard Code for Information Interchange
