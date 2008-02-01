@@ -124,7 +124,8 @@ sub format_time {
 }
 
 sub revision_links {
-    my ($r, $state, $channel) = @_;
+    my ($r, $state, $channel, $botname) = @_;
+    $channel = 'parrot' if $botname =~ /^rakudo/;
     my %prefixes = (
              'perl6'     => 'http://dev.pugscode.org/changeset/',
              'parrot'    => 'http://perlcabal.org/svn/parrot/revision/?rev=',
@@ -310,7 +311,7 @@ my %output_chain = (
 
 # does all the output processing of ordinary output lines
 sub output_process {
-    my ($str, $rule, $channel) = @_;
+    my ($str, $rule, $channel, $nick) = @_;
     return qq{} unless length $str;
     my $res = "";
     if ($rule eq 'encode'){
@@ -320,16 +321,16 @@ sub output_process {
         my $state = {};
         while ($str =~ m/$re/){
             my ($pre, $match, $post) = ($`, $&, $');
-            $res .= output_process($pre, $output_chain{$rule}{rest}, $channel);
+            $res .= output_process($pre, $output_chain{$rule}{rest}, $channel, $nick);
             my $m = $output_chain{$rule}{match};
             if (ref $m && ref $m eq 'CODE'){
-                $res .= &$m($match, $state, $channel);
+                $res .= &$m($match, $state, $channel, $nick);
             } else {
                 $res .= $m;
             }
             $str = $post;
         }
-        $res .= output_process($str, $output_chain{$rule}{rest}, $channel);
+        $res .= output_process($str, $output_chain{$rule}{rest}, $channel, $nick);
     }
     return $res;
 }
@@ -363,7 +364,12 @@ sub message_line {
     my %h = (
         ID          => $args_ref->{id},
         TIME        => format_time($args_ref->{timestamp}),
-        MESSAGE     => output_process(my_decode($args_ref->{message}), "nonprint_clean", $args_ref->{channel}),
+        MESSAGE     => output_process(my_decode(
+                            $args_ref->{message}), 
+                            "nonprint_clean", 
+                            $args_ref->{channel},
+                            $args_ref->{nick},
+                            ),
         LINE_NUMBER => ++$args_ref->{line_number},
     );
     $h{DATE}         = $args_ref->{date} if $args_ref->{date}; 
@@ -470,7 +476,7 @@ The arguments are:
     - a pointer to a counter to determine which background color to use.
     - nick of the previous line (set to "" if none)
     - a ref to an array of the form
-      [ ['nick1', 'css_class_for_nick1'],
+      [ ['nick1]', 'css_class_for_nick1'],
         ['nick2], 'css_class_for_nick2'],
         ...
       ]
