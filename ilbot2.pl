@@ -93,7 +93,7 @@ use Data::Dumper;
 
 
 package main;
-my $conf = Config::File::read_config_file($ARGV[0] || "bot.conf");
+my $conf = Config::File::read_config_file(shift @ARGV || "bot.conf");
 my $nick = shift @ARGV || $conf->{NICK} || "ilbot6";
 my $server = $conf->{SERVER} || "irc.freenode.net";
 my $port = $conf->{PORT} || 6667;
