@@ -111,9 +111,9 @@ sub irclog_output {
     {
         my $count = scalar @nick_classes + scalar @colors + 1;
         my $q1 = $dbh->prepare('SELECT nick, COUNT(nick) AS c FROM irclog'
-                . ' WHERE day = ? AND not spam'
+                . ' WHERE day = ? AND channel = ? AND not spam'
                 . " GROUP BY nick ORDER BY c DESC LIMIT $count");
-        $q1->execute($date);
+        $q1->execute($date, $full_channel);
         while (my @row = $q1->fetchrow_array and @nick_classes){
             next unless length $row[0];
             my $n = quotemeta $row[0];
