@@ -169,3 +169,5 @@ USB         --- Universal Serial Bus
 RAID        --- Redundant Array of Independent Disks
 XSL         --- Extensible Stylesheet Language
 XSLT        --- Extensible Stylesheet Language Transformations
+CPS         --- Continuation Passing Style
+PCT         --- Parrot Compiler Toolkit
