@@ -66,7 +66,6 @@ use Data::Dumper;
     sub topic {
         my $self = shift;
         my $e = shift;
-        $q->execute($e->{channel}, gmt_today(), "", time, 'Topic for ' . $e->{channel} . 'is now ' . $e->{topic});
         dbwrite($e->{channel}, "", 'Topic for ' . $e->{channel} . 'is now ' . $e->{topic});
         return undef;
     }
