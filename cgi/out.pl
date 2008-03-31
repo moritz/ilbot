@@ -13,7 +13,7 @@ use File::Slurp;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
 use IrcLog::WWW qw(http_header message_line my_encode);
-use Cache::FileCache;
+use Cache::SizeAwareFileCache;
 #use Data::Dumper;
 
 
@@ -64,20 +64,33 @@ if ($channel !~ m/\A\w+\z/smx){
     confess 'Invalid channel name';
 }
 
-my $cache_key = $channel . '|' . $date;
-if ($date eq gmt_today()){
-    # no caching here
-    print irclog_output($date, $channel);
-} else {
-    my $cache = new Cache::FileCache( { 
+my $count;
+{
+    my $sth = $dbh->prepare_cached('SELECT COUNT(*) FROM irclog WHERE day = ?');
+    $sth->execute($date);
+    $sth->bind_columns(\$count);
+    $sth->fetch();
+    $sth->finish();
+}
+
+
+{
+    my $cache_key = $channel . '|' . $date . '|' . $count;
+    # the average #perl6 day produces 100k to 400k of HTML, so with
+    # 50MB we have about 150 pages in the cache. Since most hits are
+    # the "today" page and those of the last 7 days, we still get a very
+    # decent speedup
+    # btw a cache hit is about 10 times faster than generating the page anew
+    my $cache = new Cache::SizeAwareFileCache( { 
             namespace 		=> 'irclog',
+            max_size        => 150 * 1048576,
             } );
     my $data = $cache->get($cache_key);
     if (defined $data){
         print $data;
     } else {
         $data = irclog_output($date, $channel);
-        $cache->set($cache_key, $data, '1 day');
+        $cache->set($cache_key, $data);
         print $data;
     }
 }
@@ -169,14 +182,19 @@ sub irclog_output {
         $q1->execute($full_channel, $tomorrow);
         my ($res) = $q1->fetchrow_array();
         if ($res){
-            $t->param(NEXT_URL => $base_url . "$channel/$tomorrow");
+            my $next_url = $base_url . "$channel/$tomorrow";
+            # where the hell does the leading double slash come from?
+            $next_url =~ s{^//+}{/};
+            $t->param(NEXT_URL => $next_url);
         }
 
         my $yesterday = date($date) - 1;
         $q1->execute($full_channel, $yesterday);
         ($res) = $q1->fetchrow_array();
         if ($res){
-            $t->param(PREV_URL => $base_url . "$channel/$yesterday");
+            my $prev_url = $base_url . "$channel/$yesterday";
+            $prev_url =~ s{^//+}{/};
+            $t->param(PREV_URL => $prev_url);
         }
 
     }
