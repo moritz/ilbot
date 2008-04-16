@@ -150,6 +150,7 @@ sub irclog_output {
         my $nick = decode('utf8', ($row[1]));
         my $timestamp = $row[2];
         my $message = $row[3];
+        next if $message =~ m/^\s*\[off\]/i;
 
         push @msg, message_line( {
                 id           => $id,
