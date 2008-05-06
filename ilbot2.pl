@@ -22,6 +22,9 @@ use Data::Dumper;
     my $q = prepare($dbh);
     sub dbwrite {
         my ($channel, $who, $line) = @_;
+        # mncharity aka putter has an IRC client that prepends some lines with
+        # a BOM. Remove that:
+        $line =~ s/\A\x{ffef}//;
         my @sql_args = ($channel, gmt_today(), $who, time, $line);
         if ($dbh->ping){
             $q->execute(@sql_args);
