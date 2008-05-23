@@ -171,3 +171,4 @@ XSL         --- Extensible Stylesheet Language
 XSLT        --- Extensible Stylesheet Language Transformations
 CPS         --- Continuation Passing Style
 PCT         --- Parrot Compiler Toolkit
+red_STD     --- Ruby version of STD

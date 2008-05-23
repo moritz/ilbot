@@ -41,6 +41,7 @@ my @colors = (
         ['rakudo_svn',  'bots'],
         ['purl',        'bots'],
         ['svnbotlt',    'bots'],
+        ['specbot',     'bots'],
          );
 # additional classes for nicks, sorted by frequency of speech:
 my @nick_classes = map { "nick$_" } (1 .. 9);
@@ -59,7 +60,7 @@ if ($date eq 'today') {
 }
 
 
-if ($channel !~ m/\A\w+\z/smx){
+if ($channel !~ m/\A[\w-]+\z/smx){
     # guard against channel=../../../etc/passwd or so
     confess 'Invalid channel name';
 }
