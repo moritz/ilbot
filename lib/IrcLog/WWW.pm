@@ -249,6 +249,14 @@ sub rt_links {
             . qq{</a>};
 }
 
+sub irc_channel_links {
+    my ($key, $state) = @_;
+    $key =~ s/^#//;
+    return qq{<a href="/$key/today">}
+            . encode_entities("#$key", ENTITIES) 
+            . qq{</a>};
+}
+
 my %output_chain = (
         nonprint_clean => {
             re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
@@ -284,7 +292,12 @@ my %output_chain = (
         rt_links     => {
              re     => qr{#\d{5}\b}, 
              match  => \&rt_links,
-             rest   => 'abbrs',
+             rest   => 'irc_channel_links',
+        },
+        irc_channel_links => {
+            re      => qr{#(?:perl6-soc|perl6|parrot|cdk|bioclipse)\b},
+            match   => \&irc_channel_links,
+            rest    => 'abbrs',
         },
         abbrs => {
             re      => $re_abbr,
