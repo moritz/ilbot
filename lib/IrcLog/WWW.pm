@@ -241,6 +241,14 @@ my $re_links = qr/(?!)/;
 
 }
 
+sub rt_links {
+    my ($key, $state) = @_;
+    $key =~ s/^#//;
+    return qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$key">}
+            . encode_entities("#$key", ENTITIES) 
+            . qq{</a>};
+}
+
 my %output_chain = (
         nonprint_clean => {
             re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
@@ -271,7 +279,12 @@ my %output_chain = (
         static_links => {
              re     => $re_links,
              match  => \&expand_links,
-             rest   => 'abbrs'
+             rest   => 'rt_links'
+        },
+        rt_links     => {
+             re     => qr{#\d{5}\b}, 
+             match  => \&rt_links,
+             rest   => 'abbrs',
         },
         abbrs => {
             re      => $re_abbr,
