@@ -295,7 +295,7 @@ my %output_chain = (
              rest   => 'irc_channel_links',
         },
         irc_channel_links => {
-            re      => qr{#(?:perl6-soc|perl6|parrot|cdk|bioclipse)\b},
+            re      => qr{#(?:perl6-soc|perl6|parrot|cdk|bioclipse|parrotsketch)\b},
             match   => \&irc_channel_links,
             rest    => 'abbrs',
         },
