@@ -33,6 +33,7 @@ my @colors = (
         ['audreyt',     'nick_audreyt'],
         ['evalbot',     'bots'],
         ['exp_evalbot', 'bots'],
+        ['p6eval',      'bots'],
         ['lambdabot',   'bots'],
         ['pugs_svnbot', 'bots'],
         ['pugs_svn',    'bots'],
