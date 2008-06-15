@@ -126,10 +126,12 @@ sub format_time {
 sub revision_links {
     my ($r, $state, $channel, $botname) = @_;
     $channel = 'parrot' if $botname =~ /^rakudo/;
+    $channel = 'specs'  if $botname =~ /^speck?bot/;
     my %prefixes = (
              'perl6'     => 'http://dev.pugscode.org/changeset/',
              'parrot'    => 'http://perlcabal.org/svn/parrot/revision/?rev=',
              'bioclipse' => 'http://bioclipse.svn.sourceforge.net/viewvc/bioclipse?view=rev;revision=',
+             'specs'     => 'http://www.perlcabal.org/svn/p6spec/revision?rev=',
             );
     my $url_prefix = $prefixes{$channel};
     return $r unless $url_prefix;
