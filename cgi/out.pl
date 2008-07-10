@@ -38,12 +38,12 @@ my @colors = (
         ['pugs_svnbot', 'bots'],
         ['pugs_svn',    'bots'],
         ['specbot',     'bots'],
+        ['speckbot',    'bots'],
         ['pasteling',   'bots'],
         ['rakudo_svn',  'bots'],
         ['purl',        'bots'],
         ['svnbotlt',    'bots'],
-        ['specbot',     'bots'],
-         );
+    );
 # additional classes for nicks, sorted by frequency of speech:
 my @nick_classes = map { "nick$_" } (1 .. 9);
 
@@ -105,6 +105,7 @@ sub irclog_output {
             filename            => 'template/day.tmpl',
             loop_context_vars   => 1,
             global_vars         => 1,
+            die_on_bad_params   => 0,
             );
 
     $t->param(ADMIN => 1) if ($q->param('admin'));
