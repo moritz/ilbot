@@ -431,12 +431,13 @@ NICK:    foreach (@$colors){
         push @msg_classes, 'act';
     }
 
-    if ($nick eq ""){
-        # empty nick column means that nobody said anything, but
-        # it's a join, part, topic change etc.
-        push @classes, "special";
-        $h{SPECIAL} = 1;
-    }
+    # class not used at the moment
+#    if ($nick eq ""){
+#        # empty nick column means that nobody said anything, but
+#        # it's a join, part, topic change etc.
+#        push @classes, "special";
+#                $h{SPECIAL} = 1;
+#    }
     if ($$c % 2){
         push @classes, "dark";
     }
