@@ -26,8 +26,11 @@ my $lines_of_context = 2;
 
 my $q = new CGI;
 print http_header();
-my $t = HTML::Template->new(filename => "template/search.tmpl",
-		global_vars => 1);
+my $t = HTML::Template->new(
+        filename => "template/search.tmpl",
+		global_vars => 1,
+        die_on_bad_params => 0,
+);
 $t->param(BASE_URL => $base_url);
 my $start = $q->param("start") || 0;
 

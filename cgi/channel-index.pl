@@ -32,7 +32,10 @@ sub get_channel_index {
 
     my $conf = Config::File::read_config_file('cgi.conf');
     my $base_url = $conf->{BASE_URL} || q{/};
-    my $t = HTML::Template->new(filename => 'template/channel-index.tmpl');
+    my $t = HTML::Template->new(
+            filename            => 'template/channel-index.tmpl',
+            die_on_bad_params   => 0,
+    );
 
     my $dbh = get_dbh();
 

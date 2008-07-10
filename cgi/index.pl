@@ -44,7 +44,8 @@ sub get_index {
 			filename => 'template/index.tmpl',
 			loop_context_vars   => 1,
 			global_vars         => 1,
-			);
+            die_on_bad_params   => 0,
+    );
 	$template->param(BASE_URL => $base_url);
 	$template->param( channels => \@channels );
 
