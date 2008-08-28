@@ -193,7 +193,7 @@ sub pdd_links {
     $s =~ m/(\d\d)/;
     my $pdd_num = $1;
     if ($pdd_filenames{$pdd_num}){
-        return qq{<a href="http://www.parrotcode.org/docs/ppd/$pdd_filenames{$pdd_num}.html">} . encode_entities($s, ENTITIES) . qq{</a>};
+        return qq{<a href="http://www.parrotcode.org/docs/pdd/$pdd_filenames{$pdd_num}.html">} . encode_entities($s, ENTITIES) . qq{</a>};
     } else {
         return encode_entities($s, ENTITIES); 
     }
