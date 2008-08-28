@@ -330,7 +330,7 @@ my %output_chain = (
             rest    => 'pdd_links',
         },
         pdd_links => {
-            re      => qr{(?i)\bpdd(\d\d)(?:_\w+)\b},
+            re      => qr{(?i)\bpdd(\d\d)(?:_\w+)?\b},
             match   => \&pdd_links,
             rest    => 'static_links',
         },
