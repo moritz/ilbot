@@ -156,6 +156,49 @@ sub synopsis_links {
     }
 }
 
+my %pdd_filenames = (
+    '00' => 'pdd00_pdd',
+    '01' => 'pdd01_overview',
+    '03' => 'pdd03_calling_conventions',
+    '04' => 'pdd04_datatypes',
+    '05' => 'pdd05_opfunc',
+    '06' => 'pdd06_pasm',
+    '07' => 'pdd07_codingstd',
+    '08' => 'pdd08_keys',
+    '09' => 'pdd09_gc',
+    '10' => 'pdd10_embedding',
+    '11' => 'pdd11_extending',
+    '13' => 'pdd13_bytecode',
+    '14' => 'pdd14_bignum',
+    '15' => 'pdd15_objects',
+    '16' => 'pdd16_native_call',
+    '17' => 'pdd17_pmc',
+    '18' => 'pdd18_security',
+    '19' => 'pdd19_pir',
+    '20' => 'pdd20_lexical_vars',
+    '21' => 'pdd21_namespaces',
+    '22' => 'pdd22_io',
+    '23' => 'pdd23_exceptions',
+    '24' => 'pdd24_events',
+    '25' => 'pdd25_concurrency',
+    '26' => 'pdd26_ast',
+    '27' => 'pdd27_multiple_dispatch',
+    '28' => 'pdd28_strings',
+    '29' => 'pdd29_compiler_tools',
+    '30' => 'pdd30_install',
+);
+
+sub pdd_links {
+    my $s = shift;
+    $s =~ m/(\d\d)/;
+    my $pdd_num = $1;
+    if ($pdd_filenames{$pdd_num}){
+        return qq{<a href="http://www.parrotcode.org/docs/ppd/$pdd_filenames{$pdd_num}.html">} . encode_entities($s, ENTITIES) . qq{</a>};
+    } else {
+        return encode_entities($s, ENTITIES); 
+    }
+}
+
 sub linkify {
     my $url = shift;
     my $display_url = $url;
@@ -284,6 +327,11 @@ my %output_chain = (
                 }xmsi,
 
             match   => \&synopsis_links,
+            rest    => 'pdd_links',
+        },
+        pdd_links => {
+            re      => qr{(?i)\bpdd(\d\d)(?:_\w+)\b},
+            match   => \&pdd_links,
             rest    => 'static_links',
         },
         static_links => {
