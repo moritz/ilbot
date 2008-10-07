@@ -128,7 +128,7 @@ sub revision_links {
     $channel = 'parrot' if $botname =~ /^rakudo/;
     $channel = 'specs'  if $botname =~ /^speck?bot/;
     my %prefixes = (
-             'perl6'     => 'http://dev.pugscode.org/changeset/',
+             'perl6'    =>  'http://perlcabal.org/svn/pugs/revision/?rev=',
              'parrot'    => 'http://perlcabal.org/svn/parrot/revision/?rev=',
              'bioclipse' => 'http://bioclipse.svn.sourceforge.net/viewvc/bioclipse?view=rev;revision=',
              'specs'     => 'http://www.perlcabal.org/svn/p6spec/revision?rev=',
