@@ -23,7 +23,7 @@ my $channel = $q->param('channel') || $default_channel;
 
 my $date = $q->param('date') || gmt_today;
 
-if ($channel !~ m/^\w+\z/sx){
+if ($channel !~ m/^\w+(?:-\w+)*\z/sx){
     # guard against channel=../../../etc/passwd or so
     confess 'Invalid channel name';
 }
