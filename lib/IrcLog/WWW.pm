@@ -288,6 +288,12 @@ my $re_links = qr/(?!)/;
 
 sub rt_links {
     my ($key, $state) = @_;
+    if ($key =~ m/^ii/i) {
+        $key =~ m/(\d+)/;
+        return qq{<a href="https://trac.parrot.org/parrot/ticket/$1">}
+            . encode_entities($key, ENTITIES)
+            . qq{</a> };
+    } 
     $key =~ s/^#//;
     return qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$key">}
             . encode_entities("#$key", ENTITIES) 
@@ -340,7 +346,7 @@ my %output_chain = (
              rest   => 'rt_links'
         },
         rt_links     => {
-             re     => qr{#\d{5}\b}, 
+             re     => qr{(?i:\btt\s*)?#\d{2,5}\b}, 
              match  => \&rt_links,
              rest   => 'irc_channel_links',
         },
