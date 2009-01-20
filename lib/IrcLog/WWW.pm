@@ -288,7 +288,7 @@ my $re_links = qr/(?!)/;
 
 sub rt_links {
     my ($key, $state) = @_;
-    if ($key =~ m/^ii/i) {
+    if ($key =~ m/^tt/i) {
         $key =~ m/(\d+)/;
         return qq{<a href="https://trac.parrot.org/parrot/ticket/$1">}
             . encode_entities($key, ENTITIES)
