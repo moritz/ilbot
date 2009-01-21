@@ -155,8 +155,14 @@ use Data::Dumper;
 
     sub nick_change {
         my $self = shift;
-        print Dumper(\@_);
-        # XXX TODO
+        my($old, $new) = @_;
+
+        for my $channel (keys( %{ $self->{channel_data} } )) {
+            if (defined($self->{channel_data}{$channel}{$new})) {
+                dbwrite($channel, "", $old . ' is now known as ' . $new);
+            }
+        }
+        
         return undef;
     }
 
