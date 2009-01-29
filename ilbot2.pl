@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use Config::File;
-use Bot::BasicBot;
+use Bot::BasicBot 0.81;
 use Carp qw(confess);
 
 # this is a cleaner reimplementation of ilbot, with Bot::BasicBot which 
@@ -12,33 +12,6 @@ use IrcLog qw(get_dbh gmt_today);
 use Data::Dumper;
 
 {
-
-    # XXX since Bot::BasicBot doesn't provide an action for the
-    # quit message yet, we monkey-patch it in...
-    use POE::Session;
-    sub start_state {
-        my ($self, $session) = @_[ OBJECT, SESSION ];
-        $session->_register_state("irc_quit", $self, "irc_quit_state");
-        shift->SUPER::start_state(@_);
-    }
-
-    sub irc_quit_state {
-        my ($self, $kernel, $nick, $message) = @_[OBJECT, KERNEL, ARG0, ARG1];
-        $nick = $_[OBJECT]->nick_strip($nick);
-        if ($self->nick eq $nick) {
-            $kernel->delay('reconnect', 1 );
-            return;
-        }
-        for my $channel (keys( %{ $self->{channel_data} } )) {
-            if (defined($self->{channel_data}{$channel}{$nick})) {
-                $_[OBJECT]->_remove_from_channel( $channel, $nick );
-                @_[ARG1, ARG2] = ($channel, $message);
-                Bot::BasicBot::irc_chan_received_state( 'chanpart', 'say', @_ );
-            }
-        }
-    }
-    # end of monkeypatching
-
 
     my $dbh = get_dbh();
 
@@ -100,6 +73,23 @@ use Data::Dumper;
         return undef;
     }
 
+    sub _channels_for_nick {
+        my $self = shift;
+        my $nick = shift;
+
+        return grep { $self->{channel_data}{$_}{$nick} } keys( %{ $self->{channel_data} } );
+    }
+
+    sub userquit {
+        my $self = shift;
+        my $e = shift;
+        my $nick = $e->{who};
+
+        foreach my $channel ($self->_channels_for_nick($nick)) {
+            $self->chanpart({ who => $nick, channel => $channel });
+        }
+    }
+
     sub topic {
         my $self = shift;
         my $e = shift;
@@ -111,10 +101,8 @@ use Data::Dumper;
         my $self = shift;
         my($old, $new) = @_;
 
-        for my $channel (keys( %{ $self->{channel_data} } )) {
-            if (defined($self->{channel_data}{$channel}{$new})) {
-                dbwrite($channel, "", $old . ' is now known as ' . $new);
-            }
+        foreach my $channel ($self->_channels_for_nick($new)) {
+            dbwrite($channel, "", $old . ' is now known as ' . $new);
         }
         
         return undef;
