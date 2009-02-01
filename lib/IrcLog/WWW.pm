@@ -11,6 +11,9 @@ use Config::File;
 use Carp qw(confess cluck);
 use utf8;
 
+my $uri_regexp = $RE{URI}{HTTP};
+$uri_regexp =~ s/http/https?/g;
+
 use base 'Exporter';
 our @EXPORT_OK = qw(
         http_header
@@ -319,7 +322,7 @@ my %output_chain = (
             # trailing punctuation like http://foo.com/, is not included 
             # in the link. This means that not all valid URLs are recognized
             # in full, but that's an acceptable tradeoff
-            re      => qr/$RE{URI}{HTTP}(?:#[\w_%:-]+)?(?<![.,])/,
+            re      => qr/$uri_regexp(?:#[\w_%:-]+)?(?<![.,])/,
             match   => \&linkify,
             rest    => 'synopsis_links',
         },
