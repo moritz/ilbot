@@ -93,7 +93,7 @@ use Data::Dumper;
     sub topic {
         my $self = shift;
         my $e = shift;
-        dbwrite($e->{channel}, "", 'Topic for ' . $e->{channel} . 'is now ' . $e->{topic});
+        dbwrite($e->{channel}, "", 'Topic for ' . $e->{channel} . ' is now ' . $e->{topic});
         return undef;
     }
 
