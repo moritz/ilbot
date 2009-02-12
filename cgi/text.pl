@@ -10,7 +10,7 @@ use HTML::Entities;
 use lib '../lib';
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
-use IrcLog::WWW qw(my_encode);
+use IrcLog::WWW qw(my_encode my_decode);
 use Text::Table;
 
 my $default_channel = 'perl6';
@@ -50,7 +50,7 @@ while (my $row = $db->fetchrow_hashref){
     $table->add(
             sprintf("%02d:%02d", $hour, $minute),
             $row->{nick},
-            $row->{line},
+            my_decode($row->{line}),
             );
 }
 my $text = encode_entities($table, '<>&');
