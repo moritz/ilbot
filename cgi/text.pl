@@ -54,9 +54,15 @@ while (my $row = $db->fetchrow_hashref){
             );
 }
 my $text = encode_entities($table, '<>&');
-print encode("utf-8", $text);
 
-print "</pre></body></html>\n"
+# Text::Table will add trailing whitespace to pad messages to the
+# longest message. I (avar) wasn't able to find out how to make it
+# stop doing that so I'm hacking around it with regex! 
+$text =~ s/ +$//gm;
+
+print encode("utf-8", $text);
+print "</pre></body></html>\n";
+
 
 
 
