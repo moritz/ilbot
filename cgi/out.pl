@@ -62,7 +62,7 @@ if ($date eq 'today') {
 }
 
 
-if ($channel !~ m/\A[\w-]+\z/smx){
+if ($channel !~ m/\A[\w-.]+\z/smx){
     # guard against channel=../../../etc/passwd or so
     confess 'Invalid channel name';
 }
