@@ -5,7 +5,7 @@ DirectoryIndex index.pl
 RewriteEngine on
 
 RewriteCond %{HTTP_REQUEST} !^search
-RewriteRule ^([\w-\.]+)/?$ channel-index.pl?channel=$1 [L]
+RewriteRule ^([\w-]+)/?$ channel-index.pl?channel=$1 [L]
 
 RewriteCond %{HTTP_REQUEST} !^search
 RewriteRule ^([\w-]+)/today$ out.pl?channel=$1
