@@ -436,7 +436,8 @@ sub break_apart {
 
     my $result = substr $str, 0, $chunk_size;
     for (my $i = $chunk_size; $i < $l; $i += $chunk_size){
-        $result .= " " . substr $str, $i, $chunk_size;
+        my $delim = chr(8203);
+        $result .= $delim . substr $str, $i, $chunk_size;
     }
     return encode_entities($result, ENTITIES);
 }
