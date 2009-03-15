@@ -63,6 +63,16 @@
 	</TMPL_LOOP>
 	</TMPL_IF>
 
+	<p>
+	Result pages:
+	<TMPL_LOOP NAME=RESULT_PAGES>
+		<a href="<TMPL_VAR NAME=BASE_URL>search.pl?nick=<TMPL_VAR
+		NAME=NICK ESCAPE=URL>;channel=<TMPL_VAR NAME=CURRENT_CHANNEL
+		ESCAPE=URL>;q=<TMPL_VAR NAME=Q>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
+		NAME=PAGE></a>
+	</TMPL_LOOP>
+	</p>
+
     <TMPL_INCLUDE NAME="footer.tmpl">
   </body>
 </html>

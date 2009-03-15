@@ -52,8 +52,8 @@ sub get_channel_index {
 
 sub calendar_for_channel {
     my ($channel, $query, $base_url)  = @_;
-    $query->execute('#' . $channel);
     $channel =~ s/\A\#//smx;
+    $query->execute('#' . $channel);
     my %cals;
     while (my ($day) = $query->fetchrow_array){
         # extract year and month part: (YYYY-MM)
