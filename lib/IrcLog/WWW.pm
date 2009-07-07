@@ -14,6 +14,15 @@ use utf8;
 my $uri_regexp = $RE{URI}{HTTP};
 $uri_regexp =~ s/http/https?/g;
 
+my %color_codes = (
+   "\e[32m"     => 'green',
+   "\e[34m"     => 'blue',
+   "\e[31m"     => 'red',
+   "\e[33m"     => 'yellow',
+);
+my $color_reset = qr{(?:\[0m|\\x1b)+};
+my $color_start = join '|', map quotemeta, keys %color_codes;
+
 use base 'Exporter';
 our @EXPORT_OK = qw(
         http_header
@@ -197,9 +206,34 @@ sub pdd_links {
     my $pdd_num = $1;
     if ($pdd_filenames{$pdd_num}){
         return qq{<a href="http://www.parrotcode.org/docs/pdd/$pdd_filenames{$pdd_num}.html">} . encode_entities($s, ENTITIES) . qq{</a>};
+        # " # un-freak-out vim syntax hilighting
     } else {
         return encode_entities($s, ENTITIES); 
     }
+}
+
+sub ansi_color_codes {
+    my ($str, @args) = @_;
+    my @chunks = split /($color_start|$color_reset)/, $str;
+    warn "In ansi_color_codes";
+    my $color;
+    my $res = '';
+    for (@chunks) {
+        next unless length $_;
+        next if /$color_reset/;
+        if (/$color_start/) {
+            $color = $color_codes{$_};
+            warn "setting color to $color\n";
+
+        } else {
+            $res .=  qq{<span style="color: $color">}
+                    . encode_entities($_, ENTITIES)
+                    . qq{</span>};
+            
+           warn "Adding <<$_>> with color $color\n";
+        }
+    }
+    return $res;
 }
 
 sub linkify {
@@ -312,6 +346,11 @@ sub irc_channel_links {
 }
 
 my %output_chain = (
+        ansi_color_codes => {
+            re      => qr{$color_start.*?(?:$color_reset|\z)}s,
+            match   => \&ansi_color_codes,
+            rest    => 'nonprint_clean',
+        },
         nonprint_clean => {
             re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
             match   => q{},
@@ -452,7 +491,7 @@ sub message_line {
         TIME        => format_time($args_ref->{timestamp}),
         MESSAGE     => output_process(my_decode(
                             $args_ref->{message}), 
-                            "nonprint_clean", 
+                            "ansi_color_codes", 
                             $args_ref->{channel},
                             $args_ref->{nick},
                             ),
