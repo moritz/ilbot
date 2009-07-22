@@ -516,6 +516,13 @@ sub message_line {
         push @classes, 'cont';
     }
     # determine nick color:
+    # Now that we give each <tr> (with a non-special message) classes of 
+    #  'nick' and "nick_$nick", this is probably better done with CSS:
+    #  
+    #    tr.nick_TimToady td.nick { color: green; font-weight: bold; }
+    #    tr.nick_KyleHa   td.nick { color: #005500; }
+    #    tr.nick_tann_    td.nick { color: #ff0077; }
+    
 NICK:    foreach (@$colors){
         my $n = quotemeta $_->[0];
         if ($nick =~ m/^$n/ or $nick =~ m/^\* $n/){
@@ -534,6 +541,12 @@ NICK:    foreach (@$colors){
         push @classes, "special";
                 $h{SPECIAL} = 1;
     }
+    else {
+        # To ensure successive lines from same nick are displayed, we want
+        # both these classes on every non-special <tr>
+        push @classes, ( "nick", "nick_".sanitize_nick($nick) );   
+    }
+    
     if ($$c % 2){
         push @classes, "dark";
     }
@@ -555,6 +568,13 @@ sub my_encode {
     # valid xml characters: http://www.w3.org/TR/REC-xml/#charsets
     $s =~ s/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//g;
     return $s;
+}
+
+# Filter out characters so we can put nick into a CSS class name
+sub sanitize_nick {
+    my $nick = shift;
+    $nick =~ s/[^-a-zA-Z0-9_]//g;
+    return $nick;
 }
 
 =head1 NAME

@@ -100,6 +100,8 @@ br {
 .nick_timtoady 	{ color: green; font-weight: bold; }
 .nick_audreyt 	{ color: red;  font-weight: bold;}
 
+/* above can now be done with ".nick_TimToady", etc. That is, "nick_$nick",
+   after $nick has been sanitized. See WWW.pm. */
 
 /* all "active" bots, (svnbot6, lambdabot, specbot etc.) */
 .bots  {color: #FFA500; font-style: italic}
@@ -121,3 +123,22 @@ abbr { cursor: help; }
 	font-weight: bold;
 }
 
+/* Nick autocomplete */
+.ac_results {
+	background: white;
+	border: 1px solid #ccc;
+}
+.ac_results ul {
+	margin: 0px;
+	padding: 0px;
+}
+.ac_results li {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+	font-family: Consolas,"Lucida Console","Courier New",monospace;
+}
+.ac_results li:hover {
+	background: #70709f;
+	cursor: default;
+}
