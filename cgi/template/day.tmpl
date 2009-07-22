@@ -8,8 +8,6 @@
     <link rel="shortcut icon" href="<TMPL_VAR NAME=BASE_URL>moose1.ico" type="image/x-icon" />
     <title>IRC log for #<TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></title>
 	<TMPL_IF NAME=ADMIN>
-	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>jquery.min.js"></script>
-	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>jquery.autocomplete.js"></script>
 	<script type="text/javascript">
 	<!--
 		function reset_checkboxes() {
@@ -21,6 +19,9 @@
 	//-->
 	</script>
 	</TMPL_IF>
+	
+	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>jquery.min.js"></script>
+	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>jquery.autocomplete.js"></script>	
 </head>
 <body>
     <p><img style="float:right" src="<TMPL_VAR NAME=BASE_URL>moosecamel.png" width="400" height="194"
@@ -71,46 +72,7 @@
 
     <TMPL_INCLUDE NAME="footer.tmpl">
 		
-	<script type="text/javascript">
-	/* Enable filtering the current page to display only messages from a
-	   single nick, without context. Autocompletes all nicks on current page */
-	$(document).ready(function() {
-		var i = 0;
-		var ac_nicks = new Array();
-		var nicks_seen = new Object();
-		var nick;
-		
-		$("tr.nick").each(function() {
-			var this_class  = $(this).attr('class');
-			var extr_re     = new RegExp("nick_([^\x20]+)");
-			var matches     = this_class.match(extr_re);
-			var nick        = matches[1];
-			//if (i++ < 5) { alert(nick); }
-			ac_nicks.push(nick);
-		});
-		// uniq
-		for (var i=0; i < ac_nicks.length; i++) {
-			nicks_seen[ ac_nicks[i] ] = 1;   
-		}
-		ac_nicks.splice(0, ac_nicks.length); // empty
-		for (nick in nicks_seen) {
-			ac_nicks.push(nick);
-		}
-		ac_nicks.sort();
-		
-		$("#nick").autocomplete('', {}, ac_nicks);
-	});
-	
-	function filter() {
-		var nick = $("#nick").val();
-		var jq_sel = "tr:not(.nick_" + nick + ")";
-		$(jq_sel).hide();
-	}
-	
-	function unfilter() {
-		$("tr.nick").show();
-	}
-	</script>		
+	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>nickfilter.js"></script>		
 </body>
 </html>
 <!-- <TMPL_IF DEBUG> <TMPL_VAR NAME=DEBUG> </TMPL_IF> -->
