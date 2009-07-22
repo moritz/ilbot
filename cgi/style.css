@@ -123,6 +123,8 @@ abbr { cursor: help; }
 	font-weight: bold;
 }
 
+#log td.msg { text-align: left !important; }
+
 /* Nick autocomplete */
 .ac_results {
 	background: white;
