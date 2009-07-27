@@ -18,7 +18,7 @@ my %color_codes = (
    "\e[32m"     => 'green',
    "\e[34m"     => 'blue',
    "\e[31m"     => 'red',
-   "\e[33m"     => 'yellow',
+   "\e[33m"     => 'orange',
 );
 my $color_reset = qr{(?:\[0m|\\x1b)+};
 my $color_start = join '|', map quotemeta, keys %color_codes;
