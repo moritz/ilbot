@@ -215,7 +215,6 @@ sub pdd_links {
 sub ansi_color_codes {
     my ($str, @args) = @_;
     my @chunks = split /($color_start|$color_reset)/, $str;
-    warn "In ansi_color_codes";
     my $color;
     my $res = '';
     for (@chunks) {
@@ -223,14 +222,10 @@ sub ansi_color_codes {
         next if /$color_reset/;
         if (/$color_start/) {
             $color = $color_codes{$_};
-            warn "setting color to $color\n";
-
         } else {
             $res .=  qq{<span style="color: $color">}
                     . encode_entities($_, ENTITIES)
                     . qq{</span>};
-            
-           warn "Adding <<$_>> with color $color\n";
         }
     }
     return $res;
