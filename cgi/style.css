@@ -127,9 +127,9 @@ abbr { cursor: help; }
 
 
 #filterbox {
-	width: 300px;
+	width: 30%;		/* #log becomes 60%, for 5% space before this */
 	top: 50px;
-	right: 50px;
+	right: 5%;
 	padding: 10px;
 	background: #e0e0e0;
 	border: 2px solid #b0b0b0;
