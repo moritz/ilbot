@@ -125,22 +125,12 @@ abbr { cursor: help; }
 
 #log td.msg { text-align: left !important; }
 
-/* Nick autocomplete */
-.ac_results {
-	background: white;
-	border: 1px solid #ccc;
-}
-.ac_results ul {
-	margin: 0px;
-	padding: 0px;
-}
-.ac_results li {
-	list-style: none;
-	margin: 0px;
-	padding: 0px;
-	font-family: Consolas,"Lucida Console","Courier New",monospace;
-}
-.ac_results li:hover {
-	background: #70709f;
-	cursor: default;
+
+#filterbox {
+	width: 300px;
+	top: 50px;
+	right: 50px;
+	padding: 10px;
+	background: #e0e0e0;
+	border: 2px solid #b0b0b0;
 }

@@ -40,14 +40,7 @@
 	<div style="clear:both"></div>
 	</TMPL_IF>
 	
-    <p id="nickfilter"><label>Filter by nick:</label> 
-        <input type="text" id="nick" />
-        <input type="button" value="Filter" onclick="filter()" />
-        <input type="button" value="Unfilter" onclick="unfilter()" />
-        <noscript><br />Nick filtering requires javascript, which seems to be
-        missing or deactivated in your browser.
-        </noscript>
-    </p>	
+	<p style="display: none;" id="filter_toggle"></p>
 	
     <table id="log" style="clear:both">
         <tr class="head">
