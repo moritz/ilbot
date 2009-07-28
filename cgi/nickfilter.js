@@ -44,7 +44,7 @@ $(document).ready(function() {
             }
         });
         nick_regex_str = array_to_regex_str(obj_props(all_nicks));
-        alert('set NRS='+nick_regex_str);
+/*        alert('set NRS='+nick_regex_str); */
     } catch(e) { alert(e) }
     
     /** Create filter panel/box thingy and add nicks */
