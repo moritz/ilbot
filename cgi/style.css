@@ -101,7 +101,7 @@ br {
 .nick_audreyt 	{ color: red;  font-weight: bold;}
 
 /* above can now be done with ".nick_TimToady", etc. That is, "nick_$nick",
-   after $nick has been sanitized. See WWW.pm. */
+   after $nick has been sanitized. Case-sensitive. See WWW.pm. */
 
 /* all "active" bots, (svnbot6, lambdabot, specbot etc.) */
 .bots  {color: #FFA500; font-style: italic}
@@ -126,11 +126,67 @@ abbr { cursor: help; }
 #log td.msg { text-align: left !important; }
 
 
+/* position: fixed; set in JS */
 #filterbox {
-	width: 30%;		/* #log becomes 60%, for 5% space before this */
+	width: 25%;
 	top: 50px;
-	right: 5%;
+	right: 1%;
 	padding: 10px;
 	background: #e0e0e0;
 	border: 2px solid #b0b0b0;
+}
+
+/* Semantically, a table would be more appropriate. But we want to avoid
+   table layout algorithms which are a headtrip. */
+#filterbox div {
+	font-family: Consolas, "Lucida Console", "Courier New", monospace;
+}
+
+/* copy stuff from main table for consistent appearance */
+
+/* TODO nicks in #filterbox could by styled a little more:
+  Copy nick colors for easy visual parsing, will need JS to copy classes
+  from DOM
+*/
+#filterbox div.row span {
+	float: left;
+}
+#filterbox div.row {
+	clear: both;
+}
+#filterbox span {
+    padding: 0.2em 0.4em;
+}
+#filterbox span.nick {
+    text-align: right;
+	width: 40%;
+}
+#filterbox span.spoken_to,
+#filterbox span.spoken_to_show,
+#filterbox span.spoken_to_hide
+{
+	font-size: 80%;
+	/* adjust for smaller font (match nick size):
+	   1.3em / 0.8 = 1.625em
+	*/
+	line-height: 1.625em;
+}
+
+#filterbox div.row a {
+	text-decoration: none;
+}
+/* underline doesn't work great here because some nicks have underscores */
+#filterbox div.row a:hover {
+	color: #525266;
+}
+
+#filterbox h3,
+#filterbox #filtering_off
+{
+	padding-top: 1.5em;
+}
+
+#filtering_off {
+	clear: both;
+	text-align: left;
 }

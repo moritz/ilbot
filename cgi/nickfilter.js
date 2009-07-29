@@ -1,6 +1,8 @@
 /*
 Maybe-helpful filtering-by-nick stuff. Lets you filter nicks in/out, thus
 letting you view particular conversations. Sorta.
+
+/msg missingthepoint or bpetering in #perl6 with bug complaints :)
 */
 
 // Settings
@@ -9,15 +11,15 @@ letting you view particular conversations. Sorta.
 var filterbox_id            = 'filterbox';
 var filter_toggle_id        = 'filter_toggle';    // match in HTML
 
-var filter_hidden_ul_id     = 'filter_hidden';
-var filter_shown_ul_id      = 'filter_shown';
+var filter_hidden_id        = 'filter_hidden';
+var filter_shown_id         = 'filter_shown';
 
 var nick_id_prefix          = 'fn_nick_';
 
 // match in CSS
 var tbl_id                  = 'log';
-var expanded_tbl_width     = '100%';
-var shrunk_tbl_width        = '60%';
+var expanded_tbl_width      = '100%';
+var shrunk_tbl_width        = '65%';
 
 // Globals
 
@@ -27,30 +29,16 @@ var shown_nicks = new Object();
 var nick_regex_str = '';
 var tbl_width = '';
 
-// Set up nick filtering stuff when DOM is ready, i.e. when
-//  we have all message rows ready to process
 $(document).ready(function() {
     
-    /** Pull nicks from HTML, put in initial store obj */
     try {
-        $("tr.nick").each(function() {
-            var this_class  = $(this).attr("class");
-            var extr_re     = new RegExp("nick_([^\x20]+)");
-            var matches     = this_class.match(extr_re);
-            
-            if (matches) {
-                all_nicks[ matches[1] ] = 1;
-                hidden_nicks[ matches[1] ] = 1;
-            }
-        });
-        nick_regex_str = array_to_regex_str(obj_props(all_nicks));
-/*        alert('set NRS='+nick_regex_str); */
+        process_html();
     } catch(e) { alert(e) }
     
     /** Create filter panel/box thingy and add nicks */
     try {
         var filterbox = document.createElement("div");
-        $(filterbox).hide().css("position", "absolute");
+        $(filterbox).hide().css("position", "fixed"); /* don't move onscroll */
         $(filterbox).attr("id", filterbox_id);
     
         // Add to body element
@@ -58,25 +46,35 @@ $(document).ready(function() {
         
         $(filterbox).append(
             '<h2>Conversation</h2>'
+
+            + '<p id="show_hide_all">'
+            + ' <a href="javascript:show_all()">Show All</a>'
+            + ' <a href="javascript:hide_all()">Hide All</a>'
+            + '</p>'
+
+            + '<div id="shown_nicks">'
+            + '<h3>Shown nicks</h3>'            
+            + '<div id="' + filter_shown_id + '" class="nick_list">'
+            + '</div></div>'
             
             + '<div id="hidden_nicks">'
-            + '<h3>Add nicks</h3>'            
-            + '<ul id="' + filter_hidden_ul_id + '">'
-            + '</ul></div>'
+            + '<h3>Hidden nicks</h3>'            
+            + '<div id="' + filter_hidden_id + '" class="nick_list">'
+            + '</div></div>'
             
-            + '<div id="shown_nicks">'
-            + '<h3>Remove nicks</h3>'            
-            + '<ul id="' + filter_shown_ul_id + '">'
-            + '</ul></div>'
-            
-            + '<p><a href="javascript:filtering_off()">Filtering Off</a></p>'
+            + '<p id="filtering_off">'
+            +  '<a href="javascript:filtering_off()">Filtering Off</a>'
+            + '</p>'
         );
     } catch(e) { alert(e) }
 
-    $("#"+filter_toggle_id).append('<a href="javascript:filtering_on()">Turn on filtering by nick</a>');
+    $("#"+filter_toggle_id).append(
+        '<a href="javascript:filtering_on()">Turn on filtering by nick</a>'
+    );
     $("#"+filter_toggle_id).show();
     
 });
+
 
 function obj_props(obj) {
     var ret_array = new Array();
@@ -99,41 +97,52 @@ function array_to_regex_str(array) {
     return regex_str;
 }
 
-// not going to bother refactoring further ATM
+/** Pull nicks from HTML, put in initial store objects, build regex
+    to match any nick on page */
+function process_html() {
+    $("tr.nick").each(function() {
+        var this_class  = $(this).attr("class");
+        var extr_re     = new RegExp("nick_([^\x20]+)");
+        var matches     = this_class.match(extr_re);
+        
+        if (matches) {
+            all_nicks[ matches[1] ] = 1;
+            hidden_nicks[ matches[1] ] = 1;
+        }
+    });
+    nick_regex_str = array_to_regex_str(obj_props(all_nicks));    
+}
+
 function render_nicklists() {
     var hidden_list = obj_props(hidden_nicks);
     var shown_list = obj_props(shown_nicks);
     
-    $("#"+filter_hidden_ul_id).empty();    // not .html('')    :)
-    $("#"+filter_shown_ul_id).empty();
+    $("#"+filter_hidden_id).empty();    // not .html('') -> crashes stuff
+    $("#"+filter_shown_id).empty();
     
     hidden_list.sort();
     for (var i=0; i < hidden_list.length; i++) {
-        $("#"+filter_hidden_ul_id).append(gen_fnli_html(hidden_list[i]));
+        $("#"+filter_hidden_id).append(gen_nick_html(hidden_list[i]));
     }
     
     shown_list.sort();
     for (var i=0; i < shown_list.length; i++) {
-        $("#"+filter_shown_ul_id).append(gen_fnli_html(shown_list[i]));
+        $("#"+filter_shown_id).append(gen_nick_html(shown_list[i]));
     }      
 }
 
-function gen_fnli_html(nick) {
-    return  '<li id="' + nick_id_prefix + nick + '">'
-            + '<a href="javascript:toggle_nick(\'' + nick + '\')">'
-            + nick
-            + '</a>'
-            + ' (Spoken to &rarr; '
-            + '<a href="javascript:show_spoken_to(\''
-            + nick
-            + '\')">add</a>'
-            + '&nbsp;|&nbsp;'
-            + '<a href="javascript:hide_spoken_to(\''                
-            + nick
-            + '\')">remove</a>'    
-            + ')'
-            + '</li>'
-    ;
+/** For a given nick, generate the HTML for the filter box */
+function gen_nick_html(nick) {
+return  '<div id="' + nick_id_prefix + nick + '" class="row">'
+    + '<span class="nick"><a href="javascript:toggle_nick(\'' +nick+ '\')">'
+        + nick + '</a></span>'
+    + '<span class="spoken_to">(Spoken to: </span>'
+    + '<span class="spoken_to_show"><a href="javascript:show_spoken_to(\''
+        + nick + '\')">show</a></span>'
+    + '<span class="spoken_to_hide"><a href="javascript:hide_spoken_to(\''
+        + nick + '\')">hide</a>)</span>'    
+    + '</div>'
+;
 }
 
 // Switch a single nick between categories (shown/hidden)
@@ -197,6 +206,26 @@ function hide_spoken_to(nick) {
     render_nicklists();    
 }
 
+// These two: Empty one object and move nicks to other
+
+function show_all() {
+    var hidden_list = obj_props(hidden_nicks);
+    for (var i = 0; i < hidden_list.length; i++) {
+        show_nick( hidden_list[i] );
+    }
+    filtering_apply();
+    render_nicklists();    
+}
+function hide_all() {
+    var shown_list = obj_props(shown_nicks);
+    for (var i = 0; i < shown_list.length; i++) {
+        hide_nick( shown_list[i] );
+    }
+    filtering_apply();
+    render_nicklists();    
+}
+
+
 // These apply/unapply filtering for ALL nicks
 function filtering_apply() {
     var show_list = obj_props(shown_nicks);
@@ -218,8 +247,8 @@ function expand_table() {
 }
 
 function filtering_on() {
-    $("#" + filter_toggle_id + " > a").html("Turn off filtering by nick");
-    $("#" + filter_toggle_id + " > a").attr("href", 'javascript:filtering_off()');
+    $("#" +filter_toggle_id+ ">a").html("Turn off filtering by nick");
+    $("#" +filter_toggle_id+ ">a").attr("href", 'javascript:filtering_off()');
     
     shrink_table();
     $("#"+filterbox_id).fadeIn();
@@ -238,6 +267,6 @@ function filtering_off() {
     $("#"+filterbox_id).fadeOut();
     expand_table();
 
-    $("#" + filter_toggle_id + " > a").html("Turn on filtering by nick");
-    $("#" + filter_toggle_id + " > a").attr("href", 'javascript:filtering_on()');
+    $("#" + filter_toggle_id + ">a").html("Turn on filtering by nick");
+    $("#" + filter_toggle_id + ">a").attr("href", 'javascript:filtering_on()');
 }
