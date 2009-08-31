@@ -30,6 +30,7 @@ my $t = HTML::Template->new(
         filename => "template/search.tmpl",
 		global_vars => 1,
         die_on_bad_params => 0,
+        default_escape => 'html',
 );
 $t->param(BASE_URL => $base_url);
 my $start = $q->param("start") || 0;
