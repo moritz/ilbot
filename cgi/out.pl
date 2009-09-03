@@ -44,6 +44,7 @@ my @colors = (
         ['purl',        'bots'],
         ['svnbotlt',    'bots'],
         ['dalek',       'bots'],
+        ['hugme',       'bots'],
     );
 # additional classes for nicks, sorted by frequency of speech:
 my @nick_classes = map { "nick$_" } (1 .. 9);
