@@ -356,7 +356,7 @@ my %output_chain = (
             # trailing punctuation like http://foo.com/, is not included 
             # in the link. This means that not all valid URLs are recognized
             # in full, but that's an acceptable tradeoff
-            re      => qr/$uri_regexp(?:#[\w_%:-]+)?(?<![.,])/,
+            re      => qr{$uri_regexp(?:#[\w_%:/!*+?;&=-]+)?(?<![.,])},
             match   => \&linkify,
             rest    => 'synopsis_links',
         },
@@ -539,9 +539,9 @@ NICK:    foreach (@$colors){
     else {
         # To ensure successive lines from same nick are displayed, we want
         # both these classes on every non-special <tr>
-        push @classes, ( "nick", "nick_".sanitize_nick($nick) );   
+        push @classes, ( "nick", "nick_".sanitize_nick($nick) );
     }
-    
+
     if ($$c % 2){
         push @classes, "dark";
     }
