@@ -156,6 +156,8 @@ CVS         --- Concurrent Versions System
 UML         --- Unified Modelling Language
 NYI         --- Not Yet Implemented
 LHS         --- Left Hand Side
+LTA         --- Less Than Awesome
+LTM         --- Longest Token Matching
 RHS         --- Right Hand Side
 TZ          --- Timezone
 SDL         --- Simple DirectMedia Layer
