@@ -42,6 +42,7 @@ sub http_header {
     
     $h->header(Status => '200 OK');
     $h->header(Vary => 'Accept');
+    $h->header('Cache-Control' => 'no-cache') if $config->{nocache};
     
     my $accept = $ENV{HTTP_ACCEPT} || 'text/html';
     

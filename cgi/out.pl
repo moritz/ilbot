@@ -22,7 +22,6 @@ use Cache::SizeAwareFileCache;
 # If they live in the root of their own virtual host, set it to "/".
 my $conf = Config::File::read_config_file('cgi.conf');
 my $base_url = $conf->{BASE_URL} || q{/};
-print http_header();
 
 # I'm too lazy right to move this to  a config file, because Config::File seems
 # unable to handle arrays, just hashes.
@@ -61,6 +60,11 @@ my $date = $q->param('date') || gmt_today();
 if ($date eq 'today') {
     $date = gmt_today();
 }
+if ($date eq gmt_today()) {
+    print http_header({ nocache => 1});
+} else {
+    print http_header();
+}
 
 
 if ($channel !~ m/\A[.\w-]+\z/smx){
@@ -85,7 +89,7 @@ my $count;
     # the "today" page and those of the last 7 days, we still get a very
     # decent speedup
     # btw a cache hit is about 10 times faster than generating the page anew
-    my $cache = new Cache::SizeAwareFileCache( { 
+    my $cache = new Cache::SizeAwareFileCache( {
             namespace 		=> 'irclog',
             max_size        => 150 * 1048576,
             } );
