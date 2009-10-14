@@ -53,7 +53,7 @@ sub get_channel_index {
     # and last date
     my $dbh       = get_dbh();
     my $get_dates = 'SELECT DISTINCT day FROM irclog WHERE channel = ? ORDER BY day';
-    my $dates     = $dbh->selectcol_arrayref($get_dates, undef, $channel);
+    my $dates     = $dbh->selectcol_arrayref($get_dates, undef, '#' . $channel);
 
     $t->param(CHANNEL  => $channel);
     $t->param(BASE_URL => $base_url);
