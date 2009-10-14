@@ -94,6 +94,27 @@ br {
 .calendar {
     float: left;
     margin: 0.7em;
+    border-collapse: collapse;
+}
+
+.calendar th,td {
+    height: 1.4em;
+    border: 1px solid #dfdfdf;
+}
+
+.calendar td {
+    font-family: Arial,Helvetica,sans-serif;
+    text-align: center;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.calendar a {
+    text-decoration: none;
+}
+
+.calendar a:hover {
+    text-decoration: underline;
 }
 
 /* most important channel members. This is subjective, if you have a different
