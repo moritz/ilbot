@@ -68,7 +68,7 @@ sub calendar_for_channel {
     my (%months, %link);
     for my $date (@$dates) {
         my ($Y, $M, $D) = split '-', $date;
-        $link{$date}    = "$base_url$channel/$D";
+        $link{$date}    = "$base_url$channel/$date";
         $months{"$Y-$M"}++;
     }
 
