@@ -90,7 +90,7 @@ my $count;
     # decent speedup
     # btw a cache hit is about 10 times faster than generating the page anew
     my $cache = new Cache::SizeAwareFileCache( {
-            namespace 		=> 'irclog',
+            namespace       => 'irclog',
             max_size        => 150 * 1048576,
             } );
     my $data = $cache->get($cache_key);
