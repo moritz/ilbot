@@ -3,11 +3,11 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <meta name="description" content="IRC LOG for channel #<TMPL_VAR NAME=CHANNEL>" />
-    <link rel="stylesheet" type="text/css" href="<TMPL_VAR NAME=BASE_URL>style.css" title="Irclog Stylesheet" />
-    <link rel="shortcut icon" href="<TMPL_VAR NAME=BASE_URL>moose1.ico" type="image/x-icon" />
-    <title>IRC log for #<TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></title>
-	<TMPL_IF NAME=ADMIN>
+    <meta name="description" content="IRC LOG for channel #<TMPL_VAR CHANNEL>" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>style.css" title="Irclog Stylesheet" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>moose1.ico" type="image/x-icon" />
+    <title>IRC log for #<TMPL_VAR CHANNEL>, <TMPL_VAR DATE></title>
+	<TMPL_IF ADMIN>
 	<script type="text/javascript">
 	<!--
 		function reset_checkboxes() {
@@ -20,21 +20,21 @@
 	</script>
 	</TMPL_IF>
 	
-	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>jquery.min.js"></script>
-	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>jquery.autocomplete.js"></script>	
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>jquery.min.js"></script>
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>jquery.autocomplete.js"></script>	
 </head>
 <body>
-    <p><a href="http://perl6.org/"><img style="float:right; border:none" src="<TMPL_VAR NAME=BASE_URL>camelia.png" width="193" height="180"
+    <p><a href="http://perl6.org/"><img style="float:right; border:none" src="<TMPL_VAR BASE_URL>camelia.png" width="193" height="180"
     alt="Camelia, the Perl 6 bug"/></a></p>
     
-    <h1>IRC log for #<TMPL_VAR NAME=CHANNEL>, <TMPL_VAR NAME=DATE></h1>
+    <h1>IRC log for #<TMPL_VAR CHANNEL>, <TMPL_VAR DATE></h1>
 
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
     <p>All times shown according to <abbr title="Coordinated Universal Time">UTC</abbr>.</p>
-	<TMPL_IF NAME=ADMIN>
-	<form method="post" action="<TMPL_VAR NAME=BASE_URL>spam.pl?date=<TMPL_VAR NAME=DATE>;channel=<TMPL_VAR NAME=CHANNEL>">
+	<TMPL_IF ADMIN>
+	<form method="post" action="<TMPL_VAR BASE_URL>spam.pl?date=<TMPL_VAR DATE>;channel=<TMPL_VAR CHANNEL>">
 	<p><input type="submit" value="Mark as spam" /></p>
 	<p><a href="javascript:reset_checkboxes()">Reset all Checkboxes</a></p>
 	<div style="clear:both"></div>
@@ -44,7 +44,7 @@
 	
     <table id="log" style="clear:both">
         <tr class="head">
-		<TMPL_IF NAME=ADMIN>
+		<TMPL_IF ADMIN>
 			<th>Range</th>
 			<th>Single</th>
 		</TMPL_IF>
@@ -52,12 +52,12 @@
             <th>Nick</th>
             <th>Message</th>
         </tr>
-        <TMPL_LOOP NAME=MESSAGES>
+        <TMPL_LOOP MESSAGES>
 <TMPL_INCLUDE NAME='line.tmpl'>
         </TMPL_LOOP>
 
     </table>
-	<TMPL_IF NAME=ADMIN>
+	<TMPL_IF ADMIN>
 	<p><input type="submit" value="Mark as spam" /></p>
 	<div style="clear:both"></div>
 	</form>
@@ -68,7 +68,7 @@
 
     <TMPL_INCLUDE NAME="footer.tmpl">
 		
-	<script type="text/javascript" src="<TMPL_VAR NAME=BASE_URL>nickfilter.js"></script>		
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>nickfilter.js"></script>		
 </body>
 </html>
-<!-- <TMPL_IF DEBUG> <TMPL_VAR NAME=DEBUG> </TMPL_IF> -->
+<!-- <TMPL_IF DEBUG> <TMPL_VAR DEBUG> </TMPL_IF> -->

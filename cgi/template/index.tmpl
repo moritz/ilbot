@@ -4,19 +4,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <meta name="description" content="IRC logs by ilbot" />
-    <link rel="stylesheet" type="text/css" href="<TMPL_VAR NAME=BASE_URL>style.css" title="Irclog default Stylesheet" />
-    <link rel="shortcut icon" href="<TMPL_VAR NAME=BASE_URL>moose1.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>style.css" title="Irclog default Stylesheet" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>moose1.ico" type="image/x-icon" />
     <title>IRC logs - Index</title>
 </head>
 <body>
     <h1>Index of IRC logs</h1>
 
-    <p><a href="<TMPL_VAR NAME=BASE_URL>/search.pl">Search the logs</a></p>
+    <p><a href="<TMPL_VAR BASE_URL>search.pl">Search the logs</a></p>
 
 	<h2>Channels</h2>
 
-	<ul><TMPL_LOOP NAME=CHANNELS>
-		<li><a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR NAME=CHANNEL></a> - <a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/today">Today</a></li>
+	<ul><TMPL_LOOP CHANNELS>
+		<li><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR CHANNEL></a> - <a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/today">Today</a></li>
     </TMPL_LOOP>
 	</ul>
 

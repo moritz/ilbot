@@ -1,10 +1,9 @@
-<tr id="id_l<TMPL_VAR NAME=LINE_NUMBER>" <TMPL_IF NAME=CLASS>class="<TMPL_VAR NAME=CLASS>"</TMPL_IF>>
-	<TMPL_IF NAME=ADMIN>
-	<td class="checkbox"><input type="checkbox" name="range"  value="<TMPL_VAR NAME=ID>" size="1" style="width:1em"/></td>
-	<td class="checkbox"><input type="checkbox" name="single" value="<TMPL_VAR NAME=ID>" size="1" style="width:1em"/></td>
+<tr id="id_l<TMPL_VAR LINE_NUMBER>" <TMPL_IF CLASS>class="<TMPL_VAR CLASS>"</TMPL_IF>>
+	<TMPL_IF ADMIN>
+	<td class="checkbox"><input type="checkbox" name="range"  value="<TMPL_VAR ID>" size="1" style="width:1em"/></td>
+	<td class="checkbox"><input type="checkbox" name="single" value="<TMPL_VAR ID>" size="1" style="width:1em"/></td>
 	</TMPL_IF>
-	<td class="time" id="i_<TMPL_VAR NAME=ID>"><a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/<TMPL_VAR NAME=DATE>#i_<TMPL_VAR NAME=ID>"><TMPL_VAR
-	NAME=TIME></a></td>
-	<td class="nick<TMPL_IF NAME=NICK_CLASS> <TMPL_VAR NAME=NICK_CLASS></TMPL_IF>"><TMPL_VAR NAME=NICK></td>
-	<td class="msg<TMPL_IF NAME=MSG_CLASS> <TMPL_VAR NAME=MSG_CLASS></TMPL_IF> <TMPL_VAR NAME=SEARCH_FOUND DEFAULT=''>"><TMPL_VAR NAME=MESSAGE ESCAPE=0></td>
+	<td class="time" id="i_<TMPL_VAR ID>"><a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR DATE>#i_<TMPL_VAR ID>"><TMPL_VAR TIME></a></td>
+	<td class="nick<TMPL_IF NICK_CLASS> <TMPL_VAR NICK_CLASS></TMPL_IF>"><TMPL_VAR NICK></td>
+	<td class="msg<TMPL_IF MSG_CLASS> <TMPL_VAR MSG_CLASS></TMPL_IF> <TMPL_VAR NAME=SEARCH_FOUND DEFAULT=''>"><TMPL_VAR NAME=MESSAGE ESCAPE=0></td>
 </tr>

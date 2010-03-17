@@ -4,20 +4,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <meta name="description" content="IRC logs by ilbot" />
-    <link rel="stylesheet" type="text/css" href="<TMPL_VAR NAME=BASE_URL>style.css" title="Irclog default Stylesheet" />
-    <link rel="shortcut icon" href="<TMPL_VAR NAME=BASE_URL>moose1.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>style.css" title="Irclog default Stylesheet" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>moose1.ico" type="image/x-icon" />
     <title>IRC logs</title>
 </head>
 <body>
     <h1>IRC logs - Channel Index</h1>
 
-	<TMPL_INCLUDE NAME=linkblock.tmpl>
+	<TMPL_INCLUDE linkblock.tmpl>
 
-	<h2 id="<TMPL_VAR NAME=CHANNEL>">#<TMPL_VAR NAME=CHANNEL></h2>
-	<p><strong><a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/today">Today</a></strong></p>
+	<h2 id="<TMPL_VAR CHANNEL>">#<TMPL_VAR CHANNEL></h2>
+	<p><strong><a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/today">Today</a></strong></p>
 
-	<TMPL_VAR NAME=CALENDAR>
+	<TMPL_VAR CALENDAR>
 
-    <TMPL_INCLUDE NAME="footer.tmpl">
+    <TMPL_INCLUDE footer.tmpl">
   </body>
 </html>
