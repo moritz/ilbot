@@ -111,7 +111,7 @@ use Data::Dumper;
     sub kicked {
         my $self = shift;
         my $e = shift;
-        dbwrite($e->{channel}, "", $e->{nick} . ' was kicked by ' . $e->{who} . ': ' . $e->{reason});
+        dbwrite($e->{channel}, "", $e->{kicked} . ' was kicked by ' . $e->{who} . ': ' . $e->{reason});
         return undef;
     }
 
