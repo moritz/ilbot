@@ -60,7 +60,10 @@ my $channel = $q->param('channel') || $default_channel;
 my $date = $q->param('date') || gmt_today();
 if ($date eq 'today') {
     $date = gmt_today();
+} elsif ($date eq 'yesterday') {
+    $date = date(gmt_today()) - 1;
 }
+
 if ($date eq gmt_today()) {
     print http_header({ nocache => 1});
 } else {
