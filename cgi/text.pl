@@ -21,14 +21,22 @@ my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param('channel') || $default_channel;
 
+my $reverse = $q->param('reverse') || 0;
+
 my $date = $q->param('date') || gmt_today;
 
 if ($channel !~ m/^\w+(?:-\w+)*\z/sx){
     # guard against channel=../../../etc/passwd or so
     confess 'Invalid channel name';
 }
-my $db = $dbh->prepare('SELECT nick, timestamp, line FROM irclog '
-        . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
+
+#Check for reverse
+my $statement = 'SELECT nick, timestamp, line FROM irclog '
+        . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id';
+
+$statement .= ' DESC' if $reverse;
+
+my $db = $dbh->prepare($statement);
 $db->execute($date, '#' . $channel);
 
 
