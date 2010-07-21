@@ -12,4 +12,8 @@
 	<TMPL_IF NAME=DATE>| <a href="<TMPL_VAR
 	NAME=BASE_URL>text.pl?channel=<TMPL_VAR NAME=CHANNEL>;date=<TMPL_VAR
 	NAME=DATE>">Plain-Text</a></TMPL_IF>
+    | <a href="<TMPL_VAR
+	NAME=BASE_URL>text.pl?channel=<TMPL_VAR NAME=CHANNEL>;date=<TMPL_VAR
+	NAME=DATE>;reverse=1">plain, newest first</a></TMPL_IF>
+
 	</p>
