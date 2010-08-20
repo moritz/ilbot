@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
+use lib 'lib';
 use Config::File;
 use Bot::BasicBot 0.81;
 use Carp qw(confess);
