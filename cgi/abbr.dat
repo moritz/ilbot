@@ -15,6 +15,7 @@ ASM         --- Assembler
 SML         --- Standard ML
 (?i:KP6)    --- KindaPerl6                                  --- KP6
 (?i:MP6)    --- MiniPerl6                                   --- MP6
+(?i:ttiar)  --- Two Terms In A Row                          --- TTIAR
 HTML        --- Hypertext Markup Language
 XHTML       --- Extensible Hypertext Markup Language
 RAM         --- Random Access Memory
