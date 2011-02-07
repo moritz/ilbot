@@ -74,6 +74,7 @@ my $date = $q->param('date') || gmt_today();
         print "<html><head><title>Redirect to $url</title></head>\n";
         print "<body><p>If your browser doesn't like you, please follow\n";
         print qq[<a href="$url">this link</a> manually.</body></html>\n];
+        exit;
     }
 }
 
