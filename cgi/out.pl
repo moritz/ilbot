@@ -58,10 +58,23 @@ my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param('channel') || $default_channel;
 my $date = $q->param('date') || gmt_today();
-if ($date eq 'today') {
-    $date = gmt_today();
-} elsif ($date eq 'yesterday') {
-    $date = date(gmt_today()) - 1;
+{
+    my $redirect;
+    if ($date eq 'today') {
+        $date = gmt_today();
+        $redirect = 1;
+    } elsif ($date eq 'yesterday') {
+        $date = date(gmt_today()) - 1;
+        $redirect = 1;
+    }
+
+    if ($redirect) {
+        my $url = $q->url(-base => 1) . "/$channel/$date";
+        print $q->redirect($url);
+        print "<html><head><title>Redirect to $url</title></head>\n";
+        print "<body><p>If your browser doesn't like you, please follow\n";
+        print qq[<a href="$url">this link</a> manually.</body></html>\n];
+    }
 }
 
 if ($date eq gmt_today()) {
