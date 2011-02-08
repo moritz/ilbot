@@ -10,15 +10,14 @@
         href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR DATE>" />
     <title>IRC log for #<TMPL_VAR CHANNEL>, <TMPL_VAR DATE></title>
 	<TMPL_IF ADMIN>
-	<script type="text/javascript">
-	<!--
+	<script type="text/javascript">/* <![CDATA[ */
 		function reset_checkboxes() {
 			var inputs = document.getElementsByTagName("input");
 			for (var i = 1; i < inputs.length - 1; i++){
 				inputs[i].checked = false;
 			}
 		}
-	//-->
+	/* ]]> */
 	</script>
 	</TMPL_IF>
 	
