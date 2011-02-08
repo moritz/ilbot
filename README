@@ -1,5 +1,5 @@
-The documentation can be found at
-http://moritz.faui2k3.org/en/ilbot
+This is an IRC logging bot, and a CGI web interface for showing the logs.
 
-However it is very incomplete, in case you really want to use it, ask moritz_
-on #perl6
+The documentation can be found at http://moritz.faui2k3.org/en/ilbot
+
+Installation instructs are still sorely missing, sorry about that.
