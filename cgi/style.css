@@ -35,6 +35,10 @@ tr, td {
 	background-color: #efefef;
 }
 
+.highlight {
+	background-color: yellow;
+}
+
 .special {
 	font-size: 80%;
 }
