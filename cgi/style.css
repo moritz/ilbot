@@ -35,8 +35,8 @@ tr, td {
 	background-color: #efefef;
 }
 
-.highlight, :target {
-	background-color: yellow;
+:target {
+	background-color: #FFFF66;
 }
 
 .special {
