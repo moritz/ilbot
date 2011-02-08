@@ -57,10 +57,10 @@ my $default_channel = 'perl6';
 my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param('channel') || $default_channel;
-my $date = $q->param('date') || gmt_today();
+my $date = $q->param('date');
 {
     my $redirect;
-    if ($date eq 'today') {
+    if (!$date || $date eq 'today') {
         $date = gmt_today();
         $redirect = 1;
     } elsif ($date eq 'yesterday') {
