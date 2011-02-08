@@ -35,7 +35,7 @@ tr, td {
 	background-color: #efefef;
 }
 
-.highlight {
+.highlight, :target {
 	background-color: yellow;
 }
 
