@@ -154,7 +154,7 @@ abbr { cursor: help; }
 
 /* position: fixed; set in JS */
 #filterbox {
-	width: 25%;
+	width: 24em;
 	top: 50px;
 	right: 1%;
 	padding: 10px;

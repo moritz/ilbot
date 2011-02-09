@@ -38,7 +38,7 @@ $(document).ready(function() {
     /** Create filter panel/box thingy and add nicks */
     try {
         var filterbox = document.createElement("div");
-        $(filterbox).hide().css("position", "fixed"); /* don't move onscroll */
+        $(filterbox).hide().css("position", "absolute");
         $(filterbox).attr("id", filterbox_id);
     
         // Add to body element
@@ -50,6 +50,7 @@ $(document).ready(function() {
             + '<p id="show_hide_all">'
             + ' <a href="javascript:show_all()">Show All</a>'
             + ' <a href="javascript:hide_all()">Hide All</a>'
+            + ' <a href="javascript:hide_nick_filter()">(hide this window)</a> '
             + '</p>'
 
             + '<div id="shown_nicks">'
@@ -255,6 +256,10 @@ function filtering_on() {
     
     filtering_apply();
     render_nicklists();
+}
+
+function hide_nick_filter() {
+    $('#filterbox').hide();
 }
 
 function filtering_off() {
