@@ -30,20 +30,19 @@ var nick_regex_str = '';
 var tbl_width = '';
 
 $(document).ready(function() {
-    
     try {
         process_html();
     } catch(e) { alert(e) }
-    
+
     /** Create filter panel/box thingy and add nicks */
     try {
         var filterbox = document.createElement("div");
         $(filterbox).hide().css("position", "absolute");
         $(filterbox).attr("id", filterbox_id);
-    
+
         // Add to body element
-        $("body").append(filterbox);        
-        
+        $("body").append(filterbox);
+
         $(filterbox).append(
             '<h2>Conversation</h2>'
 
@@ -54,15 +53,15 @@ $(document).ready(function() {
             + '</p>'
 
             + '<div id="shown_nicks">'
-            + '<h3>Shown nicks</h3>'            
+            + '<h3>Shown nicks</h3>'
             + '<div id="' + filter_shown_id + '" class="nick_list">'
             + '</div></div>'
-            
+
             + '<div id="hidden_nicks">'
-            + '<h3>Hidden nicks</h3>'            
+            + '<h3>Hidden nicks</h3>'
             + '<div id="' + filter_hidden_id + '" class="nick_list">'
             + '</div></div>'
-            
+
             + '<p id="filtering_off">'
             +  '<a href="javascript:filtering_off()">Filtering Off</a>'
             + '</p>'
@@ -73,7 +72,6 @@ $(document).ready(function() {
         '<a href="javascript:filtering_on()">Turn on filtering by nick</a>'
     );
     $("#"+filter_toggle_id).show();
-    
 });
 
 
@@ -105,31 +103,31 @@ function process_html() {
         var this_class  = $(this).attr("class");
         var extr_re     = new RegExp("nick_([^\x20]+)");
         var matches     = this_class.match(extr_re);
-        
+
         if (matches) {
             all_nicks[ matches[1] ] = 1;
             hidden_nicks[ matches[1] ] = 1;
         }
     });
-    nick_regex_str = array_to_regex_str(obj_props(all_nicks));    
+    nick_regex_str = array_to_regex_str(obj_props(all_nicks));
 }
 
 function render_nicklists() {
     var hidden_list = obj_props(hidden_nicks);
     var shown_list = obj_props(shown_nicks);
-    
+
     $("#"+filter_hidden_id).empty();    // not .html('') -> crashes stuff
     $("#"+filter_shown_id).empty();
-    
+
     hidden_list.sort();
     for (var i=0; i < hidden_list.length; i++) {
         $("#"+filter_hidden_id).append(gen_nick_html(hidden_list[i]));
     }
-    
+
     shown_list.sort();
     for (var i=0; i < shown_list.length; i++) {
         $("#"+filter_shown_id).append(gen_nick_html(shown_list[i]));
-    }      
+    }
 }
 
 /** For a given nick, generate the HTML for the filter box */
@@ -141,17 +139,17 @@ return  '<div id="' + nick_id_prefix + nick + '" class="row">'
     + '<span class="spoken_to_show"><a href="javascript:show_spoken_to(\''
         + nick + '\')">show</a></span>'
     + '<span class="spoken_to_hide"><a href="javascript:hide_spoken_to(\''
-        + nick + '\')">hide</a>)</span>'    
+        + nick + '\')">hide</a>)</span>'
     + '</div>'
 ;
 }
 
 // Switch a single nick between categories (shown/hidden)
 function toggle_nick(nick) {
-    if (hidden_nicks[nick]) {        
+    if (hidden_nicks[nick]) {
         show_nick(nick);
     }
-    else if (shown_nicks[nick]) {        
+    else if (shown_nicks[nick]) {
         hide_nick(nick);
     }
     else {
@@ -164,7 +162,7 @@ function toggle_nick(nick) {
 // Add a single nick
 function show_nick(nick) {
     delete hidden_nicks[nick];      // can't be in both at once
-    shown_nicks[nick] = 1;    
+    shown_nicks[nick] = 1;
 }
 
 // Remove a single nick
@@ -175,7 +173,7 @@ function hide_nick(nick) {
 
 // Add all nicks a given nick spoke to ("$nick: ..." or "$nick, ...")
 // to/from conversation
-function show_spoken_to(nick) {  
+function show_spoken_to(nick) {
     $("tr.nick_" + nick + " td.msg").each(function() {
         var msg = $(this).html();
 
@@ -192,7 +190,7 @@ function show_spoken_to(nick) {
 
 // Remove all nicks a given nick spoke to ("$nick: ..." or "$nick, ...")
 // to/from conversation
-function hide_spoken_to(nick) {  
+function hide_spoken_to(nick) {
     $("tr.nick_" + nick + " td.msg").each(function() {
         var msg = $(this).html();
 
@@ -204,7 +202,7 @@ function hide_spoken_to(nick) {
         }
     });
     filtering_apply();
-    render_nicklists();    
+    render_nicklists();
 }
 
 // These two: Empty one object and move nicks to other
@@ -215,7 +213,7 @@ function show_all() {
         show_nick( hidden_list[i] );
     }
     filtering_apply();
-    render_nicklists();    
+    render_nicklists();
 }
 function hide_all() {
     var shown_list = obj_props(shown_nicks);
@@ -223,7 +221,7 @@ function hide_all() {
         hide_nick( shown_list[i] );
     }
     filtering_apply();
-    render_nicklists();    
+    render_nicklists();
 }
 
 
@@ -250,10 +248,10 @@ function expand_table() {
 function filtering_on() {
     $("#" +filter_toggle_id+ ">a").html("Turn off filtering by nick");
     $("#" +filter_toggle_id+ ">a").attr("href", 'javascript:filtering_off()');
-    
+
     shrink_table();
     $("#"+filterbox_id).fadeIn();
-    
+
     filtering_apply();
     render_nicklists();
 }
@@ -267,7 +265,7 @@ function filtering_off() {
     // hidden_nicks / shown_nicks, but I think it's a feature we don't -
     // can then switch between "full" view and the filtered conversation
     // we set up.
-    
+
     filtering_unapply();
     $("#"+filterbox_id).fadeOut();
     expand_table();
