@@ -38,6 +38,7 @@ my $sth = $dbh->prepare('SELECT channel, day, nick, timestamp, line, id FROM irc
 $sth->execute();
 $sth->bind_columns(\my ($channel, $day, $nick, $timestamp, $line, $id));
 while ($sth->fetch) {
+    $nick =~ s/^\* //;
     $indexer->add_doc({
             channel     => $channel,
             day         => $day,
