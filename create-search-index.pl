@@ -9,6 +9,7 @@ use KinoSearch::Plan::FullTextType;
 use KinoSearch::Plan::StringType;
 use KinoSearch::Analysis::PolyAnalyzer;
 use KinoSearch::Index::Indexer;
+use Encode qw/decode_utf8/;
 
 my $schema      = KinoSearch::Plan::Schema->new;
 my $poly_an     = KinoSearch::Analysis::PolyAnalyzer->new(language => 'en');
@@ -60,7 +61,7 @@ unless ($create) {
     $where = 'WHERE id > ?'
 }
 
-my $sth = $dbh->prepare("SELECT channel, day, nick, timestamp, line, id FROM irclog $where ORDER BY id ASC");
+my $sth = $dbh->prepare("SELECT channel, day, nick, timestamp, line, id FROM irclog $where");
 $sth->execute(@last_id);
 $sth->bind_columns(\my ($channel, $day, $nick, $timestamp, $line, $id));
 my $last = -9e99;
@@ -71,7 +72,7 @@ while ($sth->fetch) {
             day         => $day,
             nick        => $nick,
             timestamp   => $timestamp,
-            line        => $line,
+            line        => decode_utf8($line),
             id          => $id,
     });
     $last = $id if $id > $last;
