@@ -21,7 +21,7 @@ sub mysql_ecape {
 
 
 while (my $row = $sth->fetchrow_hashref) {
-    mysql_ecape @$row{'nick', 'line'};
+    mysql_ecape @$row{qw/nick line day channel/};
     print "INSERT INTO irclog(", join(', ', keys %$row),
            ") VALUES (",         join(', ', values %$row),
            ");\n";
