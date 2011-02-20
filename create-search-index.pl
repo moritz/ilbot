@@ -55,10 +55,10 @@ my $indexer = KinoSearch::Index::Indexer->new(
 use IrcLog qw(get_dbh);
 
 my $dbh = get_dbh;
-my $where = '';
+my $where = 'WHERE nick <> ""';
 
 unless ($create) {
-    $where = 'WHERE id > ?'
+    $where .= ' AND id > ?'
 }
 
 my $sth = $dbh->prepare("SELECT channel, day, nick, timestamp, line, id FROM irclog $where");
