@@ -108,7 +108,7 @@ my $count;
     # anymore it cannot be retrieved from the cache, but rather
     # is created anew
     if ($date eq gmt_today) {
-        $cache_key ~= '-TODAY';
+        $cache_key .= '-TODAY';
     }
     # the average #perl6 day produces 100k to 400k of HTML, so with
     # 50MB we have about 150 pages in the cache. Since most hits are
