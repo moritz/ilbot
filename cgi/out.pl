@@ -102,6 +102,14 @@ my $count;
 
 {
     my $cache_key = $channel . '|' . $date . '|' . $count;
+    # the current date is different from all other pages,
+    # because it doesn't have a 'next day' link, so make
+    # sure that the first time it is called when it's not today
+    # anymore it cannot be retrieved from the cache, but rather
+    # is created anew
+    if ($date eq gmt_today) {
+        $cache_key ~= '-TODAY';
+    }
     # the average #perl6 day produces 100k to 400k of HTML, so with
     # 50MB we have about 150 pages in the cache. Since most hits are
     # the "today" page and those of the last 7 days, we still get a very
