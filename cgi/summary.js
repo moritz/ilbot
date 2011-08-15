@@ -1,6 +1,6 @@
+var summary_filter_link = '<a href="javascript:hide_non_summary()">show only summary lines</a>';
 $(document).ready(function() {
-        $('#summary_container').html('<a href="javascript:save_summary_changes()">Save summary changes</a>');
-
+        $('#summary_container').html('<a href="javascript:save_summary_changes()">Save summary changes</a>, <span id="toggle_summary">' + summary_filter_link + '</span>');
 });
 
 function save_summary_changes() {
@@ -23,4 +23,14 @@ function save_summary_changes() {
     if (was_checked.length != 0 || newly_checked.length != 0) {
         $.post("/save_summary.pl", { check: newly_checked.join('.'), uncheck: was_checked.join('.') } );
     }
+}
+
+function hide_non_summary() {
+    $('.summary_checkbox:not(:checked)').parent().parent().hide();
+    $('#toggle_summary').html('<a href="javascript:show_all_rows()">show all lines</a>');
+}
+
+function show_all_rows() {
+    $('.summary_checkbox').parent().parent().show();
+    $('#toggle_summary').html(summary_filter_link);
 }
