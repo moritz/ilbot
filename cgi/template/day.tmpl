@@ -33,11 +33,14 @@
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
     <p>All times shown according to <abbr title="Coordinated Universal Time">UTC</abbr>.</p>
+    <div id="summary_container" />
 	<TMPL_IF ADMIN>
 	<form method="post" action="<TMPL_VAR BASE_URL>spam.pl?date=<TMPL_VAR DATE>;channel=<TMPL_VAR CHANNEL>">
 	<p><input type="submit" value="Mark as spam" /></p>
 	<p><a href="javascript:reset_checkboxes()">Reset all Checkboxes</a></p>
 	<div style="clear:both"></div>
+    <TMPL_ELSE>
+    <form action="#" name="summary_form" id="summary_form">
 	</TMPL_IF>
 	
 	<p style="display: none;" id="filter_toggle"></p>
@@ -61,8 +64,8 @@
 	<TMPL_IF ADMIN>
 	<p><input type="submit" value="Mark as spam" /></p>
 	<div style="clear:both"></div>
-	</form>
 	</TMPL_IF>
+	</form>
 
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
@@ -70,6 +73,7 @@
     <TMPL_INCLUDE NAME="footer.tmpl">
 		
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>nickfilter.js"></script>		
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>summary.js"></script>		
 </body>
 </html>
 <!-- <TMPL_IF DEBUG> <TMPL_VAR DEBUG> </TMPL_IF> -->
