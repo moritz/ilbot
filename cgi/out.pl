@@ -120,7 +120,7 @@ my $count;
             max_size        => 150 * 1048576,
             } );
 #    my $data = $cache->get($cache_key);
-    my $date;
+    my $data;
     if (defined $data){
         print $data;
     } else {
@@ -151,8 +151,8 @@ sub irclog_output {
     }
     $t->param(BASE_URL  => $base_url);
     my $self_url = $base_url . "/$channel/$date";
-    my $db = $dbh->prepare('SELECT id, nick, timestamp, line FROM irclog '
-            . 'WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
+    my $db = $dbh->prepare('SELECT id, nick, timestamp, line, in_summary FROM '
+        . 'irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
     $db->execute($date, $full_channel);
 
 
@@ -186,6 +186,7 @@ sub irclog_output {
         my $nick = decode('utf8', ($row[1]));
         my $timestamp = $row[2];
         my $message = $row[3];
+        my $in_summary = $row[4];
         next if $message =~ m/^\s*\[off\]/i;
 
         push @msg, message_line( {
@@ -198,6 +199,7 @@ sub irclog_output {
                 colors      => \@colors,
                 self_url    => $self_url,
                 channel     => $channel,
+                in_summary  => $in_summary,
                 },
                 \$c,
                 );
