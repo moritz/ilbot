@@ -121,7 +121,8 @@ if ($conf->{NO_CACHE}) {
             namespace       => 'irclog',
             max_size        => 150 * 1048576,
             } );
-    my $data = $cache->get($cache_key);
+#    my $data = $cache->get($cache_key);
+    my $date;
     if (defined $data){
         print $data;
     } else {
