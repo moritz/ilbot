@@ -497,6 +497,7 @@ sub message_line {
                             $args_ref->{nick},
                             ),
         LINE_NUMBER => ++$args_ref->{line_number},
+        IN_SUMMARY  => $args_ref->{in_summary},
     );
     $h{DATE}         = $args_ref->{date} if $args_ref->{date}; 
     $h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
