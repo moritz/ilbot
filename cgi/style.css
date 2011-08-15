@@ -216,3 +216,5 @@ abbr { cursor: help; }
 	clear: both;
 	text-align: left;
 }
+
+.summary { width: 1em !important }
