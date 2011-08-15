@@ -20,4 +20,7 @@ function save_summary_changes() {
                 );
             }
     });
+    if (was_checked.length != 0 || newly_checked.length != 0) {
+        $.post("/save_summary.pl", { check: newly_checked.join('.'), uncheck: was_checked.join('.') } );
+    }
 }
