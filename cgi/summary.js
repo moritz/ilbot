@@ -26,11 +26,11 @@ function save_summary_changes() {
 }
 
 function hide_non_summary() {
-    $('.summary_checkbox:not(:checked)').parent().parent().hide();
+    $('.summary_checkbox:not(:checked)').parents('tr').hide();
     $('#toggle_summary').html('<a href="javascript:show_all_rows()">show all lines</a>');
 }
 
 function show_all_rows() {
-    $('.summary_checkbox').parent().parent().show();
+    $('.summary_checkbox').parents('tr').show();
     $('#toggle_summary').html(summary_filter_link);
 }
