@@ -4,9 +4,7 @@ The documentation can be found at http://moritz.faui2k3.org/en/ilbot
 
 Installation instructs are still sorely missing, sorry about that.
 
-Note that pages are cached for performance reason; after you change
-anything significant, remove the file cache:
-
-    rm -rf /tmp/FileCache/irclog/
-
-Before reloading the page in your browser.
+Note that in production mode, pages are cached for performance reason.
+During the installation, you should have caching disabled (by
+setting NO_CACHE = 1 in cgi.conf). Once you're confident with your setup,
+remove that setting again.

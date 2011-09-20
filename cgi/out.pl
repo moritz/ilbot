@@ -100,7 +100,9 @@ my $count;
 }
 
 
-{
+if ($conf->{NO_CACHE}) {
+    print irclog_output($date, $channel);
+} else {
     my $cache_key = $channel . '|' . $date . '|' . $count;
     # the current date is different from all other pages,
     # because it doesn't have a 'next day' link, so make

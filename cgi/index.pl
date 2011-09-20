@@ -11,23 +11,27 @@ use IrcLog::WWW qw(http_header);
 use Cache::FileCache;
 
 print http_header();
-my $cache = new Cache::FileCache( { 
-		namespace 		=> 'irclog',
-		} );
+my $conf = Config::File::read_config_file('cgi.conf');
 
-my $data;
-$data = $cache->get('index');
-if ( ! defined $data){
-	$data = get_index();
-	$cache->set('index', $data, '5 hours');
+if ($conf->{NO_CACHE}) {
+    print get_index();
+} else {
+    my $cache = new Cache::FileCache( { 
+            namespace 		=> 'irclog',
+            } );
+
+    my $data = $cache->get('index');
+    if ( ! defined $data){
+        $data = get_index();
+        $cache->set('index', $data, '5 hours');
+    }
+    print $data;
 }
-print $data;
 
 sub get_index {
 
 	my $dbh = get_dbh();
 
-	my $conf = Config::File::read_config_file('cgi.conf');
 	my $base_url = $conf->{BASE_URL} || q{/irclog/};
 
 	my $sth = $dbh->prepare("SELECT DISTINCT channel FROM irclog");

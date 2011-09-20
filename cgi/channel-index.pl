@@ -10,24 +10,30 @@ use Cache::FileCache;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
 
+my $conf     = Config::File::read_config_file('cgi.conf');
+
 # test_calendar();
 go();
 
 sub go {
-    my $q = new CGI;
+    my $q = CGI->new;
     my $channel = $q->url_param('channel');
     print "Content-Type: text/html; charset=utf-8\n\n";
 
-    my $cache_name = $channel . '|' . gmt_today();
-    my $cache      = new Cache::FileCache({ namespace => 'irclog' });
-    my $data       = $cache->get($cache_name);
+    if ($conf->{NO_CACHE}) {
+        print get_channel_index($channel);
+    } else {
+        my $cache_name = $channel . '|' . gmt_today();
+        my $cache      = new Cache::FileCache({ namespace => 'irclog' });
+        my $data       = $cache->get($cache_name);
 
-    if (! defined $data) {
-        $data = get_channel_index($channel);
-        $cache->set($data, '2 hours');
+        if (! defined $data) {
+            $data = get_channel_index($channel);
+            $cache->set($data, '2 hours');
+        }
+
+        print $data;
     }
-
-    print $data;
 }
 
 sub test_calendar {
@@ -41,7 +47,6 @@ sub test_calendar {
 
 sub get_channel_index {
     my $channel  = shift;
-    my $conf     = Config::File::read_config_file('cgi.conf');
     my $base_url = $conf->{BASE_URL} || q{/};
 
     my $t = HTML::Template->new(
