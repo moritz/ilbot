@@ -3,3 +3,10 @@ This is an IRC logging bot, and a CGI web interface for showing the logs.
 The documentation can be found at http://moritz.faui2k3.org/en/ilbot
 
 Installation instructs are still sorely missing, sorry about that.
+
+Note that pages are cached for performance reason; after you change
+anything significant, remove the file cache:
+
+    rm -rf /tmp/FileCache/irclog/
+
+Before reloading the page in your browser.
