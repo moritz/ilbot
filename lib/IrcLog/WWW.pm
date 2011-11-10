@@ -384,7 +384,7 @@ my %output_chain = (
              rest   => 'rt_links'
         },
         rt_links     => {
-             re     => qr{(?i:\btt\s*)?#\d{2,5}\b}, 
+             re     => qr{(?i:\btt\s*)?#\d{2,6}\b},
              match  => \&rt_links,
              rest   => 'irc_channel_links',
         },
