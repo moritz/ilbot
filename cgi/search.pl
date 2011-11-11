@@ -103,8 +103,10 @@ if (length($nick) or length($qs)){
 			. "ORDER BY day DESC LIMIT $days_per_page OFFSET $offset");
     my $q2 = $dbh->prepare("SELECT id, day FROM irclog "
 			. $sql_cond . ' AND day = ? ORDER BY id');
-	my $q3 = $dbh->prepare('SELECT id, timestamp, nick, line FROM irclog '
-			. 'WHERE day = ? AND id >= ? AND id <= ? ORDER BY id ASC');
+	my $q3pre  = $dbh->prepare('SELECT id, timestamp, nick, line FROM irclog '
+			. 'WHERE channel = ? AND day = ? AND id >= ? AND id <= ? ORDER BY id DESC LIMIT ?');
+	my $q3post = $dbh->prepare('SELECT id, timestamp, nick, line FROM irclog '
+			. 'WHERE channel = ? AND day = ? AND id >= ?             ORDER BY id ASC LIMIT ?');
 
     $q0->execute(@args);
     my $result_count = ($q0->fetchrow_array);
@@ -135,19 +137,21 @@ if (length($nick) or length($qs)){
         $q2->execute(@args, $row[0]);
         while (my ($found_id, $found_day) = $q2->fetchrow_array){
 
-			# determine the context range:
-			my $lower = max($last_context + 1, $found_id - $lines_of_context);
-			my $upper = $found_id + $lines_of_context;
-			$last_context = $upper;
-
 			# retrieve context from database
-			$q3->execute( $found_day, $lower, $upper );
-			while (my @r2 = $q3->fetchrow_array){
+			$q3pre->execute( $channel, $found_day, $last_context + 1, $found_id,
+                                $lines_of_context+1 );
+                        my $pre_rows = $q3pre->fetchall_arrayref();
+			$q3post->execute( $channel, $found_day, $found_id+1,
+                                $lines_of_context );
+                        my $post_rows = $q3post->fetchall_arrayref();
+
+			for my $r2 (reverse(@$pre_rows), @$post_rows){
+                                $last_context = $r2->[0];
 				my %args = (
-							id			=> $r2[0],
-							nick		=> decode('utf8', $r2[2]),
-							timestamp	=> $r2[1], 
-							message		=> $r2[3],
+							id			=> $r2->[0],
+							nick		=> decode('utf8', $r2->[2]),
+							timestamp	=> $r2->[1], 
+							message		=> $r2->[3],
 							line_number => $line_number++, 
 							prev_nick	=> $prev_nick, 
 							colors		=> [], 
@@ -155,7 +159,7 @@ if (length($nick) or length($qs)){
 							channel		=> $channel,
 							date		=> $found_day,
 						);
-				$args{search_found} = 'search_found' if $r2[0] == $found_id;
+				$args{search_found} = 'search_found' if $r2->[0] == $found_id;
 			
 				push @lines, message_line(
 						\%args,
