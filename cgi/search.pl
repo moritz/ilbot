@@ -145,9 +145,6 @@ if (length($nick) or length($qs)){
                                 $lines_of_context );
             my $post_rows = $q3post->fetchall_arrayref();
 
-            use Data::Dumper;
-            print Dumper($pre_rows), Dumper($post_rows);
-
 			for my $r2 (reverse(@$pre_rows), @$post_rows){
                 $last_context = $r2->[0];
 				my %args = (
