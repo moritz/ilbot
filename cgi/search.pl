@@ -139,14 +139,17 @@ if (length($nick) or length($qs)){
 
 			# retrieve context from database
 			$q3pre->execute( $channel, $found_day, $last_context + 1, $found_id,
-                                $lines_of_context+1 );
-                        my $pre_rows = $q3pre->fetchall_arrayref();
-			$q3post->execute( $channel, $found_day, $found_id+1,
+                                $lines_of_context + 1 );
+            my $pre_rows = $q3pre->fetchall_arrayref();
+			$q3post->execute( $channel, $found_day, max($last_context + 1, $found_id + 1),
                                 $lines_of_context );
-                        my $post_rows = $q3post->fetchall_arrayref();
+            my $post_rows = $q3post->fetchall_arrayref();
+
+            use Data::Dumper;
+            print Dumper($pre_rows), Dumper($post_rows);
 
 			for my $r2 (reverse(@$pre_rows), @$post_rows){
-                                $last_context = $r2->[0];
+                $last_context = $r2->[0];
 				my %args = (
 							id			=> $r2->[0],
 							nick		=> decode('utf8', $r2->[2]),
