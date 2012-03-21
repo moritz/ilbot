@@ -14,8 +14,8 @@ my $dbh = get_dbh;
 my $from_month;
 my $prev_count = 0;
 {
-    my $sth = $dbh->prepare('SELECT MIN(day) FROM irclog');
-    $sth->execute;
+    my $sth = $dbh->prepare('SELECT MIN(day) FROM irclog WHERE channel = ?');
+    $sth->execute($channel);
     my ($month) = $sth->fetchrow_array;
     $sth->finish;
     ($from_month) = $month =~ /(\d{4}-\d{2})/;
