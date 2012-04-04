@@ -63,6 +63,12 @@ sub get_channel_index {
     $t->param(CHANNEL  => $channel);
     $t->param(BASE_URL => $base_url);
     $t->param(CALENDAR => calendar_for_channel($channel, $dates, $base_url));
+
+    my $clf = "channels/$channel.tmpl";
+    if (-e $clf) {
+        $t->param(CHANNEL_LINKS => q{} . read_file($clf));
+    }
+
     return $t->output;
 }
 
