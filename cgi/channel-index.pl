@@ -9,6 +9,7 @@ use HTML::Template;
 use Cache::FileCache;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
+use File::Slurp qw/read_file/;
 
 my $conf     = Config::File::read_config_file('cgi.conf');
 
