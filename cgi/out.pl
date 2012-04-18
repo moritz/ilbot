@@ -219,7 +219,7 @@ sub irclog_output {
         my $tomorrow = date($date) + 1;
         $q1->execute($full_channel, $tomorrow);
         my ($res) = $q1->fetchrow_array();
-        if ($res){
+        if ($res || $tomorrow eq gmt_today()){
             my $next_url = $base_url . "$channel/$tomorrow";
             # where the hell does the leading double slash come from?
             $next_url =~ s{^//+}{/};
