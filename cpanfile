@@ -15,6 +15,3 @@ requires 'Regexp::Common';
 requires 'Text::Table';
 requires 'Cache::Cache';
 requires 'DBD::mysql';
-
-recommends 'JSON::XS', '2.0';
-conflicts 'JSON', '< 1.0';
