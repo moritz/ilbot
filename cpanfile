@@ -1,0 +1,16 @@
+Bot::BasicBot
+Calendar::Simple
+Config::File
+CGI
+Date::Simple
+DBI
+CGI::Carp
+Encode::Guess
+HTML::Entities
+HTML::Template
+HTTP::Headers
+File::Slurp
+Regexp::Common
+Text::Table
+Cache::Cache
+DBD::mysql
