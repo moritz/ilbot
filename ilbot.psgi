@@ -5,6 +5,8 @@ use warnings;
 use Plack::Builder;
 use Plack::Util;
 use Plack::App::Directory;
+use Plack::Request;
+use URI;
 
 my $index_app = Plack::Util::load_psgi('www/index.pl');
 my $channel_index_app = Plack::Util::load_psgi('www/channel-index.pl');
@@ -18,10 +20,24 @@ my $static_app = Plack::App::Directory->new({ root => "www/static" })->to_app;
 my $app = sub {
     my $env = shift;
 
-    local $_ = $env->{PATH_INFO};
+    my $req = Plack::Request->new($env);
+    local $_ = $req->path_info;
 
     return $static_app->($env) if m{\.(js|css|png|ico)$};
-    return [301, [ Location => $_ ], []] if s{^/out\.pl\?channel=([^;]+);date=(\d\d\d\d-\d\d-\d\d)}{/$1/$2}; # deprecated - /out.pl?channel=foo&date=today
+
+    warn $_;
+
+    # these routes are deprecated and should be removed eventually
+    {
+        # /out.pl?channel=foo&date=today
+        if (m{^/out\.pl$}) {
+            warn "QUERY_STRING: $env->{QUERY_STRING}";
+            my $uri = URI->new("/?$env->{QUERY_STRING}");
+            my %params = $uri->query_form;
+            use Data::Dumper; warn Dumper \%params;
+            return [301, [ Location => $req->base."$params{channel}/$params{date}" ], []];
+        }
+    }
 
     if (m{^/search}) {
         if (m{^/search/(\d+)/(.+)$}) {
@@ -38,7 +54,7 @@ my $app = sub {
     return $channel_index_app->($env) if m{^/([^/]+/?)$};    # /channel
     return $index_app->($env) if m{^/$};    # /
 
-    return [404, [], 'Not found'];
+    return [404, [], ['Not found']];
 };
 
 return $app;
