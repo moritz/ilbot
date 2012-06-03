@@ -10,32 +10,11 @@ use Cache::FileCache;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
 use File::Slurp qw/read_file/;
+use Plack::Request;
+use Plack::Response;
 
-my $conf     = Config::File::read_config_file('cgi.conf');
+my $conf     = Config::File::read_config_file('www/www.conf');
 
-# test_calendar();
-go();
-
-sub go {
-    my $q = CGI->new;
-    my $channel = $q->url_param('channel');
-    print "Content-Type: text/html; charset=utf-8\n\n";
-
-    if ($conf->{NO_CACHE}) {
-        print get_channel_index($channel);
-    } else {
-        my $cache_name = $channel . '|' . gmt_today();
-        my $cache      = new Cache::FileCache({ namespace => 'irclog' });
-        my $data       = $cache->get($cache_name);
-
-        if (! defined $data) {
-            $data = get_channel_index($channel);
-            $cache->set($data, '2 hours');
-        }
-
-        print $data;
-    }
-}
 
 sub test_calendar {
     my $channel  = '#parrotsketch';
@@ -51,7 +30,7 @@ sub get_channel_index {
     my $base_url = $conf->{BASE_URL} || q{/};
 
     my $t = HTML::Template->new(
-            filename            => 'template/channel-index.tmpl',
+            filename            => 'www/template/channel-index.tmpl',
             die_on_bad_params   => 0,
     );
 
@@ -125,5 +104,33 @@ sub calendar_for_channel {
 
     return $html;
 }
+
+my $app = sub {
+    my $env = shift;
+    my $req = Plack::Request->new($env);
+
+    my $channel = $req->path;
+    $channel =~ s{^/}{};
+    $channel =~ s{/$}{};
+
+    my $response = Plack::Response->new(200);
+    $response->headers([ 'Content-Type' => 'text/html; charset=utf-8' ]);
+
+    if ($conf->{NO_CACHE}) {
+        $response->body( get_channel_index($channel) );
+    } else {
+        my $cache_name = $channel . '|' . gmt_today();
+        my $cache      = new Cache::FileCache({ namespace => 'irclog' });
+        my $data       = $cache->get($cache_name);
+
+        if (! defined $data) {
+            $data = get_channel_index($channel);
+            $cache->set($data, '2 hours');
+        }
+
+        $response->body($data);
+    }
+    return $response->finalize;
+};
 
 # vim: syn=perl sw=4 ts=4 expandtab

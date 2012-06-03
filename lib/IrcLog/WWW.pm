@@ -26,6 +26,7 @@ my $color_start = join '|', map quotemeta, keys %color_codes;
 use base 'Exporter';
 our @EXPORT_OK = qw(
         http_header
+        http_header_obj
         my_decode
         message_line
         my_encode
@@ -35,12 +36,10 @@ use constant TAB_WIDTH => 4;
 use constant NBSP => decode_entities("&nbsp;");
 use constant ENTITIES => qq{<>"&};
 
-
-sub http_header {
+sub http_header_obj {
     my $config = shift || {};
     my $h = HTTP::Headers->new;
     
-    $h->header(Status => '200 OK');
     $h->header(Vary => 'Accept');
     $h->header('Cache-Control' => 'no-cache') if $config->{nocache};
     
@@ -62,6 +61,12 @@ sub http_header {
             'Content-Language' => 'en',
             );
     
+    return $h;
+}
+
+sub http_header {
+    my $h = http_header_obj(@_);
+    $h->header(Status => '200 OK');
     return $h->as_string . "\n";
 }
 

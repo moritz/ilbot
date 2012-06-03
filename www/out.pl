@@ -2,25 +2,26 @@
 use warnings;
 use strict;
 use Carp qw(confess);
-use CGI::Carp qw(fatalsToBrowser);
 use Date::Simple qw(date);
 use Encode::Guess;
-use CGI;
 use Encode;
 use HTML::Template;
 use Config::File;
 use File::Slurp;
 use lib 'lib';
 use IrcLog qw(get_dbh gmt_today);
-use IrcLog::WWW qw(http_header message_line my_encode);
+use IrcLog::WWW qw(http_header_obj message_line my_encode);
 use Cache::SizeAwareFileCache;
+
+use Plack::Request;
+use Plack::Response;
 #use Data::Dumper;
 
 
 # Configuration
 # $base_url is the absoulte URL to the directoy where index.pl and out.pl live
 # If they live in the root of their own virtual host, set it to "/".
-my $conf = Config::File::read_config_file('cgi.conf');
+my $conf = Config::File::read_config_file('www/www.conf');
 my $base_url = $conf->{BASE_URL} || q{/};
 
 # I'm too lazy right to move this to  a config file, because Config::File seems
@@ -54,97 +55,18 @@ my $default_channel = 'perl6';
 
 # End of config
 
-my $q = new CGI;
-my $dbh = get_dbh();
-my $channel = $q->param('channel') || $default_channel;
-my $date = $q->param('date');
-my $summary = $q->param('summary');
-{
-    my $redirect;
-    if (!$date || $date eq 'today') {
-        $date = gmt_today();
-        $redirect = 1;
-    } elsif ($date eq 'yesterday') {
-        $date = date(gmt_today()) - 1;
-        $redirect = 1;
-    }
-
-    if ($redirect && !$summary) {
-        my $url = $q->url(-base => 1) . "/$channel/$date";
-        print $q->redirect($url);
-        print "<html><head><title>Redirect to $url</title></head>\n";
-        print "<body><p>If your browser doesn't like you, please follow\n";
-        print qq[<a href="$url">this link</a> manually.</body></html>\n];
-        exit;
-    }
-}
-
-if ($date eq gmt_today()) {
-    print http_header({ nocache => 1});
-} else {
-    print http_header();
-}
-
-
-if ($channel !~ m/\A[.\w-]+\z/smx){
-    # guard against channel=../../../etc/passwd or so
-    confess 'Invalid channel name';
-}
-
-my $count;
-{
-    my $sth = $dbh->prepare_cached('SELECT COUNT(*) FROM irclog WHERE day = ?');
-    $sth->execute($date);
-    $sth->bind_columns(\$count);
-    $sth->fetch();
-    $sth->finish();
-}
-
-
-if ($conf->{NO_CACHE} || $summary) {
-    print irclog_output($date, $channel);
-} else {
-    my $cache_key = $channel . '|' . $date . '|' . $count;
-    # the current date is different from all other pages,
-    # because it doesn't have a 'next day' link, so make
-    # sure that the first time it is called when it's not today
-    # anymore it cannot be retrieved from the cache, but rather
-    # is created anew
-    if ($date eq gmt_today) {
-        $cache_key .= '-TODAY';
-    }
-    # the average #perl6 day produces 100k to 400k of HTML, so with
-    # 50MB we have about 150 pages in the cache. Since most hits are
-    # the "today" page and those of the last 7 days, we still get a very
-    # decent speedup
-    # btw a cache hit is about 10 times faster than generating the page anew
-    my $cache = new Cache::SizeAwareFileCache( {
-            namespace       => 'irclog',
-            max_size        => 150 * 1048576,
-            } );
-#    my $data = $cache->get($cache_key);
-    my $data;
-    if (defined $data){
-        print $data;
-    } else {
-        $data = irclog_output($date, $channel);
-        $cache->set($cache_key, $data);
-        print $data;
-    }
-}
-
 sub irclog_output {
-    my ($date, $channel) = @_;
+    my ($date, $channel, $dbh, $admin, $summary) = @_;
 
     my $full_channel = q{#} . $channel;
     my $t = HTML::Template->new(
-            filename            => 'template/day.tmpl',
+            filename            => 'www/template/day.tmpl',
             loop_context_vars   => 1,
             global_vars         => 1,
             die_on_bad_params   => 0,
             );
 
-    $t->param(ADMIN => 1) if ($q->param('admin'));
+    $t->param(ADMIN => 1) if $admin;
 
     {
         my $clf = "channels/$channel.tmpl";
@@ -253,5 +175,119 @@ sub irclog_output {
     return my_encode($t->output);
 }
 
+
+return sub {
+    my $env = shift;
+    my $req = Plack::Request->new($env);
+    my $response = Plack::Response->new(200);
+
+    my $dbh = get_dbh();
+    my $admin_flag = $req->param('admin');
+    my $channel = $req->param('channel') || $default_channel;
+    my $date = $req->param('date');
+    my $summary = $req->param('summary');
+
+    {
+        my $path = $req->path;
+        $path =~ s{^/*}{};
+        if ($path =~ m{^([^/]+)/yesterday/?$}) {
+            $channel = $1;
+            $date = 'yesterday';
+        }
+        elsif ($path =~ m{^([^/]+)/today/?$}) {
+            $channel = $1;
+            $date = 'today';
+        }
+        elsif ($path =~ m{^([^/]+)$}) {
+            $channel = $1;
+        }
+        elsif ($path =~ m{^([^/]+)/(\d\d\d\d-\d\d-\d\d)}) {
+            $channel = $1;
+            $date = $2;
+        }
+        elsif ($path eq '' or $path eq 'out.pl') {
+            # ok
+        }
+        else {
+            return [404, [], ["$path Not found"]];
+        }
+    }
+
+    {
+        my $redirect;
+        if (!$date || $date eq 'today') {
+            $date = gmt_today();
+            $redirect = 1;
+        } elsif ($date eq 'yesterday') {
+            $date = date(gmt_today()) - 1;
+            $redirect = 1;
+        }
+
+        if ($redirect && !$summary) {
+            my $url = $req->base . "$channel/$date";
+            $response->redirect($url);
+            my $body = "<html><head><title>Redirect to $url</title></head>\n";
+            $body .= "<body><p>If your browser doesn't like you, please follow\n";
+            $body .= qq[<a href="$url">this link</a> manually.</body></html>\n];
+            $response->body($body);
+            return $response->finalize;
+        }
+    }
+
+    if ($date eq gmt_today()) {
+        $response->headers( http_header_obj({ nocache => 1}) );
+    } else {
+        $response->headers( http_header_obj() );
+    }
+
+
+    if ($channel !~ m/\A[.\w-]+\z/smx){
+        # guard against channel=../../../etc/passwd or so
+        confess 'Invalid channel name';
+    }
+
+    my $count;
+    {
+        my $sth = $dbh->prepare_cached('SELECT COUNT(*) FROM irclog WHERE day = ?');
+        $sth->execute($date);
+        $sth->bind_columns(\$count);
+        $sth->fetch();
+        $sth->finish();
+    }
+
+
+    if ($conf->{NO_CACHE} || $summary) {
+        $response->body( irclog_output($date, $channel, $dbh, $admin_flag, $summary) );
+    } else {
+        my $cache_key = $channel . '|' . $date . '|' . $count;
+        # the current date is different from all other pages,
+        # because it doesn't have a 'next day' link, so make
+        # sure that the first time it is called when it's not today
+        # anymore it cannot be retrieved from the cache, but rather
+        # is created anew
+        if ($date eq gmt_today) {
+            $cache_key .= '-TODAY';
+        }
+        # the average #perl6 day produces 100k to 400k of HTML, so with
+        # 50MB we have about 150 pages in the cache. Since most hits are
+        # the "today" page and those of the last 7 days, we still get a very
+        # decent speedup
+        # btw a cache hit is about 10 times faster than generating the page anew
+        my $cache = new Cache::SizeAwareFileCache( {
+                namespace       => 'irclog',
+                max_size        => 150 * 1048576,
+                } );
+        # my $data = $cache->get($cache_key);
+        my $data;
+        if (defined $data){
+            $response->body( $data );
+        } else {
+            $data = irclog_output($date, $channel, $dbh, $admin_flag);
+            $cache->set($cache_key, $data);
+            $response->body( $data );
+        }
+    }
+    return $response->finalize;
+};
 
 # vim: sw=4 ts=4 expandtab

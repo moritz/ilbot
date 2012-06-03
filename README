@@ -6,7 +6,7 @@ Installation instructs are still sorely missing, sorry about that.
 
 Note that in production mode, pages are cached for performance reason.
 During the installation, you should have caching disabled (by
-setting NO_CACHE = 1 in cgi.conf). Once you're confident with your setup,
+setting NO_CACHE = 1 in www.conf). Once you're confident with your setup,
 remove that setting again.
 
 WARNING: When upgrading from previous versions of ilbot, and if you haven't
