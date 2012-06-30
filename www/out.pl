@@ -224,7 +224,7 @@ return sub {
         }
 
         if ($redirect && !$summary) {
-            my $url = $req->base . "$channel/$date";
+            my $url = $req->base . "/$channel/$date";
             $response->redirect($url);
             my $body = "<html><head><title>Redirect to $url</title></head>\n";
             $body .= "<body><p>If your browser doesn't like you, please follow\n";
