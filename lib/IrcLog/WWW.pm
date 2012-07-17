@@ -342,6 +342,11 @@ sub irc_channel_links {
 }
 
 my %output_chain = (
+        irc_color_codes => {
+            re      => qr/\03\d{2}/,
+            match   => '',
+            rest    => 'ansi_color_codes',
+        },
         ansi_color_codes => {
             re      => qr{$color_start.*?(?:$color_reset|\z)}s,
             match   => \&ansi_color_codes,
@@ -487,7 +492,7 @@ sub message_line {
         TIME        => format_time($args_ref->{timestamp}),
         MESSAGE     => output_process(my_decode(
                             $args_ref->{message}), 
-                            "ansi_color_codes", 
+                            "irc_color_codes",
                             $args_ref->{channel},
                             $args_ref->{nick},
                             ),
