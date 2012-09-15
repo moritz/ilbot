@@ -58,6 +58,7 @@ my $q = new CGI;
 my $dbh = get_dbh();
 my $channel = $q->param('channel') || $default_channel;
 my $date = $q->param('date');
+my $summary = $q->param('summary');
 {
     my $redirect;
     if (!$date || $date eq 'today') {
@@ -68,7 +69,7 @@ my $date = $q->param('date');
         $redirect = 1;
     }
 
-    if ($redirect) {
+    if ($redirect && !$summary) {
         my $url = $q->url(-base => 1) . "/$channel/$date";
         print $q->redirect($url);
         print "<html><head><title>Redirect to $url</title></head>\n";
@@ -100,7 +101,7 @@ my $count;
 }
 
 
-if ($conf->{NO_CACHE}) {
+if ($conf->{NO_CACHE} || $summary) {
     print irclog_output($date, $channel);
 } else {
     my $cache_key = $channel . '|' . $date . '|' . $count;
@@ -153,12 +154,20 @@ sub irclog_output {
     }
     $t->param(BASE_URL  => $base_url);
     my $self_url = $base_url . "/$channel/$date";
-    my $db = $dbh->prepare('SELECT id, nick, timestamp, line, in_summary FROM '
-        . 'irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
+    my $db;
+    
+    if ($summary) {
+        $db = $dbh->prepare('SELECT id, nick, timestamp, line, in_summary FROM '
+            . 'irclog WHERE day = ? AND channel = ? AND NOT spam AND in_summary = 1 ORDER BY id');
+    }
+    else {
+        $db = $dbh->prepare('SELECT id, nick, timestamp, line, in_summary FROM '
+            . 'irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id');
+    }
     $db->execute($date, $full_channel);
 
 
-# determine which colors to use for which nick:
+    # determine which colors to use for which nick:
     {
         my $count = scalar @nick_classes + scalar @colors + 1;
         my $q1 = $dbh->prepare('SELECT nick, COUNT(nick) AS c FROM irclog'
