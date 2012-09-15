@@ -1,7 +1,17 @@
 var summary_filter_link = '<a href="javascript:hide_non_summary()">show only summary lines</a>';
+var enable_summary_mode_html = '<a href="javascript:enable_summary_mode()">Enable summary mode</a>';
 $(document).ready(function() {
-        $('#summary_container').html('<a href="javascript:save_summary_changes()">Save summary changes</a>, <span id="toggle_summary">' + summary_filter_link + '</span>');
+    disable_summary_mode();
 });
+
+function enable_summary_mode() {
+        $('#summary_container').html('<a href="javascript:save_summary_changes()">Save summary changes</a>, <span id="toggle_summary">' + summary_filter_link + '</span> <a href="javascript:disable_summary_mode()">disable summary mode</a>');
+        $('.summary').show();
+}
+function disable_summary_mode() {
+    $('.summary').hide();
+    $('#summary_container').html(enable_summary_mode_html);
+}
 
 function save_summary_changes() {
     var newly_checked = [];
