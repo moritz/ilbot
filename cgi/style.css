@@ -220,3 +220,7 @@ abbr { cursor: help; }
 	clear: both;
 	text-align: left;
 }
+
+tr.cont td.nick {
+    visibility: hidden;
+}

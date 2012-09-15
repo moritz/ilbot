@@ -38,9 +38,11 @@ function save_summary_changes() {
 function hide_non_summary() {
     $('.summary_checkbox:not(:checked)').parents('tr').hide();
     $('#toggle_summary').html('<a href="javascript:show_all_rows()">show all lines</a>');
+    $('tr.cont td.nick').css('visibility', 'visible');
 }
 
 function show_all_rows() {
     $('.summary_checkbox').parents('tr').show();
     $('#toggle_summary').html(summary_filter_link);
+    $('tr.cont td.nick').css('visibility', 'hidden');
 }

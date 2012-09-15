@@ -504,17 +504,15 @@ sub message_line {
 
     my @classes;
     my @msg_classes;
-
+    my $display_nick = $nick;
+    $display_nick =~ s/\A\*\ /'*' . NBSP/exms;
+    $h{NICK} = encode_entities($display_nick, ENTITIES);
     if ($nick ne $args_ref->{prev_nick}){
         # $c++ is used to alternate the background color
         $$c++;
-        my $display_nick = $nick;
-        $display_nick =~ s/\A\*\ /'*' . NBSP/exms;
-        $h{NICK} = encode_entities($display_nick, ENTITIES);
         push @classes, 'new';
     } else {
         # omit nick in successive lines from the same nick
-        $h{NICK} = "";
         push @classes, 'cont';
     }
     # determine nick color:
