@@ -221,6 +221,7 @@ sub irclog_output {
             CHANNEL     => $channel,
             MESSAGES    => \@msg,
             DATE        => $date,
+            IS_SUMMARY  => $summary,
         );
 
 # check if previous/next date exists in database

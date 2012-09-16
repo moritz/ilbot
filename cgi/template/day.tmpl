@@ -33,7 +33,9 @@
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
     <p>All times shown according to <abbr title="Coordinated Universal Time">UTC</abbr>.</p>
+    <TMPL_UNLESS NAME=IS_SUMAMRY>
     <div id="summary_container" />
+    </TMPL_UNLESS>
 	<TMPL_IF ADMIN>
 	<form method="post" action="<TMPL_VAR BASE_URL>spam.pl?date=<TMPL_VAR DATE>;channel=<TMPL_VAR CHANNEL>">
 	<p><input type="submit" value="Mark as spam" /></p>
