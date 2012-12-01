@@ -36,5 +36,5 @@ CREATE TABLE `irclog` (
   KEY `irclog_day_channel_idx` (`day`,`channel`),
   KEY `channel_idx` (`channel`),
   FULLTEXT KEY `message_index` (`line`)
-) ENGINE=MyISAM AUTO_INCREMENT=2357358 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 SET character_set_client = @saved_cs_client;
