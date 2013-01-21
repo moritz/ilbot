@@ -237,6 +237,9 @@ sub irclog_output {
             # where the hell does the leading double slash come from?
             $next_url =~ s{^//+}{/};
             $t->param(NEXT_URL => $next_url);
+            if ($summary) {
+                $t->param(NEXT_DATE => $tomorrow);
+            }
         }
 
         my $yesterday = date($date) - 1;
@@ -246,6 +249,9 @@ sub irclog_output {
             my $prev_url = $base_url . "$channel/$yesterday";
             $prev_url =~ s{^//+}{/};
             $t->param(PREV_URL => $prev_url);
+            if ($summary) {
+                $t->param(PREV_DATE => $yesterday);
+            }
         }
 
     }
