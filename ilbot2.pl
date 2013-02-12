@@ -24,6 +24,7 @@ use Data::Dumper;
     sub dbwrite {
         my ($channel, $who, $line) = @_;
         return unless $channel =~ /\A#\S+\z/;
+        $channel =~ s/\A##/#/;
         # mncharity aka putter has an IRC client that prepends some lines with
         # a BOM. Remove that:
         $line =~ s/\A\x{ffef}//;
