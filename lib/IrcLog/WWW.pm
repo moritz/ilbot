@@ -319,6 +319,30 @@ my $re_links = qr/(?!)/;
 
 }
 
+sub github_links {
+    my ($key, $state, $channel, $nick) = @_;
+    if ($key =~ m/^GH/i) {
+        $key =~ m/(\d+)/;
+        if ($channel eq "parrot") {
+            return qq{<a href="https://github.com/parrot/parrot/issues/$1">}
+                . encode_entities($key, ENTITIES)
+                . qq{</a> };
+        }
+        elsif ($channel eq "moe") {
+            return qq{<a href="https://github.com/MoeOrganization/moe/issues/$1">}
+                . encode_entities($key, ENTITIES)
+                . qq{</a> };
+        }
+    }
+    elsif ($key =~ m/^pull request/i) {
+        if ($channel eq "moe") {
+            return qq{<a href="https://github.com/MoeOrganization/moe/pull/$1">}
+                . encode_entities($key, ENTITIES)
+                . qq{</a> };
+        }
+    }
+}
+
 sub rt_links {
     my ($key, $state) = @_;
     if ($key =~ m/^tt/i) {
@@ -386,7 +410,12 @@ my %output_chain = (
         static_links => {
              re     => $re_links,
              match  => \&expand_links,
-             rest   => 'rt_links'
+             rest   => 'github_links'
+        },
+        github_links     => {
+            re     => qr{(?i:\b(?:GH|pull request)\s*)?#\d{2,6}\b},
+            match  => \&github_links,
+            rest   => 'rt_links',
         },
         rt_links     => {
              re     => qr{(?i:\btt\s*)?#\d{2,6}\b},
