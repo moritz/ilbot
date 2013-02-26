@@ -142,7 +142,7 @@ OLED        --- Organic Light Emitting Diode
 TT          --- Template Toolkit
 CL          --- Common Lisp
 PPI         --- Perl Parsing Interface
-RC          --- Release Candidate
+RC          --- Release Candidate or Rosetta Code
 HTTPS       --- Secure Hypertext Transfer Protocol
 PASM        --- Parrot assembly language
 GMP         --- GNU Multi-Precision Library
