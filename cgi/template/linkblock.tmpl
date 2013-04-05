@@ -1,12 +1,21 @@
-    <p><TMPL_IF NAME=PREV_URL><a href="<TMPL_VAR NAME=PREV_URL>" rel="prev">&larr; Previous
-    day</a> |</TMPL_IF> 
+    <p><TMPL_IF NAME=PREV_URL>
+        <TMPL_IF NAME=IS_SUMMARY>
+        <a href="<TMPL_VAR NAME=BASE_URL>out.pl?channel=<TMPL_VAR NAME=CHANNEL>;date=<TMPL_VAR NAME=PREV_DATE>;summary=1" rel="prev">
+        <TMPL_ELSE>
+        <a href="<TMPL_VAR NAME=PREV_URL>" rel="prev">
+        </TMPL_IF>&larr; Previous day</a> |
+    </TMPL_IF> 
     <a href="<TMPL_VAR NAME=BASE_URL>">Channels</a> |
 	<a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/">#<TMPL_VAR
     CHANNEL> index</a> |
-	<a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/today">Today</a> |
+	<a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/today<TMPL_IF NAME=IS_SUMMARY>?summary=1</TMPL_IF>">Today</a> |
     <TMPL_IF NAME=NEXT_URL>
-		<a href="<TMPL_VAR NAME=NEXT_URL>" rel="next">Next day &rarr;</a> |
-	</TMPL_IF>
+        <TMPL_IF NAME=IS_SUMMARY>
+        <a href="<TMPL_VAR NAME=BASE_URL>out.pl?channel=<TMPL_VAR NAME=CHANNEL>;date=<TMPL_VAR NAME=NEXT_DATE>;summary=1" rel="next">
+        <TMPL_ELSE>
+        <a href="<TMPL_VAR NAME=NEXT_URL>" rel="next">
+        </TMPL_IF>Next day &rarr;</a> |
+    </TMPL_IF>
     <a href="<TMPL_VAR BASE_URL>search.pl?channel=<TMPL_VAR CHANNEL>">Search</a> |
     <a href="http://www.google.com/search?q=site%3Airclog.perlgeek.de+inurl%3A<TMPL_VAR NAME=CHANNEL ESCAPE=URL>">Google Search</a>
 	<TMPL_IF NAME=DATE>| <a href="<TMPL_VAR
