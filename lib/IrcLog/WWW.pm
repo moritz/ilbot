@@ -341,6 +341,9 @@ sub github_links {
                 . qq{</a> };
         }
     }
+    else {
+        return encode_entities($key, ENTITIES);
+    }
 }
 
 sub rt_links {
@@ -413,7 +416,7 @@ my %output_chain = (
              rest   => 'github_links'
         },
         github_links     => {
-            re     => qr{(?i:\b(?:GH|pull request)\s*)?#\d{2,6}\b},
+            re     => qr{(?i:\b(?:GH|pull request)\s*)#\d{2,6}\b},
             match  => \&github_links,
             rest   => 'rt_links',
         },
