@@ -7,23 +7,23 @@ RewriteEngine on
 RewriteRule ^[.] - [F]
 RewriteRule \.conf - [F]
 
-RewriteCond %{HTTP_REQUEST} !^search
+RewriteCond %{HTTP_REQUEST} !^(search|images)
 RewriteRule ^([^/]+)/$ /channel-index.pl?channel=$1 [L]
 
-RewriteCond %{HTTP_REQUEST} !^search
+RewriteCond %{HTTP_REQUEST} !^(search|images)
 RewriteRule ^([\w_-]+)/?$ /channel-index.pl?channel=$1 [L]
 
-RewriteCond %{HTTP_REQUEST} !^search
+RewriteCond %{HTTP_REQUEST} !^(search|images)
 RewriteRule ^([^/]+)/today$ out.pl?channel=$1
 
-RewriteCond %{HTTP_REQUEST} !^search
+RewriteCond %{HTTP_REQUEST} !^(search|images)
 RewriteRule ^([^/]+)/yesterday$ out.pl?channel=$1;date=yesterday
 
 RewriteCond %{QUERY_STRING} ^channel=([^;]+);date=(\d\d\d\d-\d\d-\d\d)
 RewriteCond %{HTTP_REQUEST} ^out\.pl
 RewriteRule ^out.pl /%1/%2? [R=301,L]
 
-RewriteCond %{HTTP_REQUEST} !^search
+RewriteCond %{HTTP_REQUEST} !(search|images)
 RewriteRule ^([^/]+)/(\d\d\d\d-\d\d-\d\d)  out.pl?channel=$1;date=$2 [L]
 
 RewriteRule ^search/?$ /search.pl

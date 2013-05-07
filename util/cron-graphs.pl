@@ -24,6 +24,8 @@ $sth->execute();
 my $count_sth = $dbh->prepare('SELECT COUNT(*) FROM irclog WHERE channel = ?
     AND day BETWEEN ? AND ?');
 
+die "No directory 'cgi/images'\n" unless -d 'cgi/images';
+
 while (my ($channel) = $sth->fetchrow) {
     my @counts;
     for (my $d = $min_date; $d < $max_date; $d += $interval) {
@@ -38,7 +40,7 @@ while (my ($channel) = $sth->fetchrow) {
 
     $total_max = max $total_max, @counts;
     (my $filename = $channel) =~ s/[^\w-]//g;
-    $filename = "images/gen/$filename.png";
+    $filename = "cgi/images/$filename.png";
     open my $TMP, '>', 'out.tmp'
         or die "Error while opening out.tmp: $!";
     for (@counts) {
