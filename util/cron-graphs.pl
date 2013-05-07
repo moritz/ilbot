@@ -4,8 +4,18 @@ use strict;
 use IrcLog qw(get_dbh);
 use Date::Simple qw/date today/;
 use List::Util qw/max/;
+use Getopt::Long;
 
+my $dir = 'cgi/images/index/';
 my $no_steps = 100;
+use File::Temp qw/tempfile/;
+
+GetOptions(
+    'output-dir=s'  => \$dir,
+    'steps=i'       => \$no_steps,
+) or die "Usage: $0 [--out-dir=where/to/put/the/files/] [--steps=100]\n";
+
+die "No directory '$dir'\n" unless -d $dir;
 
 my $dbh = get_dbh();
 
@@ -24,7 +34,6 @@ $sth->execute();
 my $count_sth = $dbh->prepare(q[SELECT COUNT(*) FROM irclog WHERE channel = ?
     AND day BETWEEN ? AND ? AND nick <> '']);
 
-die "No directory 'cgi/images'\n" unless -d 'cgi/images';
 
 while (my ($channel) = $sth->fetchrow) {
     my @counts;
@@ -40,15 +49,14 @@ while (my ($channel) = $sth->fetchrow) {
 
     $total_max = max $total_max, @counts;
     (my $filename = $channel) =~ s/[^\w-]//g;
-    $filename = "cgi/images/$filename.png";
-    open my $TMP, '>', 'out.tmp'
-        or die "Error while opening out.tmp: $!";
+    $filename = "$dir/$filename.png";
+    my ($TMP, $tmp_file) = tempfile();
     for (@counts) {
         say $TMP $_;
     }
-    close $TMP or die "Error while writing to out.tmp: $!";
+    close $TMP or die "Error while writing to $tmp_file: $!";
 
-    system('gnuplot', '-e', qq[set output '$filename'], 'lines.plot');
+    system('gnuplot', '-e', qq[set output '$filename'; plot '$tmp_file' with lines lt rgb "gray"], 'lines.plot');
 
 }
 $sth->finish;

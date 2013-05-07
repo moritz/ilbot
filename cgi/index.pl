@@ -45,7 +45,7 @@ sub get_index {
 		if ($conf->{ACTIVITY_IMAGES}) {
 			my $filename = $row[0];
 			$filename =~ s/[^\w-]+//g;
-			$filename = "images/$filename.png";
+			$filename = "images/index/$filename.png";
 			$data{image_path} = $filename if -e $filename;
 		}
 		push @channels, \%data;
