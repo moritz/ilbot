@@ -224,3 +224,7 @@ abbr { cursor: help; }
 tr.cont td.nick {
     visibility: hidden;
 }
+
+table.calendar a {
+    font-weight:  bold;
+}
