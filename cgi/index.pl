@@ -40,8 +40,15 @@ sub get_index {
 	my @channels;
 
 	while (my @row = $sth->fetchrow_array()){
-		$row[0] =~ s/^\#//;
-		push @channels, { channel => $row[0] };
+		next unless $row[0] =~ s/^\#+//;
+		my %data = (channel => $row[0]);
+		if ($conf->{ACTIVITY_IMAGES}) {
+			my $filename = $row[0];
+			$filename =~ s/[^\w-]+//g;
+			$filename = "images/$filename.png";
+			$data{image_path} = $filename if -e $filename;
+		}
+		push @channels, \%data;
 	}
 
 	my $template = HTML::Template->new(
@@ -51,8 +58,10 @@ sub get_index {
             die_on_bad_params   => 0,
     );
 	$template->param(BASE_URL => $base_url);
+	$template->param(HAS_IMAGES => $conf->{ACTIVITY_IMAGES});
 	$template->param( channels => \@channels );
 
 
 	return $template->output;
 }
+# vim: ft=perl noexpandtab sw=4 ts=4
