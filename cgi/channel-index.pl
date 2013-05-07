@@ -58,7 +58,7 @@ sub get_channel_index {
     # we are evil and create a calendar entry for month between the first
     # and last date
     my $dbh       = get_dbh();
-    my $get_dates = 'SELECT DISTINCT day FROM irclog WHERE channel = ? ORDER BY day';
+    my $get_dates = q[SELECT DISTINCT day FROM irclog WHERE channel = ? AND nick <> '' ORDER BY day];
     my $dates     = $dbh->selectcol_arrayref($get_dates, undef, '#' . $channel);
 
     $t->param(CHANNEL  => $channel);
