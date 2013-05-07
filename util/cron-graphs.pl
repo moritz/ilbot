@@ -21,8 +21,8 @@ my $total_max = 0;
 
 $sth = $dbh->prepare('SELECT DISTINCT(channel) FROM irclog');
 $sth->execute();
-my $count_sth = $dbh->prepare('SELECT COUNT(*) FROM irclog WHERE channel = ?
-    AND day BETWEEN ? AND ?');
+my $count_sth = $dbh->prepare(q[SELECT COUNT(*) FROM irclog WHERE channel = ?
+    AND day BETWEEN ? AND ? AND nick <> '']);
 
 die "No directory 'cgi/images'\n" unless -d 'cgi/images';
 
