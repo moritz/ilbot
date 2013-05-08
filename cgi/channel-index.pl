@@ -112,8 +112,9 @@ sub calendar_for_channel {
                     $content = $link ? qq{<a href="$link">$day</a>}
                                      : $day;
                     if ($link) {
-                        my $rel_count = 25 * $count{"$Y-$M-$D"} / $average;
-                        $rel_count    = 50 if $rel_count > 50;
+                        use constant W = 74;
+                        my $rel_count = W / 2 * $count{"$Y-$M-$D"} / $average;
+                        $rel_count    = W if $rel_count > W;
                         my $c         = sprintf '%x', 255 - $rel_count;
                         $style = qq[ style="background-color: #$c$c$c;"];
                     }
