@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Calendar::Simple;
+use Calendar::Simple qw(calendar);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI;
 use Config::File;
@@ -37,15 +37,6 @@ sub go {
     }
 }
 
-sub test_calendar {
-    my $channel  = '#parrotsketch';
-    my $base_url = '/irclog/';
-    my $dates    = [qw( 2009-09-28 2009-09-30
-                        2009-10-01 2009-10-02 2009-10-05 2009-10-12 )];
-
-    print calendar_for_channel($channel, $dates, $base_url);
-}
-
 sub get_channel_index {
     my $channel  = shift;
     my $base_url = $conf->{BASE_URL} || q{/};
@@ -58,12 +49,18 @@ sub get_channel_index {
     # we are evil and create a calendar entry for month between the first
     # and last date
     my $dbh       = get_dbh();
-    my $get_dates = q[SELECT DISTINCT day FROM irclog WHERE channel = ? AND nick <> '' ORDER BY day];
-    my $dates     = $dbh->selectcol_arrayref($get_dates, undef, '#' . $channel);
+    my $get_dates = q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day];
+    my $dates_and_counts = $dbh->selectall_arrayref($get_dates, undef, '#' . $channel);
+
+    my $sth       = $dbh->prepare(q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> '']);
+    $sth->execute('#' . $channel);
+    my ($count, $days) = $sth->fetchrow;
+    $sth->finish;
+    my $average = $count / ($days || 1);
 
     $t->param(CHANNEL  => $channel);
     $t->param(BASE_URL => $base_url);
-    $t->param(CALENDAR => calendar_for_channel($channel, $dates, $base_url));
+    $t->param(CALENDAR => calendar_for_channel($channel, $dates_and_counts, $base_url, $average));
 
     my $clf = "channels/$channel.tmpl";
     if (-e $clf) {
@@ -74,13 +71,16 @@ sub get_channel_index {
 }
 
 sub calendar_for_channel {
-    my ($channel, $dates, $base_url)  = @_;
+    my ($channel, $dates_and_counts, $base_url, $average)  = @_;
     $channel =~ s/\A\#//smx;
+    $average ||= 1;
 
-    my (%months, %link);
-    for my $date (@$dates) {
+    my (%months, %link, %count);
+    for my $e (@$dates_and_counts) {
+        my ($date, $count) = @$e;
         my ($Y, $M, $D) = split '-', $date;
         $link{$date}    = "$base_url$channel/$date";
+        $count{$date}   = $count;
         $months{"$Y-$M"}++;
     }
 
@@ -104,15 +104,22 @@ sub calendar_for_channel {
             for my $day_num (0 .. 6) {
                 my $day     = $week->[$day_num];
                 my $content = '';
+                my $style = '';
 
                 if ($day) {
-                    my $D    = sprintf '%02d', $day;
+                    my $D       = sprintf '%02d', $day;
                     my $link = $link{"$Y-$M-$D"};
                     $content = $link ? qq{<a href="$link">$day</a>}
                                      : $day;
+                    if ($link) {
+                        my $rel_count = 25 * $count{"$Y-$M-$D"} / $average;
+                        $rel_count    = 50 if $rel_count > 50;
+                        my $c         = sprintf '%x', 205 + $rel_count;
+                        $style = qq[ style="background-color: #$c$c$c;"];
+                    }
                 }
 
-                $html .= qq{<td>$content</td>};
+                $html .= qq{<td$style>$content</td>};
             }
 
             $html .= qq{</tr>\n};
