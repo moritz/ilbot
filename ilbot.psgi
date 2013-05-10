@@ -9,6 +9,8 @@ use Ilbot::Date qw/gmt_today/;
 use Config::File qw/read_config_file/;
 use Data::Dumper;
 
+use Plack::Builder;
+
 my $app = sub {
     my $env = shift;
 #    print Dumper $env;
@@ -42,4 +44,11 @@ my $app = sub {
     }
 
     return [200, [ 'Content-Type' => 'text/html; charset=utf-8' ], [$s]];
+};
+
+builder {
+    enable "Plack::Middleware::Static",
+            path => qr{^/(?:style\.css$|images|favicon\.ico$|.*\.(?:png|js)$)},
+            root => './';
+    $app;
 }
