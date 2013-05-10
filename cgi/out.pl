@@ -186,7 +186,6 @@ sub irclog_output {
 
     my @msg;
 
-    my $line = 1;
     my $prev_nick = q{};
     my $c = 0;
 

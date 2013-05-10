@@ -518,7 +518,6 @@ sub break_apart {
 sub message_line {
     my ($args_ref, $c) = @_;
     my $nick = $args_ref->{nick};
-    my $colors = $args_ref->{colors};
     my %h = (
         ID          => $args_ref->{id},
         TIME        => format_time($args_ref->{timestamp}),
@@ -547,21 +546,6 @@ sub message_line {
         # omit nick in successive lines from the same nick
         push @classes, 'cont';
     }
-    # determine nick color:
-    # Now that we give each <tr> (with a non-special message) classes of 
-    #  'nick' and "nick_$nick", this is probably better done with CSS:
-    #  
-    #    tr.nick_TimToady td.nick { color: green; font-weight: bold; }
-    #    tr.nick_KyleHa   td.nick { color: #005500; }
-    #    tr.nick_tann_    td.nick { color: #ff0077; }
-    
-NICK:    foreach (@$colors){
-        my $n = quotemeta $_->[0];
-        if ($nick =~ m/^$n/ or $nick =~ m/^\* $n/){
-            $h{NICK_CLASS} = $_->[1];
-            last NICK;
-        }
-    }
 
     if ($nick =~ /\A\*\ /smx) {
         push @msg_classes, 'act';
@@ -588,6 +572,7 @@ NICK:    foreach (@$colors){
     if (@msg_classes) {
         $h{MSG_CLASS} = join " ", @msg_classes;
     }
+    $h{NICK_COLOR} = $args_ref->{color};
 
     return \%h;
 }

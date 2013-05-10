@@ -6,10 +6,14 @@ use 5.010;
 
 our %SQL = (
     STANDARD    => {
-        channels            => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
-        day_has_actitivity  => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
+        channels                 => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
+        day_has_actitivity       => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
         days_and_activity_counts => q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day],
-        activity_average    => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM irclog WHERE channel = ? AND nick <> ''],
+        activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM irclog WHERE channel = ? AND nick <> ''],
+        lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id],
+        lines_summary_nospam     => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND NOT spam AND in_summary ORDER BY id],
+        lines_nosummary_spam     => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? ORDER BY id],
+        lines_summary_spam       => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND in_summary ORDER BY id],
     },
     mysql       => {
         activity_average    => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
@@ -89,7 +93,7 @@ sub activity_average {
     $sth->execute($self->channel);
     my ($count, $days) = $sth->fetchrow;
     $sth->finish;
-    return ($count || 1) / ($day || 1);
+    return ($count || 1) / ($days || 1);
 }
 
 sub days_and_activity_counts {
@@ -99,6 +103,15 @@ sub days_and_activity_counts {
         undef,
         $self->channel,
     );
+}
+
+sub lines {
+    my ($self, %opt) = @_;
+    die "Missing option 'day'" unless $opt{day};
+    my $key = join '_', 'lines',
+                ($opt{summary_only} ? 'summary' : 'nosummary'),
+                ($opt{exclude_spam} // 0 ? 'spam' : 'nospam');
+
 }
 
 1;

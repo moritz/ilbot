@@ -3,6 +3,9 @@ use strict;
 use warnings;
 use 5.010;
 use HTML::Template;
+use Ilbot::Date qw/gmt_today/;
+use Ilbot::Frontend::NickColor qw/nick_to_color/;
+use IrcLog::WWW qw/message_line/;
 
 sub new {
     my ($class, %opt) = @_;
@@ -52,7 +55,7 @@ sub index {
     $template->param(has_images => $has_images);
     $template->param(base_url   => $self->config(key => 'base_url'));
     $template->param(channels   => \@channels);
-    $template->output(print_to => $opt{out_fh});
+    $template->output(print_to  => $opt{out_fh});
 }
 
 sub channel_index {
@@ -143,3 +146,62 @@ sub calendar {
     return $html;
 }
 
+sub day {
+    my ($self, %opt) = @_;
+    $opt{day} //= gmt_today();
+    for my $attr (qw/out_fh channel/) {
+        die "Missing argument '$attr'" unless defined $opt{$attr};
+    }
+    my $channel = $opt{channel};
+    $channel =~ s/^\#+//;
+        my $full_channel = q{#} . $channel;
+    my $t = HTML::Template->new(
+        filename            => 'template/day.tmpl',
+        loop_context_vars   => 1,
+        global_vars         => 1,
+        die_on_bad_params   => 0,
+    );
+    {
+        my $clf = "channels/$channel.tmpl";
+        if (-e $clf) {
+            open my $IN, '<', $clf;
+            my $contents = do { local $/; <$clf> };
+            close $IN;
+            $t->param(CHANNEL_LINKS => $contents);
+        }
+    }
+    $t->param(base_url  => $self->config(key => 'self_url'));
+    my $b         = $self->backend->channel(channel => $channel);
+    my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary_only});
+    my $line_no   = 0;
+    my $prev_nick = q{};
+    my $c         = 0;
+    my @msg;
+    my $self_url  = join '/', $self->config(key => 'base_url'), $channel, $opt{day};
+    for my $row (@$rows) {
+        my $id          = $row->[0];
+        # TODO: decode?
+        my $nick        = $row->[1];
+        my $timestamp   = $row->[2];
+        my $message     = $row->[3];
+        my $in_summary  = $row->[4];
+        next if $message =~ m/^\s*\[off\]/i;
+        push @msg, message_line( {
+                id           => $id,
+                nick        => $nick,
+                timestamp   => $timestamp,
+                message     => $message,
+                line_number =>  ++$line_no,
+                prev_nick   => $prev_nick,
+                color       => nick_to_color($nick),
+                self_url    => $self_url,
+                channel     => $channel,
+                in_summary  => $in_summary,
+            },
+            \$c,
+        );
+        $prev_nick = $nick;
+    }
+} 
+
+1;
