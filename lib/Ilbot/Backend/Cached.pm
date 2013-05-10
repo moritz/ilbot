@@ -83,5 +83,11 @@ sub lines {
     $cache->compute($cache_key, undef, sub { $self->backend->lines(%opt) });
 }
 
+sub activity_average {
+    my $self = shift;
+    my $cache_key = join '|', 'activity_average', $self->channel;
+    $cache->compute($cache_key, '1 day', sub { $self->backend->activity_average } );
+}
+
 
 1;

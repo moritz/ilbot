@@ -9,6 +9,10 @@ our %SQL = (
         channels            => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
         day_has_actitivity  => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
         days_and_activity_counts => q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day],
+        activity_average    => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM irclog WHERE channel = ? AND nick <> ''],
+    },
+    mysql       => {
+        activity_average    => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
     },
 );
 
@@ -80,7 +84,12 @@ sub day_has_actitivity {
 }
 
 sub activity_average {
-
+    my $self = shift;
+    my $sth = $self->dbh->prepare($self->sql_for(query => 'activity_average'));
+    $sth->execute($self->channel);
+    my ($count, $days) = $sth->fetchrow;
+    $sth->finish;
+    return $count / ($day || 1);
 }
 
 sub days_and_activity_counts {
