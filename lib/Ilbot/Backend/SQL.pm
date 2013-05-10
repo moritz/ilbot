@@ -3,6 +3,7 @@ package Ilbot::Backend::SQL;
 use strict;
 use warnings;
 use 5.010;
+use DBI;
 
 our %SQL = (
     STANDARD    => {
@@ -59,6 +60,16 @@ sub channels {
     $self->dbh->selectcol_arrayref($self->sql_for(query => 'channels'));
 }
 
+sub channel {
+    my ($self, %opt) = @_;
+    die "Missing option 'channel'" unless defined $opt{channel};
+    return Ilbot::Backend::SQL::Channel->new(
+        dbh     => $self->dbh,
+        channel => $opt{channel},
+        db      => $self->{db},
+    );
+}
+
 package Ilbot::Backend::SQL::Channel;
 
 # it's a hack, but works for now
@@ -98,11 +109,13 @@ sub activity_average {
 
 sub days_and_activity_counts {
     my $self = shift;
-    return $self->dbh->selectall_arrayref(
+    my $r = $self->dbh->selectall_arrayref(
         $self->sql_for(query => 'days_and_activity_counts'),
         undef,
         $self->channel,
     );
+
+    return $r;
 }
 
 sub lines {
@@ -111,7 +124,14 @@ sub lines {
     my $key = join '_', 'lines',
                 ($opt{summary_only} ? 'summary' : 'nosummary'),
                 ($opt{exclude_spam} // 0 ? 'spam' : 'nospam');
+    my $r = $self->dbh->selectall_arrayref(
+        $self->sql_for(query => $key),
+        undef,
+        $opt{day},
+        $self->channel,
+    );
 
+    return $r;
 }
 
 1;

@@ -6,12 +6,15 @@ use HTML::Template;
 use Ilbot::Date qw/gmt_today/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use IrcLog::WWW qw/message_line/;
+use Date::Simple qw/date/;
 
 sub new {
     my ($class, %opt) = @_;
     die "Missing option 'backend" unless $opt{backend};
     return bless {backend => $opt{backend} }, $class;
 }
+
+sub backend { $_[0]{backend} }
 
 sub config {
     my ($self, %opt) = @_;
@@ -66,16 +69,17 @@ sub channel_index {
         filename            => 'template/channel-index.tmpl',
         die_on_bad_params   => 0,
     );
-    my $b = $self->backend->channel(channel => $opt{channel});
+    my $b = $self->backend->channel(channel => '#' . $opt{channel});
     $t->param(channel   => $opt{channel});
     $t->param(base_url  => $self->config(key => 'base_url'));
     $t->param(calendar  => $self->calendar(
                 channel             => $opt{channel},
-                dates_and_counts    => $b->dates_and_counts,
+                dates_and_counts    => $b->days_and_activity_counts,
                 base_url            => $self->config(key => 'base_url'),
                 average             => $b->activity_average(),
             ),
     );
+    $t->output(print_to => $opt{out_fh});
 }
 
 sub calendar {
@@ -170,14 +174,15 @@ sub day {
             $t->param(CHANNEL_LINKS => $contents);
         }
     }
-    $t->param(base_url  => $self->config(key => 'self_url'));
-    my $b         = $self->backend->channel(channel => $channel);
+    my $base_url = $self->config(key => 'base_url');
+    $t->param(base_url  => $base_url);
+    my $b         = $self->backend->channel(channel => '#' . $channel);
     my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary_only});
     my $line_no   = 0;
     my $prev_nick = q{};
     my $c         = 0;
     my @msg;
-    my $self_url  = join '/', $self->config(key => 'base_url'), $channel, $opt{day};
+    my $self_url  = join '/', $base_url, $channel, $opt{day};
     for my $row (@$rows) {
         my $id          = $row->[0];
         # TODO: decode?
@@ -202,6 +207,17 @@ sub day {
         );
         $prev_nick = $nick;
     }
-} 
+    $t->param(
+        CHANNEL     => $channel,
+        MESSAGES    => \@msg,
+        DATE        => $opt{day},
+#        IS_SUMMARY  => $summary,
+    );
+    my $prev = date($opt{day}) - 1;
+    $t->param(PREV_DATE => $prev, PREV_URL => "$base_url/$opt{channel}/$prev");
+    my $next = date($opt{day}) + 1;
+    $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url/$opt{channel}/$next");
+    $t->output(print_to => $opt{out_fh}),
+}
 
 1;
