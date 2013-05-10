@@ -89,7 +89,7 @@ sub activity_average {
     $sth->execute($self->channel);
     my ($count, $days) = $sth->fetchrow;
     $sth->finish;
-    return $count / ($day || 1);
+    return ($count || 1) / ($day || 1);
 }
 
 sub days_and_activity_counts {
