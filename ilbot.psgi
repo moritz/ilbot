@@ -31,7 +31,7 @@ my $app = sub {
             $frontend->channel_index(channel => $1, out_fh => $OUT);
         }
         when ( qr{ ^/ ([^./]+) /today $}x ) {
-            my $url = join '', $env->{'psgi.url_scheme'},
+            my $url = join '', 'http://',
                                $env->{HTTP_HOST},
                                "/$1/",
                                gmt_today();
