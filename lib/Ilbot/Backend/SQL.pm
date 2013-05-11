@@ -21,6 +21,11 @@ our %SQL = (
     },
 );
 
+my %post_connect = (
+    mysql   => sub { $_[0]{mysql_enable_utf8} = 1 },
+    Pg      => sub { $_[0]{pg_enable_utf8}    = 1 },
+);
+
 sub new {
     my ($class, %opt) = @_;
 
@@ -39,6 +44,9 @@ sub new {
         my $db_dsn  = "DBI:$dbs:database=$db_name;host=$host";
         $self->{dbh} = DBI->connect($db_dsn, $user, $passwd,
                 {RaiseError=>1, AutoCommit => 1});
+        if (my $post = $post_connect{$self->{db}}) {
+            $post->($self->{dbh});
+        }
     }
     return $self;
 }
