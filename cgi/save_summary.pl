@@ -4,16 +4,8 @@ use strict;
 use Carp qw(confess);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI;
-# use Date::Simple qw(date);
-# use Encode::Guess;
-# use Encode;
-# use HTML::Template;
-# use Config::File;
-# use File::Slurp;
 use lib 'lib';
 use IrcLog qw(get_dbh);
-# use IrcLog::WWW qw(http_header message_line my_encode);
-# use Cache::SizeAwareFileCache;
 
 my $c       = CGI->new;
 my @actions = (scalar($c->param('uncheck')), scalar($c->param('check')));
