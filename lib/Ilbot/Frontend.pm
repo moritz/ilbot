@@ -216,6 +216,26 @@ sub day {
     $t->output(print_to => $opt{out_fh}),
 }
 
+sub day_text {
+    my ($self, %opt) = @_;
+    $opt{day} //= gmt();
+    for my $attr (qw/channel/) {
+        die "Missing argument '$attr'" unless defined $opt{$attr};
+    }
+    my $channel = $opt{channel};
+    $channel =~ s/^\#+//;
+    require Text::Table;
+    my $table = Text::Table->new(qw/Time Nick Message/);
+    for my $row (@{ $self->backend->channel(channel => "#$channel")->lines(day => $opt{day}) }) {
+        my ($nick, $ts, $line) = ($row->[1], $row->[2], $row->[3]);
+        my ($hour, $minute) = (gmtime $ts)[2, 1];
+        $table->add(sprintf("%02d:%02d", $hour, $minute), $nick, $line);
+    }
+    my $text = "$table";
+    $text =~ s/\h+$//gm;
+    return $text;
+}
+
 sub update_summary {
     my ($self, %opt) = @_;
     $self->backend->update_summary(%opt);

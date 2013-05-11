@@ -71,6 +71,13 @@ my $app = sub {
                 summary => !! $3,
             );
         }
+        when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /text)? ) $!x ) {
+            $s = $frontend->day_text(
+                channel => $1,
+                day     => $2,
+            );
+            return [200, ["Content-Type" => "text/plain; charset=UTF-8"], [$s]];
+        }
 
     }
     my $h = $frontend->http_header( accept => $env->{HTTP_ACCEPT} );
