@@ -7,6 +7,7 @@ use Ilbot::Date qw/gmt_today/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use IrcLog::WWW qw/message_line/;
 use Date::Simple qw/date/;
+use Ilbot::Config qw/config/;
 
 sub new {
     my ($class, %opt) = @_;
@@ -16,47 +17,34 @@ sub new {
 
 sub backend { $_[0]{backend} }
 
-sub config {
-    my ($self, %opt) = @_;
-    my $key = $opt{key};
-    die "Missing option 'key'" unless $key;
-    my %defaults = (
-        base_url        => '/',
-        activity_images => 0,
-    );
-    return $self->{config}{uc $key}
-            // $defaults{lc $key}
-            // die "No config found for '$key'";
-}
-
 sub index {
     my ($self, %opt) = @_;
     die "Missing option 'out_fh'" unless $opt{out_fh};
     my $template = HTML::Template->new(
-        filename            => 'template/index.tmpl',
+        filename            => config('template') . '/index.tmpl',
         loop_context_vars   => 1,
         global_vars         => 1,
         die_on_bad_params   => 0,
     );
     my @channels;
     my $has_images = 0;
+    my $path = config(www => 'static_path');
     for my $channel (@{ $self->backend->channels }) {
         next unless $channel =~ s/^\#+//;
         my %data = (channel => $channel);
-        if ($self->config(key => 'activity_images')) {
-            my $filename = $channel;
-            $filename =~ s/[^\w-]+//g;
-            $filename = "images/index/$filename.png";
-            if (-e $filename) {
-                $data{image_path}   = $filename;
-                $has_images         = 1;
-            }
+
+        my $filename = $channel;
+        $filename =~ s/[^\w-]+//g;
+        $filename = "static/images/index/$filename.png";
+        if (-e "$path/$filename") {
+            $data{image_path}   = $filename;
+            $has_images         = 1;
         }
         push @channels, \%data;
     }
 
     $template->param(has_images => $has_images);
-    $template->param(base_url   => $self->config(key => 'base_url'));
+    $template->param(base_url   => config(www => 'base_url'));
     $template->param(channels   => \@channels);
     $template->output(print_to  => $opt{out_fh});
 }
@@ -66,16 +54,16 @@ sub channel_index {
     die "Missing option 'out_fh'"  unless $opt{out_fh};
     die "Missing option 'channel'" unless $opt{channel};
     my $t = HTML::Template->new(
-        filename            => 'template/channel-index.tmpl',
+        filename            => config('template') . '/channel-index.tmpl',
         die_on_bad_params   => 0,
     );
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
     $t->param(channel   => $opt{channel});
-    $t->param(base_url  => $self->config(key => 'base_url'));
+    $t->param(base_url  => config(www => 'base_url'));
     $t->param(calendar  => $self->calendar(
                 channel             => $opt{channel},
                 dates_and_counts    => $b->days_and_activity_counts,
-                base_url            => $self->config(key => 'base_url'),
+                base_url            => config(www => 'base_url'),
                 average             => $b->activity_average(),
             ),
     );
@@ -160,7 +148,7 @@ sub day {
     $channel =~ s/^\#+//;
         my $full_channel = q{#} . $channel;
     my $t = HTML::Template->new(
-        filename            => 'template/day.tmpl',
+        filename            => config('template') . '/day.tmpl',
         loop_context_vars   => 1,
         global_vars         => 1,
         die_on_bad_params   => 0,
@@ -174,7 +162,7 @@ sub day {
             $t->param(CHANNEL_LINKS => $contents);
         }
     }
-    my $base_url = $self->config(key => 'base_url');
+    my $base_url = config(www => 'base_url');
     $t->param(base_url  => $base_url);
     my $b         = $self->backend->channel(channel => '#' . $channel);
     my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary_only});

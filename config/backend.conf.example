@@ -1,3 +1,7 @@
+# path to the perl libraries (.pm files)
+LIB = lib
+
+# Database connectivity
 DSN = mysql
 DATABASE = moritz5 
 HOST = localhost

@@ -6,6 +6,7 @@ use Ilbot::Frontend;
 use Ilbot::Backend::SQL;
 use Ilbot::Backend::Cached;
 use Ilbot::Date qw/gmt_today/;
+use Ilbot::Config;
 use Date::Simple qw/date/;
 
 use Config::File qw/read_config_file/;
@@ -17,7 +18,7 @@ my $app = sub {
     my $env = shift;
 #    print Dumper $env;
     my $sql      = Ilbot::Backend::SQL->new(
-        config      => read_config_file('database.conf'),
+        config      => config('backend'),
     );
     my $backend  = Ilbot::Backend::Cached->new(
         backend     => $sql,
@@ -57,9 +58,11 @@ my $app = sub {
     return [200, [ 'Content-Type' => 'text/html; charset=utf-8' ], [$s]];
 };
 
+my $c = \&config;
+
 builder {
     enable "Plack::Middleware::Static",
-            path => qr{^/(?:style\.css$|images|favicon\.ico$|.*\.(?:png|js)$)},
-            root => './';
+            path => qr{^/s/},
+            root => $c->(www => 'static_path');
     $app;
 }

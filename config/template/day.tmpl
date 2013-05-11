@@ -5,8 +5,8 @@
 <head>
     <meta name="description" content="IRC LOG for channel #<TMPL_VAR CHANNEL>" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>style.css" title="Irclog Stylesheet" />
-    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>moose1.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>s/style.css" title="Irclog Stylesheet" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>s/favicon.ico" type="image/x-icon" />
     <link rel="canonical" 
         href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR DATE>" />
     <title>IRC log for #<TMPL_VAR CHANNEL>, <TMPL_VAR DATE></title>
@@ -22,11 +22,12 @@
 	</script>
 	</TMPL_IF>
 	
-	<script type="text/javascript" src="<TMPL_VAR BASE_URL>jquery.min.js"></script>
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/jquery.min.js"></script>
 </head>
 <body>
-    <p><a href="http://perl6.org/"><img style="float:right; border:none" src="<TMPL_VAR BASE_URL>camelia.png" width="193" height="180"
-    alt="Camelia, the Perl 6 bug"/></a></p>
+    <p><a href="http://perl6.org/"><img style="float:right; border:none"
+        src="<TMPL_VAR BASE_URL>s/camelia.png" width="193" height="180"
+        alt="Camelia, the Perl 6 bug"/></a></p>
     
     <h1>IRC log for #<TMPL_VAR CHANNEL>, <TMPL_VAR DATE></h1>
 
@@ -77,8 +78,8 @@
 
     <TMPL_INCLUDE NAME="footer.tmpl">
 		
-	<script type="text/javascript" src="<TMPL_VAR BASE_URL>nickfilter.js"></script>		
-	<script type="text/javascript" src="<TMPL_VAR BASE_URL>summary.js"></script>		
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/nickfilter.js"></script>		
+	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/summary.js"></script>		
 </body>
 </html>
 <!-- <TMPL_IF DEBUG> <TMPL_VAR DEBUG> </TMPL_IF> -->
