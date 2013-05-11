@@ -1,5 +1,5 @@
 var summary_filter_link = '<a href="javascript:hide_non_summary()">show only summary lines</a>';
-var enable_summary_mode_html = '<a href="javascript:enable_summary_mode()">Enable summary mode</a>';
+var enable_summary_mode_html = '&nbsp;<a href="javascript:enable_summary_mode()">Enable summary mode</a>';
 $(document).ready(function() {
     disable_summary_mode();
 });

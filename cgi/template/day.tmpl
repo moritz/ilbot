@@ -35,7 +35,10 @@
 
     <p>All times shown according to <abbr title="Coordinated Universal Time">UTC</abbr>.</p>
     <TMPL_UNLESS NAME=IS_SUMMARY>
-    <div id="summary_container" />
+    <div>
+	<span style="display: none;" id="filter_toggle"></span>
+    <span id="summary_container" />
+    </div>
     </TMPL_UNLESS>
 	<TMPL_IF ADMIN>
 	<form method="post" action="<TMPL_VAR BASE_URL>spam.pl?date=<TMPL_VAR DATE>;channel=<TMPL_VAR CHANNEL>">
@@ -46,7 +49,6 @@
     <form action="#" name="summary_form" id="summary_form">
 	</TMPL_IF>
 	
-	<p style="display: none;" id="filter_toggle"></p>
 	
     <table id="log" style="clear:both">
         <tr class="head">
