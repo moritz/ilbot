@@ -173,7 +173,7 @@ sub day {
     my $base_url = config(www => 'base_url');
     $t->param(base_url  => $base_url);
     my $b         = $self->backend->channel(channel => '#' . $channel);
-    my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary_only});
+    my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary});
     my $line_no   = 0;
     my $prev_nick = q{};
     my $c         = 0;
@@ -207,7 +207,7 @@ sub day {
         CHANNEL     => $channel,
         MESSAGES    => \@msg,
         DATE        => $opt{day},
-#        IS_SUMMARY  => $summary,
+        IS_SUMMARY  => $opt{summary},
     );
     my $prev = date($opt{day}) - 1;
     $t->param(PREV_DATE => $prev, PREV_URL => "$base_url$opt{channel}/$prev");
@@ -222,7 +222,7 @@ sub message_line {
     my %h = (
         ID          => $args_ref->{id},
         TIME        => format_time($args_ref->{timestamp}),
-        MESSAGE     => text_filter(my_decode($args_ref->{message}),
+        MESSAGE     => text_filter($args_ref->{message},
                             {
                                 channel => $args_ref->{channel},
                                 nick    => $args_ref->{nick},

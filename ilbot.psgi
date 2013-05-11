@@ -48,8 +48,13 @@ my $app = sub {
                                date(gmt_today()) - 1;
             return [302, [Location => $url ], []];
         }
-        when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) $!x ) {
-            $frontend->day(channel => $1, day => $2, out_fh => $OUT);
+        when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /summary)? ) $!x ) {
+            $frontend->day(
+                channel => $1,
+                day     => $2,
+                out_fh  => $OUT,
+                summary => !! $3,
+            );
         }
 
     }
