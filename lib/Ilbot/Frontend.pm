@@ -216,6 +216,11 @@ sub day {
     $t->output(print_to => $opt{out_fh}),
 }
 
+sub update_summary {
+    my ($self, %opt) = @_;
+    $self->backend->update_summary(%opt);
+}
+
 sub message_line {
     my ($args_ref, $c) = @_;
     my $nick = $args_ref->{nick};

@@ -21,6 +21,29 @@ sub channels {
     });
 }
 
+# XXX this might be abused for DoS-attacks, because it allows flushing
+# most caches with little effort. If this proves to be a problem in
+# practise, the cache flushing should be removed, and out-of-dateness of
+# summaries accepted
+sub update_summary {
+    my ($self, %opt) = @_;
+    $self->backend->update_summary(%opt);
+    my %seen;
+    my @all_ids = grep !$seen{$_}++, @{ $opt{check} // [] }, @{ $opt{uncheck} // [] };
+    my $c_d = $self->backend->channels_and_days_for_ids(ids => \@all_ids);
+    my $cache = cache(namespace => 'backend');
+    for my $cd (@$c_d) {
+        my ($channel, $day) = @$cd;
+        for my $summary (0, 1) {
+            for my $spam (0, 1) {
+                my $key = join '|', 'lines', $channel, $day, $spam, $summary;
+                $cache->remove($key);
+            }
+        }
+    }
+
+}
+
 sub channel {
     my ($self, %opt) = @_;
     die "Missing option 'channel'" unless defined $opt{channel};

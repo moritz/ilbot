@@ -13,9 +13,11 @@ use Config::File qw/read_config_file/;
 use Data::Dumper;
 
 use Plack::Builder;
+use Plack::Request;
 
 my $app = sub {
     my $env = shift;
+    my $req = Plack::Request->new($env);
     my $sql      = Ilbot::Backend::SQL->new(
         config      => config('backend'),
     );
@@ -27,9 +29,22 @@ my $app = sub {
     );
     open my $OUT, '>', \my $s;
 
-    given ($env->{PATH_INFO}) {
+    given ($req->path_info) {
         when ( qr{ ^/$ }x ) {
             $frontend->index(out_fh => $OUT);
+        }
+        when ( qr{ ^/e/summary }x ) {
+            my $p = $req->body_parameters;
+            my %actions;
+            for my $a (qw(check uncheck)) {
+                if ($p->{$a} =~ /^([0-9]+(?:\.[0-9]+)*)\z/) {
+                    $actions{$a} = [ split /\./, $1 ];
+                }
+            }
+            if ($req->method eq 'POST' && keys(%actions)) {
+                $frontend->update_summary(%actions);
+                return [201, [], []];
+            }
         }
         when ( qr{ ^/ ([^./]+) /?$}x ) {
             $frontend->channel_index(channel => $1, out_fh => $OUT);

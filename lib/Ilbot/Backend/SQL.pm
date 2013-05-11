@@ -31,7 +31,7 @@ sub new {
 
     die "Missing option 'config'" unless $opt{config};
     my $self = bless {}, $class;
-    
+
     {
         my $conf    = $opt{config};
         my $dbs     = $conf->{dsn}      || "mysql";
@@ -66,6 +66,47 @@ sub sql_for {
 sub channels {
     my $self = shift;
     $self->dbh->selectcol_arrayref($self->sql_for(query => 'channels'));
+}
+
+sub channels_and_days_for_ids {
+    my ($self, %opts) = @_;
+    die "Missing argument 'ids'" unless $opts{ids};
+    my @ids = @{ $opts{ids} };
+    return [] unless @ids;
+    # SQL depends on the number of elements, so
+    # can't simply be obtained with sql_for
+    my $sql = 'SELECT channel, day FROM  irclog WHERE id IN ('
+                . join(', ', ('?') x @ids)
+                . ') GROUP BY channel, day';
+    return $self->dbh->selectall_arrayref($sql, undef, @ids);
+}
+
+sub update_summary {
+    my ($self, %opt) = @_;
+
+    # SQL depends on the number of elements, so
+    # can't simply be obtained with sql_for
+    my @check = @{ $opt{check} // [] };
+    if (@check) {
+        my $sql = 'UPDATE irclog SET in_summary = TRUE WHERE id IN ('
+                    . join(', ', ('?') x @check)
+                    . ')';
+        say $sql;
+        my $sth = $self->dbh->prepare($sql);
+        $sth->execute(@check);
+        $sth->finish;
+    }
+
+    my @uncheck = @{ $opt{uncheck} // [] };
+    if (@uncheck) {
+        my $sql = 'UPDATE irclog SET in_summary = FALSE WHERE id IN ('
+                    . join(', ', ('?') x @uncheck)
+                    . ')';
+        my $sth = $self->dbh->prepare($sql);
+        $sth->execute(@uncheck);
+        $sth->finish;
+    }
+    return;
 }
 
 sub channel {
