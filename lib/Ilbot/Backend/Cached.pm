@@ -82,7 +82,7 @@ sub lines {
     # for now, don't cache for today at all:
     return $self->backend->lines(%opt) if $opt{day} eq gmt_today();
 
-    my $cache_key = join '|', 'lines', @opt{qw/day exclude_spam summary_only/};
+    my $cache_key = join '|', 'lines', $self->channel, @opt{qw/day exclude_spam summary_only/};
     cache(namespace => 'backend')->compute($cache_key, undef, sub { $self->backend->lines(%opt) });
 }
 
