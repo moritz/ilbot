@@ -111,50 +111,54 @@ for (my $i = 0; $i < @filter - 2; $i += 2) {
 
 sub text_filter {
     my ($str, $opt) = @_;
-    process($str, {%$opt, next => $first});
+    process($str, {%$opt, step => $first});
 }
 
 sub process {
     my ($str, $opt) = @_;
     my @res;
-    my $to_filter = $opt->{next};
-    return $str unless $to_filter;
+    my $step = $opt->{step};
+    return $str unless $step;
     return '' if $str eq '';
 
-    my $re = $filter{$to_filter}{re};
+    my $re = $filter{$step}{re};
+    my $prev_pos = 0;
     while ($str =~ /($re)/pgc) {
         my ($pre, $match) = (${^PREMATCH}, ${^MATCH});
+        $pre = substr($pre, $prev_pos);
         if (length($pre)) {
-            push @res, process($pre, {%$opt, next => $next{$to_filter} });
+            push @res, process($pre, {%$opt, step => $next{$step} });
         }
-        my $replacement = $filter{$to_filter}{match};
+        my $replacement = $filter{$step}{match};
+        my $next = $filter{$step}{chain} // $next{$step};
         if (ref $replacement) {
             my $r = $replacement->($match, $opt);
             if (ref $r) {
                 my ($pre, $middle, $post) = @$r;
                 push @res, $pre;
                 push @res, process($middle,
-                    { %$opt, next => $filter{$to_filter}{chain} // $next{$to_filter} }
+                    { %$opt, step => $next }
                 );
                 push @res, $post;
             }
             elsif (length($r)) {
                 push @res, process($r,
-                    { %$opt, next => $filter{$to_filter}{chain} // $next{$to_filter} }
+                    { %$opt, step => $next }
                 );
             }
         }
         else {
             push @res, process($replacement,
-                { %$opt, next => $filter{$to_filter}{chain} // $next{$to_filter} }
+                { %$opt, step => $next }
             );
 
         }
+        $prev_pos = pos($str);
     }
     my $p = pos($str) // 0;
     if ($p < length($str)) {
         my $post = substr($str, $p);
-        push @res, process($post, {%$opt, next => $next{$to_filter} });
+        push @res, process($post, {%$opt, step => $next{$step} });
     }
     return join '', @res;
 }
