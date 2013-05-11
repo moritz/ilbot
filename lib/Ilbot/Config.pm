@@ -41,8 +41,8 @@ sub import {
     $config{config_root} = $path;
     $config{template}    = "$path/template";
     $config{backend}     = read_config_file("$path/backend.conf");
-    if (defined $config{backend}{LIB}) {
-        unshift @INC, split /:/, $config{backend}{LIB}
+    if (defined $config{backend}{lib}) {
+        unshift @INC, split /:/, $config{backend}{lib}
     }
     __PACKAGE__->export_to_level(1, __PACKAGE__, 'config');
 }

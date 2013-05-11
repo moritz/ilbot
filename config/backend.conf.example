@@ -1,9 +1,9 @@
 # path to the perl libraries (.pm files)
-LIB = lib
+lib = lib
 
 # Database connectivity
-DSN = mysql
-DATABASE = moritz5 
-HOST = localhost
-USER = moritz
-PASSWORD = foo
+dsn = mysql
+database = moritz5
+host = localhost
+user = moritz
+password = foo

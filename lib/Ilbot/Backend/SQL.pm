@@ -29,12 +29,12 @@ sub new {
     
     {
         my $conf    = $opt{config};
-        my $dbs     = $conf->{DSN} || "mysql";
+        my $dbs     = $conf->{dsn}      || "mysql";
         $self->{db} = $dbs;
-        my $db_name = $conf->{DATABASE} || "irclog";
-        my $host    = $conf->{HOST} || "localhost";
-        my $user    = $conf->{USER} || "irclog";
-        my $passwd  = $conf->{PASSWORD} || "";
+        my $db_name = $conf->{database} || "irclog";
+        my $host    = $conf->{host}     || "localhost";
+        my $user    = $conf->{user}     || "irclog";
+        my $passwd  = $conf->{password} || "";
 
         my $db_dsn  = "DBI:$dbs:database=$db_name;host=$host";
         $self->{dbh} = DBI->connect($db_dsn, $user, $passwd,
