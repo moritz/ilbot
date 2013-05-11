@@ -208,4 +208,24 @@ sub day {
     $t->output(print_to => $opt{out_fh}),
 }
 
+sub http_header {
+    my ($self, %opt) = @_;
+
+    my $type   = ($opt{accept} // '') =~ m{\Qapplication/xhtml+xml\E}
+                    ? 'application/xhtml+xml'
+                    : 'text/html';
+    my @h = (
+        'Vary'              => 'Accept',
+        'Content-Language'  => 'en',
+        'Content-Type'      => "$type; charset=utf-8",
+    );
+
+    if (config(www => 'no_cache')) {
+        push @h, 'Cache-Control' => 'no-cache';
+    }
+
+    return \@h;
+}
+
+
 1;

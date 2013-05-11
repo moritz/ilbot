@@ -336,7 +336,7 @@ my %output_chain = (
             rest    => 'nonprint_clean',
         },
         nonprint_clean => {
-            re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
+            re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+|\x{1b}+/,
             match   => q{},
             rest    => 'links',
         },

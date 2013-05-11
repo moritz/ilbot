@@ -15,20 +15,25 @@ my %known_files = (
 );
 
 my %defaults = (
-    www => { base_url => '/' },
+    www => {
+        base_url    => '/',
+        no_cache    => 0,
+    },
 );
 
 sub import {
-    my @config_paths = (@_,  'config', '/etc/ilbot');
-    for my $p (@config_paths) {
-        if (-e "$p/backend.conf") {
-            $path = $p;
-            last;
-        }
-    }
     unless (defined $path) {
-        die "Cannot find config file 'backend.conf' in any of these directories:\n"
-            . join(', '), map qq['$_'], @config_paths;
+        my @config_paths = (@_,  'config', '/etc/ilbot');
+        for my $p (@config_paths) {
+            if (-e "$p/backend.conf") {
+                $path = $p;
+                last;
+            }
+        }
+        unless (defined $path) {
+            die "Cannot find config file 'backend.conf' in any of these directories:\n"
+                . join(', '), map qq['$_'], @config_paths;
+        }
     }
     unless (-d "$path/template") {
         die "Missing directory '$path/template'";

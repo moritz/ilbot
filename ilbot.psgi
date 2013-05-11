@@ -16,7 +16,6 @@ use Plack::Builder;
 
 my $app = sub {
     my $env = shift;
-#    print Dumper $env;
     my $sql      = Ilbot::Backend::SQL->new(
         config      => config('backend'),
     );
@@ -54,8 +53,9 @@ my $app = sub {
         }
 
     }
+    my $h = $frontend->http_header( accept => $env->{HTTP_ACCEPT} );
 
-    return [200, [ 'Content-Type' => 'text/html; charset=utf-8' ], [$s]];
+    return [200, $h, [$s]];
 };
 
 my $c = \&config;
