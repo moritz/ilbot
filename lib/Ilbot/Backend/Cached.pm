@@ -36,6 +36,7 @@ sub backend { $_[0]{backend} }
 package Ilbot::Backend::Cached::Channel;
 
 use Ilbot::Cache qw/cache/;
+use Ilbot::Date qw/gmt_today/;
 
 sub new {
     my ($class, %opt) = @_;

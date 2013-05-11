@@ -182,7 +182,7 @@ sub day {
     my $prev_nick = q{};
     my $c         = 0;
     my @msg;
-    my $self_url  = join '/', $base_url, $channel, $opt{day};
+    my $self_url  = $base_url . join '/',  $channel, $opt{day};
     for my $row (@$rows) {
         my $id          = $row->[0];
         # TODO: decode?
@@ -214,9 +214,9 @@ sub day {
 #        IS_SUMMARY  => $summary,
     );
     my $prev = date($opt{day}) - 1;
-    $t->param(PREV_DATE => $prev, PREV_URL => "$base_url/$opt{channel}/$prev");
+    $t->param(PREV_DATE => $prev, PREV_URL => "$base_url$opt{channel}/$prev");
     my $next = date($opt{day}) + 1;
-    $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url/$opt{channel}/$next");
+    $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url$opt{channel}/$next");
     $t->output(print_to => $opt{out_fh}),
 }
 
