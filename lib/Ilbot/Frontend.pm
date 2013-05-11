@@ -3,11 +3,19 @@ use strict;
 use warnings;
 use 5.010;
 use HTML::Template;
+
+use Ilbot::Config qw/config/;
 use Ilbot::Date qw/gmt_today/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
-use IrcLog::WWW qw/message_line/;
+use Ilbot::Frontend::TextFilter qw/text_filter/;
+
 use Date::Simple qw/date/;
-use Ilbot::Config qw/config/;
+use IrcLog::WWW qw/my_decode/;
+use HTML::Entities qw(encode_entities);
+
+use constant ENTITIES => qq{<>"&};
+use constant NBSP => "\xa0";
+
 
 sub new {
     my ($class, %opt) = @_;
@@ -208,6 +216,69 @@ sub day {
     $t->output(print_to => $opt{out_fh}),
 }
 
+sub message_line {
+    my ($args_ref, $c) = @_;
+    my $nick = $args_ref->{nick};
+    my %h = (
+        ID          => $args_ref->{id},
+        TIME        => format_time($args_ref->{timestamp}),
+        MESSAGE     => text_filter(my_decode($args_ref->{message}),
+                            {
+                                channel => $args_ref->{channel},
+                                nick    => $args_ref->{nick},
+                            }
+                        ),
+        LINE_NUMBER => ++$args_ref->{line_number},
+        IN_SUMMARY  => $args_ref->{in_summary},
+    );
+    $h{DATE}         = $args_ref->{date} if $args_ref->{date};
+    $h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
+
+    my @classes;
+    my @msg_classes;
+    my $display_nick = $nick;
+    $display_nick =~ s/\A\*\ /'*' . NBSP/exms;
+    $h{NICK} = encode_entities($display_nick, ENTITIES);
+    if ($nick ne $args_ref->{prev_nick}){
+        # $c++ is used to alternate the background color
+        $$c++;
+        push @classes, 'new';
+    } else {
+        # omit nick in successive lines from the same nick
+        push @classes, 'cont';
+    }
+
+    if ($nick =~ /\A\*\ /smx) {
+        push @msg_classes, 'act';
+    }
+
+    if ($nick eq ""){
+        # empty nick column means that nobody said anything, but
+        # it's a join, part, topic change etc.
+        push @classes, "special";
+                $h{SPECIAL} = 1;
+    }
+    else {
+        # To ensure successive lines from same nick are displayed, we want
+        # both these classes on every non-special <tr>
+        push @classes, ( "nick", "nick_".sanitize_nick($nick) );
+    }
+
+    if ($$c % 2){
+        push @classes, "dark";
+    }
+    if (@classes){
+        $h{CLASS} = join " ", @classes;
+    }
+    if (@msg_classes) {
+        $h{MSG_CLASS} = join " ", @msg_classes;
+    }
+    $h{NICK_COLOR} = $args_ref->{color};
+
+    return \%h;
+}
+
+
 sub http_header {
     my ($self, %opt) = @_;
 
@@ -225,6 +296,18 @@ sub http_header {
     }
 
     return \@h;
+}
+
+sub format_time {
+    my $d = shift;
+    my @times = gmtime($d);
+    return sprintf("%02d:%02d", $times[2], $times[1]);
+}
+
+sub sanitize_nick {
+    my $nick = shift;
+    $nick =~ s/[^-a-zA-Z0-9_]//g;
+    return $nick;
 }
 
 

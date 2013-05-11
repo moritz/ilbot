@@ -1,69 +1,25 @@
 package IrcLog::WWW;
 use strict;
 use warnings;
-use HTTP::Headers;
 use Encode qw(encode decode);
 use Encode::Guess;
-use Regexp::Common qw(URI);
 use HTML::Entities;
 use POSIX qw(ceil);
 use Config::File;
 use Carp qw(confess cluck);
 use utf8;
 
-my $uri_regexp = $RE{URI}{HTTP};
-$uri_regexp =~ s/http/https?/g;
-
-my %color_codes = (
-   "\e[32m"     => 'green',
-   "\e[34m"     => 'blue',
-   "\e[31m"     => 'red',
-   "\e[33m"     => 'orange',
-);
-my $color_reset = qr{(?:\[0m|\\x1b)+};
-my $color_start = join '|', map quotemeta, keys %color_codes;
-
 use base 'Exporter';
 our @EXPORT_OK = qw(
-        http_header
         my_decode
         message_line
         my_encode
         );
 
-use constant TAB_WIDTH => 4;
 use constant NBSP => decode_entities("&nbsp;");
 use constant ENTITIES => qq{<>"&};
 
 
-sub http_header {
-    my $config = shift || {};
-    my $h = HTTP::Headers->new;
-    
-    $h->header(Status => '200 OK');
-    $h->header(Vary => 'Accept');
-    $h->header('Cache-Control' => 'no-cache') if $config->{nocache};
-    
-    my $accept = $ENV{HTTP_ACCEPT} || 'text/html';
-    
-    my %qs = (html => 1, xhtml => 0);
-    
-    if ($accept =~ m{ application/xhtml\+xml (; q= ([\d.]+) )? }x && !$config->{no_xhtml}) {
-        $qs{xhtml} = ($2) ? $2 : 1;
-    }
-
-    if ($accept =~ m{ text/html (; q= ([\d.]+) )? }x) {
-        $qs{html} = ($2) ? $2 : 1;
-    }
-    
-    my $type = ($qs{xhtml} >= $qs{html}) ? 'application/xhtml+xml' : 'text/html';
-    $h->header(
-            'Content-Type'     => "$type; charset=utf-8",
-            'Content-Language' => 'en',
-            );
-    
-    return $h->as_string . "\n";
-}
 
 # my_decode takes a string and encodes it in utf-8
 sub my_decode {
@@ -77,41 +33,6 @@ sub my_decode {
     } else {
         return decode("utf-8", $str);
     }
-
-    # XXX never reached, reenable when the code below is fixed
-
-
-    no utf8;
-#  $str =~ s/[\x02\x16]//g;
-    my @enc;
-    if ($str =~ m/\A
-            (?:
-             [[:print:]]* [A-Za-z]+ [^[:print:]]{1,5} 
-             [A-Za-z]+
-             [[:print:]]*
-             )+
-            \z/smx 
-            or $str =~ m/\A
-                [[:print:]]*
-                [^[:print:]]{1,5}
-                [A-Za-z]+
-                [[:print:]]*
-                \z/smxg ) {
-        @enc = qw(latin1 fr euc-cn big5-eten);
-    } else {
-        @enc = qw(euc-cn big5 latin1 fr);
-    }
-    my $saved_str = $str;
-    my $utf8 = decode_by_guessing(
-        $str,
-        qw/ascii utf-8/, @enc,
-    );
-    if (! defined($utf8)) {
-        warn "Warning: malformed data: \"$str\"\n";
-        $str = $saved_str;
-        #$str =~ s/[^[:print:]]+/?/gs;
-    }     ### $str
-    return $str;
 }
 
 sub decode_by_guessing {
@@ -134,74 +55,6 @@ sub format_time {
     my $d = shift;
     my @times = gmtime($d);
     return sprintf("%02d:%02d", $times[2], $times[1]);
-}
-
-sub revision_links {
-    my ($r, $state, $channel, $botname) = @_;
-    $channel = 'parrot' if $botname =~ /^rakudo/;
-    $channel = 'specs'  if $botname =~ /^speck?bot/;
-    my %prefixes = (
-             'perl6'    =>  'http://perlcabal.org/svn/pugs/revision/?rev=',
-             'parrot'    => 'https://trac.parrot.org/parrot/changeset/',
-             'bioclipse' => 'http://bioclipse.svn.sourceforge.net/viewvc/bioclipse?view=rev;revision=',
-             'specs'     => 'http://www.perlcabal.org/svn/p6spec/revision?rev=',
-            );
-    my $url_prefix = $prefixes{$channel};
-    return $r unless $url_prefix;
-    $r =~ s/[^\d]//smxg;
-    return qq{<a href="$url_prefix$r" title="Changeset for r$r">r$r</a>};
-}
-
-sub synopsis_links {
-    my $s = shift;
-    if ($s =~ m/^S(\d\d)$/i){
-        return qq{<a href="http://perlcabal.org/syn/S$1.html">$s</a>};
-    } elsif ($s =~ m/^S(\d\d):(\d+)(?:-\d+)?$/smi){
-        return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$s</a>};
-    } elsif ( $s =~ m{^S(\d\d)/\"([^"]+)\"$}msi ) {
-        my ($syn, $anchor) = ($1, $2);
-        $s = encode_entities($s, ENTITIES);
-        $anchor =~ s{[^A-Za-z1-9_-]}{_}g;
-        return qq{<a href="http://perlcabal.org/syn/S$syn.html#$anchor">$s</a>};
-    } else {
-        warn "Internal error in synopsis link handling (string: $s)";
-        return encode_entities($s, ENTITIES);
-    }
-}
-
-sub ansi_color_codes {
-    my ($str, @args) = @_;
-    my @chunks = split /($color_start|$color_reset)/, $str;
-    my $color;
-    my $res = '';
-    for (@chunks) {
-        next unless length $_;
-        next if /$color_reset/;
-        if (/$color_start/) {
-            $color = $color_codes{$_};
-        } else {
-            $res .=  qq{<span style="color: $color">}
-                    . encode_entities($_, ENTITIES)
-                    . qq{</span>};
-        }
-    }
-    return $res;
-}
-
-sub linkify {
-    my $url = shift;
-    my $display_url = $url;
-    if (length($display_url) >= 50){
-        $display_url
-            = substr( $display_url, 0, 30 )
-            . '[…]'
-            . substr( $display_url, -17 )
-            ;
-    }
-    $url = encode_entities( $url, ENTITIES );
-    return qq{<a href="$url" title="$url">}
-           . encode_entities( $display_url, ENTITIES )
-           . '</a>';
 }
 
 my $re_abbr = qr/(?!)/;
@@ -274,189 +127,6 @@ my $re_links = qr/(?!)/;
     }
 
 }
-
-sub github_links {
-    my ($key, $state, $channel, $nick) = @_;
-    if ($key =~ m/^GH/i) {
-        $key =~ m/(\d+)/;
-        if ($channel eq "parrot") {
-            return qq{<a href="https://github.com/parrot/parrot/issues/$1">}
-                . encode_entities($key, ENTITIES)
-                . qq{</a> };
-        }
-        elsif ($channel eq "moe") {
-            return qq{<a href="https://github.com/MoeOrganization/moe/issues/$1">}
-                . encode_entities($key, ENTITIES)
-                . qq{</a> };
-        }
-    }
-    elsif ($key =~ m/^pull request/i) {
-        if ($channel eq "moe") {
-            return qq{<a href="https://github.com/MoeOrganization/moe/pull/$1">}
-                . encode_entities($key, ENTITIES)
-                . qq{</a> };
-        }
-    }
-    else {
-        return encode_entities($key, ENTITIES);
-    }
-}
-
-sub rt_links {
-    my ($key, $state) = @_;
-    if ($key =~ m/^tt/i) {
-        $key =~ m/(\d+)/;
-        return qq{<a href="https://trac.parrot.org/parrot/ticket/$1">}
-            . encode_entities($key, ENTITIES)
-            . qq{</a> };
-    } 
-    $key =~ s/^#//;
-    return qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$key">}
-            . encode_entities("#$key", ENTITIES) 
-            . qq{</a>};
-}
-
-sub irc_channel_links {
-    my ($key, $state) = @_;
-    $key =~ s/^#//;
-    return qq{<a href="/$key/today">}
-            . encode_entities("#$key", ENTITIES) 
-            . qq{</a>};
-}
-
-my %output_chain = (
-        irc_color_codes => {
-            re      => qr/\03\d{2}/,
-            match   => '',
-            rest    => 'ansi_color_codes',
-        },
-        ansi_color_codes => {
-            re      => qr{$color_start.*?(?:$color_reset|\z)}s,
-            match   => \&ansi_color_codes,
-            rest    => 'nonprint_clean',
-        },
-        nonprint_clean => {
-            re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+|\x{1b}+/,
-            match   => q{},
-            rest    => 'links',
-        },
-        links => {
-            # the negative lookbehind at the end ensures that 
-            # trailing punctuation like http://foo.com/, is not included 
-            # in the link. This means that not all valid URLs are recognized
-            # in full, but that's an acceptable tradeoff
-            re      => qr{$uri_regexp(?:#[\w_%:/!*+?;&=-]+)?(?<![.,])},
-            match   => \&linkify,
-            rest    => 'synopsis_links',
-        },
-        synopsis_links => {
-            re      => qr{
-                \bS\d\d             # S05
-                (?: (?: : \d+       # S05:123
-                    (?:-\d+)? )     # S05:123-456
-                | /"[^"]+"          # S05/"Nothing is illegal"
-                )?
-                }xmsi,
-
-            match   => \&synopsis_links,
-            rest    => 'static_links',
-        },
-        static_links => {
-             re     => $re_links,
-             match  => \&expand_links,
-             rest   => 'github_links'
-        },
-        github_links     => {
-            re     => qr{(?i:\b(?:GH|pull request)\s*)#\d{2,6}\b},
-            match  => \&github_links,
-            rest   => 'rt_links',
-        },
-        rt_links     => {
-             re     => qr{(?i:\btt\s*)?#\d{2,6}\b},
-             match  => \&rt_links,
-             rest   => 'irc_channel_links',
-        },
-        irc_channel_links => {
-            re      => qr{#(?:perl6-soc|perl6|parrot|cdk|bioclipse|parrotsketch)\b},
-            match   => \&irc_channel_links,
-            rest    => 'abbrs',
-        },
-        abbrs => {
-            re      => $re_abbr,
-            match   => \&expand_abbrs,
-            rest    => 'email_obfuscate',
-        },
-        email_obfuscate => {
-            re      => qr/(?<=\w)\@(?=\w)/,
-            # XXX: this should really be $base_url . 'at.png'
-            match   => '<img src="/at.png" alt="@" />',
-            rest    => 'break_words',
-        },
-        break_words => {
-            re      => qr/\S{50,}/,
-            match   => \&break_apart,
-            rest    => 'expand_tabs',
-        },
-        expand_tabs => {
-            re          => qr/\t/,
-            match       => sub { " " x TAB_WIDTH },
-            rest        => 'preserve_spaces',
-        },
-        preserve_spaces => {
-            re       => qr/  /,
-            match    => sub { " " . NBSP },
-            rest     => 'encode',
-        },
-);
-
-# does all the output processing of ordinary output lines
-sub output_process {
-    my ($str, $rule, $channel, $nick) = @_;
-    return qq{} unless length $str;
-    my $res = "";
-    if ($rule eq 'encode'){
-        return encode_entities( $str, ENTITIES );
-    } else {
-        my $re = $output_chain{$rule}{re};
-        my $state = {};
-        while ($str =~ m/$re/){
-            my ($pre, $match, $post) = ($`, $&, $');
-            $res .= output_process($pre, $output_chain{$rule}{rest}, $channel, $nick);
-            my $m = $output_chain{$rule}{match};
-            if (ref $m && ref $m eq 'CODE'){
-                $res .= &$m($match, $state, $channel, $nick);
-            } else {
-                $res .= $m;
-            }
-            $str = $post;
-        }
-        $res .= output_process($str, $output_chain{$rule}{rest}, $channel, $nick);
-    }
-    return $res;
-}
-
-sub break_words {
-    my $str = shift;
-    $str =~ s/(\S{50,})/break_apart($1)/ge;
-    return $str;
-}
-
-# expects a string consisting of a single long word, and returns the same
-# string with spaces after each 50 bytes at least
-sub break_apart {
-    my $str = shift;
-    my $max_chunk_size = 50;
-    my $l = length $str;
-    my $chunk_size = ceil( $l / ceil($l/$max_chunk_size));
-
-    my $result = substr $str, 0, $chunk_size;
-    for (my $i = $chunk_size; $i < $l; $i += $chunk_size){
-        my $delim = chr(8203);
-        $result .= $delim . substr $str, $i, $chunk_size;
-    }
-    return encode_entities($result, ENTITIES);
-}
-
 
 sub message_line {
     my ($args_ref, $c) = @_;

@@ -42,7 +42,7 @@ my @filter = (
         match   => \&ansi_color_codes,
     },
     nonprint_clean => {
-        re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+|\x{1b}+/,
+        re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
         match   => '',
     },
     links => {
