@@ -12,6 +12,7 @@ use Ilbot::Frontend::TextFilter qw/text_filter/;
 use Date::Simple qw/date/;
 use IrcLog::WWW qw/my_decode/;
 use HTML::Entities qw(encode_entities);
+use Encode qw/encode_utf8/;
 
 use constant ENTITIES => qq{<>"&};
 use constant NBSP => "\xa0";
@@ -233,7 +234,7 @@ sub day_text {
     }
     my $text = "$table";
     $text =~ s/\h+$//gm;
-    return $text;
+    return encode_utf8 $text;
 }
 
 sub update_summary {
