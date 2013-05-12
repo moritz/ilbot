@@ -17,7 +17,9 @@ our %SQL = (
         lines_summary_spam       => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND in_summary ORDER BY id],
     },
     mysql       => {
-        activity_average    => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
+        activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
+        search_count             => q[SELECT COUNT(DISTINCT(day)) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
+        search_count_nick        => q[SELECT COUNT(DISTINCT(day)) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
     },
 );
 
@@ -181,6 +183,21 @@ sub lines {
     );
 
     return $r;
+}
+
+sub search_day_count {
+    my ($self, %opt) = @_;
+    die "Missing argument 'q'" unless defined $opt{q};
+    my @bind_param = ($self->channel, $opt{q});
+    my $sql;
+    if (defined $opt{nick}) {
+        $sql = $self->sql_for(query => 'search_count_nick');
+        push @bind_param, $opt{nick}, "* $opt{nick}";
+    }
+    else {
+        $sql = $self->sql_for(query => 'search_count');
+    }
+
 }
 
 1;
