@@ -176,7 +176,7 @@ sub day {
     my $b         = $self->backend->channel(channel => '#' . $channel);
     my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary});
     my $line_no   = 0;
-    my $prev_nick = q{};
+    my $prev_nick = q{!!!};
     my $c         = 0;
     my @msg;
     my $self_url  = $base_url . join '/',  $channel, $opt{day};
@@ -282,7 +282,7 @@ sub message_line {
         # empty nick column means that nobody said anything, but
         # it's a join, part, topic change etc.
         push @classes, "special";
-                $h{SPECIAL} = 1;
+        $h{SPECIAL} = 1;
     }
     else {
         # To ensure successive lines from same nick are displayed, we want
