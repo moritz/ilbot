@@ -228,3 +228,7 @@ tr.cont td.nick {
 table.calendar a {
     font-weight:  bold;
 }
+
+.hidden {
+    display: none;
+}
