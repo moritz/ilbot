@@ -10,6 +10,7 @@ CREATE TABLE irclog (
 	in_summary	BOOLEAN DEFAULT(FALSE)
 );
 
-CREATE INDEX irclog__nick 	ON irclog(nick);
-CREATE INDEX irclog__channel  	ON irclog(channel);
-CREATE INDEX irclog__day  	ON irclog(day);
+CREATE INDEX irclog__nick 	            ON irclog(nick);
+CREATE INDEX irclog__channel  	        ON irclog(channel);
+CREATE INDEX irclog__day  	            ON irclog(day);
+CREATE INDEX irlcog__channel_day_nick   ON irclog (channel, day, nic);
