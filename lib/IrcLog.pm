@@ -65,8 +65,7 @@ C<database.conf>.
 
 * gmt_today
 
-returns the current date in the format YYYY-MM-DD, and uses UTC (GMT) to 
-dermine the date.
+returns the current date in the format YYYY-MM-DD, and uses UTC (GMT) or LOCAL to dermine the date.
 
 =cut
 
