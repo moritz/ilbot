@@ -158,6 +158,10 @@ sub synopsis_links {
         return qq{<a href="http://perlcabal.org/syn/S$1.html">$s</a>};
     } elsif ($s =~ m/^S(\d\d):(\d+)(?:-\d+)?$/smi){
         return qq{<a href="http://perlcabal.org/syn/S$1.html#line_$2">$s</a>};
+    } elsif ($s =~ m/^S(\d\d)\/(\w+)$/smi){
+        return qq{<a href="http://perlcabal.org/syn/S$1/$2.html">$s</a>};
+    } elsif ($s =~ m/^S(\d\d)\/(\w+):(\d+)(?:-\d+)?$/smi){
+        return qq{<a href="http://perlcabal.org/syn/S$1/$2.html#line_$3">$s</a>};
     } elsif ( $s =~ m{^S(\d\d)/\"([^"]+)\"$}msi ) {
         my ($syn, $anchor) = ($1, $2);
         $s = encode_entities($s, ENTITIES);
@@ -396,6 +400,7 @@ my %output_chain = (
         synopsis_links => {
             re      => qr{
                 \bS\d\d             # S05
+                (?: \/ \w+ )?       # S05/Foo
                 (?: (?: : \d+       # S05:123
                     (?:-\d+)? )     # S05:123-456
                 | /"[^"]+"          # S05/"Nothing is illegal"
