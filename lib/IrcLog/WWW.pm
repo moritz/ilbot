@@ -50,10 +50,17 @@ sub decode_by_guessing {
     return;
 }
 
-# turns a timestap into a (GMT) time string
+# turns a timestap into a (GMT) or LOCAL time string
 sub format_time {
     my $d = shift;
-    my @times = gmtime($d);
+	my $conf = Config::File::read_config_file("bot.conf");
+    my $timezone = $conf->{TIMEZONE} || "GMT";
+
+    my @times;
+
+    if($timezone eq 'GMT') { @times = gmtime($d); }
+    elsif($timezone eq 'LOCAL') { @times = localtime($d); }
+
     return sprintf("%02d:%02d", $times[2], $times[1]);
 }
 
