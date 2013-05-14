@@ -32,9 +32,17 @@ sub get_dbh {
     return $dbh;
 }
 
-# returns current date in GMT in the form YYYY-MM-DD
+# returns current date in GMT or EST in the form YYYY-MM-DD
 sub gmt_today {
-    my @d = gmtime(time);
+    my $conf = Config::File::read_config_file("bot.conf");
+    my $timezone = $conf->{TIMEZONE} || "GMT"
+
+	my @d;
+
+	# If the 'TIMEZONE' value has been set and it's 'EST', use EST
+	if($timezone eq 'GMT') { @d = localtime(time); }
+	elsif($timezone eq 'EST') { @d = localtime(time); }
+
     return sprintf("%04d-%02d-%02d", $d[5]+1900, $d[4] + 1, $d[3]);
 }
 
