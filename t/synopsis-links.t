@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 9;
+use Test::More tests => 11;
 
 BEGIN { use_ok('IrcLog::WWW'); }
 
@@ -34,6 +34,8 @@ is( link_length('foo S05 bar'), 3,   qq{'S05' in text is turned into a link} );
 is( link_length('sdfS05'), undef,    qq{'S05' within a word in not linkified} );
 is( link_length('S05:123'), 7,       qq{'S05:123' linkifies} );
 is( link_length('S05:1-2'), 7,       qq{'S05:1-2' (ranges) linkify} );
+is( link_length('S32/Containers'), 14,      qq{'S32/foo' (subsections) linkify} );
+is( link_length('S32/Containers:1112'), 19, qq{'S32/foo:1-2' (subsections+ranges) linkify} );
 
 # " is turned into &quot;
 is( link_length('S05/"foo b"'), 21,  qq{'S05/"foo b" linkifies} );
