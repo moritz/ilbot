@@ -197,6 +197,17 @@ sub search_day_count {
     else {
         $sql = $self->sql_for(query => 'search_count');
     }
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@bind_param);
+    my ($count) = $sth->fetchrow_array;
+    $sth->finish;
+    return $count;
+}
+
+sub search_results {
+    my ($self, %opt) = @_;
+    die "Missing argument 'q'" unless defined $opt{q};
+    $opt{offset} //= 0;
 
 }
 
