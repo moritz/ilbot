@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Config::File;
+use Ilbot::Config qw/config/;
 use Test::More tests => 6;
 
 BEGIN { use_ok('IrcLog::WWW'); }
@@ -9,11 +9,10 @@ sub link_text {
     my $text = shift;
     my $c = 1;
 
-	my $conf = Config::File::read_config_file("bot.conf");
-    my $timezone = $conf->{TIMEZONE} || "GMT";
+	my $timezone = config(backend => 'timezone') || 'gmt';
     my $time;
-    if($timezone eq 'GMT') { $time = gmtime; }
-    elsif($timezone eq 'LOCAL') { $time = localtime; }
+    if($timezone eq 'gmt') { $time = gmtime; }
+    elsif($timezone eq 'local') { $time = localtime; }
 
     my $h = IrcLog::WWW::message_line({
             id          => 1,

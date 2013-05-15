@@ -10,6 +10,7 @@ use HTML::Entities;
 # evil hack: Text::Table lies somewhere near /irclog/ on the server...
 use lib '../lib';
 use lib 'lib';
+use Ilbot::Config qw/config/;
 use IrcLog qw(get_dbh gmt_today);
 use IrcLog::WWW qw(my_encode my_decode);
 use Text::Table;
@@ -55,15 +56,15 @@ my $table = Text::Table->new(qw(Time Nick Message));
 
 while (my $row = $db->fetchrow_hashref){
     next unless length($row->{nick});
-	my $conf = Config::File::read_config_file("bot.conf");
-    my $timezone = $conf->{TIMEZONE} || "GMT";
+
+	my $timezone = config(backend => 'timezone') || 'gmt';
 
     my ($hour, $minute);
 
-    if($timezone eq 'GMT') {
+    if($timezone eq 'gmt') {
         ($hour, $minute) =(gmtime $row->{timestamp})[2,1];
     }
-    elsif($timezone eq 'LOCAL') {
+    elsif($timezone eq 'local') {
         ($hour, $minute) =(localtime $row->{timestamp})[2,1];
     }
 

@@ -7,3 +7,9 @@ database = moritz5
 host = localhost
 user = moritz
 password = foo
+
+# Timezone
+# Options:
+#	* 'local' for server's timezone
+#	* 'gmt' for UTC
+timezone = local

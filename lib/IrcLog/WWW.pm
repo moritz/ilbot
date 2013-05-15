@@ -7,6 +7,7 @@ use HTML::Entities;
 use POSIX qw(ceil);
 use Config::File;
 use Carp qw(confess cluck);
+use Ilbot::Config qw/config/;
 use utf8;
 
 use base 'Exporter';
@@ -53,13 +54,12 @@ sub decode_by_guessing {
 # turns a timestap into a (GMT) or LOCAL time string
 sub format_time {
     my $d = shift;
-	my $conf = Config::File::read_config_file("bot.conf");
-    my $timezone = $conf->{TIMEZONE} || "GMT";
+	my $timezone = config(backend => 'timezone') || 'gmt';
 
     my @times;
 
-    if($timezone eq 'GMT') { @times = gmtime($d); }
-    elsif($timezone eq 'LOCAL') { @times = localtime($d); }
+    if($timezone eq 'gmt') { @times = gmtime($d); }
+    elsif($timezone eq 'local') { @times = localtime($d); }
 
     return sprintf("%02d:%02d", $times[2], $times[1]);
 }
