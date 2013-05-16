@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use Ilbot::Config qw/config/;
 use Test::More tests => 9;
 
 BEGIN { use_ok('IrcLog::WWW'); }
@@ -7,10 +8,16 @@ BEGIN { use_ok('IrcLog::WWW'); }
 sub link_length {
     my $text = shift;
     my $c = 1;
+
+	my $timezone = config(backend => 'timezone') || 'gmt';
+    my $time;
+    if($timezone eq 'gmt') { $time = gmtime; }
+    elsif($timezone eq 'local') { $time = localtime; }
+
     my $h = IrcLog::WWW::message_line({
             id          => 1,
             nick        => 'somebody',
-            timestamp   => gmtime,
+            timestamp   => $time,
             message     => $text,
             line_number => 1,
             prev_nick   => '',

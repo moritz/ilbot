@@ -19,6 +19,9 @@ my %defaults = (
         base_url    => '/',
         no_cache    => 0,
     },
+    backend => {
+        timzone    => 'local',
+    },
 );
 
 sub import {

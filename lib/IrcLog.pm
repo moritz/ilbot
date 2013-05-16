@@ -7,6 +7,7 @@ use DBI;
 use Config::File;
 use Carp;
 use utf8;
+use Ilbot::Config qw/config/;
 
 require Exporter;
 
@@ -32,9 +33,15 @@ sub get_dbh {
     return $dbh;
 }
 
-# returns current date in GMT in the form YYYY-MM-DD
+# returns current date in gmt or local time zone in the form YYYY-MM-DD
 sub gmt_today {
-    my @d = gmtime(time);
+	my $timezone = config(backend => 'timezone') || 'gmt';
+
+	my @d;
+
+	if($timezone eq 'gmt') { @d = gmtime(time); }
+	elsif($timezone eq 'local') { @d = localtime(time); }
+
     return sprintf("%04d-%02d-%02d", $d[5]+1900, $d[4] + 1, $d[3]);
 }
 
@@ -58,8 +65,7 @@ C<database.conf>.
 
 * gmt_today
 
-returns the current date in the format YYYY-MM-DD, and uses UTC (GMT) to 
-dermine the date.
+returns the current date in the format YYYY-MM-DD, and uses UTC (GMT) or LOCAL to dermine the date.
 
 =cut
 
