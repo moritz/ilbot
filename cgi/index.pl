@@ -46,7 +46,7 @@ sub get_index {
 			my $filename = $row[0];
 			$filename =~ s/[^\w-]+//g;
 			$filename = "images/index/$filename.png";
-			$data{image_path} = $filename if -e $filename;
+			$data{image_path} = $filename if -f $filename && -s $filename;
 		}
 		push @channels, \%data;
 	}
