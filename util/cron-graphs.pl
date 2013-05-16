@@ -5,6 +5,7 @@ use IrcLog qw(get_dbh);
 use Date::Simple qw/date today/;
 use List::Util qw/max/;
 use Getopt::Long;
+use 5.010;
 
 my $dir = 'cgi/images/index/';
 my $no_steps = 100;
@@ -34,6 +35,12 @@ $sth->execute();
 my $count_sth = $dbh->prepare(q[SELECT COUNT(*) FROM irclog WHERE channel = ?
     AND day BETWEEN ? AND ? AND nick <> '']);
 
+my $template = do {
+    open my $IN, '<', 'lines.plot'
+        or die "Cannot read file 'lines.plot': $!";
+    local $/;
+    <$IN>;
+};
 
 while (my ($channel) = $sth->fetchrow) {
     my @counts;
@@ -51,12 +58,18 @@ while (my ($channel) = $sth->fetchrow) {
     (my $filename = $channel) =~ s/[^\w-]//g;
     $filename = "$dir/$filename.png";
     my ($TMP, $tmp_file) = tempfile();
+
     for (@counts) {
         say $TMP $_;
     }
     close $TMP or die "Error while writing to $tmp_file: $!";
+    my ($GNU, $gnu_file) = tempfile();
+    say $GNU $template;
+    say $GNU qq[set output '$filename';];
+    say $GNU qq[plot '$tmp_file' with lines lt rgb "gray"];
+    close $GNU or die "Error while writing to $gnu_file: $!";
 
-    system('gnuplot', '-e', qq[set output '$filename'; plot '$tmp_file' with lines lt rgb "gray"], 'lines.plot');
+    system('gnuplot', $gnu_file);
 
 }
 $sth->finish;
