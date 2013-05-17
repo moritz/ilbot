@@ -5,7 +5,7 @@ use 5.010;
 use HTML::Template;
 
 use Ilbot::Config qw/config/;
-use Ilbot::Date qw/gmt_today/;
+use Ilbot::Date qw/gmt_today mytime/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use Ilbot::Frontend::TextFilter qw/text_filter/;
 
@@ -233,14 +233,7 @@ sub day_text {
 
 		my $timezone = config(backend => 'timezone') || 'gmt';
 
-		my ($hour, $minute);
-
-		if($timezone eq 'gmt') {
-        	($hour, $minute) = (gmtime $ts)[2, 1];
-		}
-		elsif($timezone eq 'local') {
-        	($hour, $minute) = (localtime $ts)[2, 1];
-		}
+		my ($hour, $minute) = (mytime $ts)[2, 1];
 
         $table->add(sprintf("%02d:%02d", $hour, $minute), $nick, $line);
     }
@@ -338,14 +331,7 @@ sub http_header {
 
 sub format_time {
     my $d = shift;
-	
-	my $timezone = config(backend => 'timezone') || 'gmt';
-
-    my @times;
-
-    if($timezone eq 'gmt') { @times = gmtime($d); }
-    elsif($timezone eq 'local') { @times = localtime($d); }
-
+    my @times = mytime($d);
     return sprintf("%02d:%02d", $times[2], $times[1]);
 }
 
