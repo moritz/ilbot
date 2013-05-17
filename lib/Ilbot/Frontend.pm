@@ -5,7 +5,7 @@ use 5.010;
 use HTML::Template;
 
 use Ilbot::Config qw/config/;
-use Ilbot::Date qw/gmt_today mytime/;
+use Ilbot::Date qw/today mytime/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use Ilbot::Frontend::TextFilter qw/text_filter/;
 

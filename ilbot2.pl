@@ -9,7 +9,8 @@ use Carp qw(confess);
 # this is a cleaner reimplementation of ilbot, with Bot::BasicBot which 
 # in turn is based POE::* stuff
 package IrcLogBot;
-use IrcLog qw(get_dbh gmt_today);
+use IrcLog qw(get_dbh);
+use Ilbot::Date qw/today/;
 use Data::Dumper;
 
 {
@@ -28,7 +29,7 @@ use Data::Dumper;
         # mncharity aka putter has an IRC client that prepends some lines with
         # a BOM. Remove that:
         $line =~ s/\A\x{ffef}//;
-        my @sql_args = ($channel, gmt_today(), $who, time, $line);
+        my @sql_args = ($channel, today(), $who, time, $line);
         if ($dbh->ping){
             $q->execute(@sql_args);
         } else {

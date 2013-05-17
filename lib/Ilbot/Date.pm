@@ -9,7 +9,7 @@ use Exporter qw/import/;
 our @EXPORT_OK = qw/today mytime/;
 
 BEGIN {
-    *mytime = config(backend => timezone) eq 'local'
+    *mytime = config(backend => 'timezone') eq 'local'
               ? \&CORE::localtime : \&CORE::gmtime;
 }
 
