@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010;
 
-use Ilbot::Date qw/gmt_today/;
+use Ilbot::Date qw/today/;
 use Ilbot::Cache qw/cache/;
 use CHI;
 
@@ -59,7 +59,7 @@ sub backend { $_[0]{backend} }
 package Ilbot::Backend::Cached::Channel;
 
 use Ilbot::Cache qw/cache/;
-use Ilbot::Date qw/gmt_today/;
+use Ilbot::Date qw/today/;
 
 sub new {
     my ($class, %opt) = @_;
@@ -76,7 +76,7 @@ sub day_has_activity {
     my $cache_key = join '|', 'day_has_activity', $self->channel, $day;
     die "Missing option 'day'" unless defined $day;
     my $cache = cache(namespace => 'backend');
-    if ($day eq gmt_today()) {
+    if ($day eq today()) {
         my $res = $cache->get($cache_key);
         return $res if $res;
         $res = $self->backend->day_has_activity(day => $day);
@@ -90,7 +90,7 @@ sub day_has_activity {
 
 sub days_and_activity_counts {
     my $self = shift;
-    my $cache_key = join '|', 'days_and_activity_counts', $self->channel, gmt_today();
+    my $cache_key = join '|', 'days_and_activity_counts', $self->channel, today();
     cache(namespace => 'backend')->compute($cache_key, '1 hour', sub {
         $self->backend->days_and_activity_counts;
     });
@@ -103,7 +103,7 @@ sub lines {
     $opt{summary_only}  //= 0;
 
     # for now, don't cache for today at all:
-    return $self->backend->lines(%opt) if $opt{day} eq gmt_today();
+    return $self->backend->lines(%opt) if $opt{day} eq today();
 
     my $cache_key = join '|', 'lines', $self->channel, @opt{qw/day exclude_spam summary_only/};
     cache(namespace => 'backend')->compute($cache_key, undef, sub { $self->backend->lines(%opt) });

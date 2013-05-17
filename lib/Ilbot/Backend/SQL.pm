@@ -18,8 +18,10 @@ our %SQL = (
     },
     mysql       => {
         activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
-        search_count             => q[SELECT COUNT(DISTINCT(day)) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
-        search_count_nick        => q[SELECT COUNT(DISTINCT(day)) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
+        search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
+        search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
+        search_result            => q[SELECT id, timestamp, nick, line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 50 OFFSET ?],
+        search_result_nick       => q[SELECT id, timestamp, nick, line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 50 OFFSET ?],
     },
 );
 
@@ -185,7 +187,7 @@ sub lines {
     return $r;
 }
 
-sub search_day_count {
+sub search_count {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
     my @bind_param = ($self->channel, $opt{q});
@@ -208,6 +210,12 @@ sub search_results {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
     $opt{offset} //= 0;
+    my @bind_param = $opt{q};
+    my $sql;
+    if (defined $opt{nick}) {
+        $sql = $self->sql_for(query => 'search_result_nick')
+    }
+
 
 }
 

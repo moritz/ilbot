@@ -5,7 +5,7 @@ use 5.010;
 use Ilbot::Frontend;
 use Ilbot::Backend::SQL;
 use Ilbot::Backend::Cached;
-use Ilbot::Date qw/gmt_today/;
+use Ilbot::Date qw/today/;
 use Ilbot::Config;
 use Date::Simple qw/date/;
 
@@ -53,14 +53,14 @@ my $app = sub {
             my $url = join '', 'http://',
                                $env->{HTTP_HOST},
                                "/$1/",
-                               gmt_today();
+                               today();
             return [302, [Location => $url ], []];
         }
         when ( qr{ ^/ ([^./]+) /yesterday $}x ) {
             my $url = join '', 'http://',
                                $env->{HTTP_HOST},
                                "/$1/",
-                               date(gmt_today()) - 1;
+                               date(today()) - 1;
             return [302, [Location => $url ], []];
         }
         when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /summary)? ) $!x ) {

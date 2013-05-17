@@ -14,7 +14,6 @@ require Exporter;
 use base 'Exporter';
 our @EXPORT_OK = qw(
         get_dbh
-        gmt_today
         );
 
 # get a database handle.
@@ -32,19 +31,6 @@ sub get_dbh {
             {RaiseError=>1, AutoCommit => 1});
     return $dbh;
 }
-
-# returns current date in gmt or local time zone in the form YYYY-MM-DD
-sub gmt_today {
-	my $timezone = config(backend => 'timezone') || 'gmt';
-
-	my @d;
-
-	if($timezone eq 'gmt') { @d = gmtime(time); }
-	elsif($timezone eq 'local') { @d = localtime(time); }
-
-    return sprintf("%04d-%02d-%02d", $d[5]+1900, $d[4] + 1, $d[3]);
-}
-
 
 =head1 NAME
 

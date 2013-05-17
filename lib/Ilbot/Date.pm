@@ -6,10 +6,10 @@ use Ilbot::Config qw/config/;
 
 use Exporter qw/import/;
 
-our @EXPORT_OK = qw/gmt_today/;
+our @EXPORT_OK = qw/today/;
 
 # returns current date in gmt or local timezone in the form YYYY-MM-DD
-sub gmt_today {
+sub today {
 	my $timezone = config(backend => 'timezone') || 'gmt';
 
     my @d;
