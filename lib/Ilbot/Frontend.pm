@@ -9,6 +9,7 @@ use Ilbot::Date qw/gmt_today/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use Ilbot::Frontend::TextFilter qw/text_filter/;
 
+use Config::File;
 use Date::Simple qw/date/;
 use IrcLog::WWW qw/my_decode/;
 use HTML::Entities qw(encode_entities);
@@ -229,7 +230,18 @@ sub day_text {
     my $table = Text::Table->new(qw/Time Nick Message/);
     for my $row (@{ $self->backend->channel(channel => "#$channel")->lines(day => $opt{day}) }) {
         my ($nick, $ts, $line) = ($row->[1], $row->[2], $row->[3]);
-        my ($hour, $minute) = (gmtime $ts)[2, 1];
+
+		my $timezone = config(backend => 'timezone') || 'gmt';
+
+		my ($hour, $minute);
+
+		if($timezone eq 'gmt') {
+        	($hour, $minute) = (gmtime $ts)[2, 1];
+		}
+		elsif($timezone eq 'local') {
+        	($hour, $minute) = (localtime $ts)[2, 1];
+		}
+
         $table->add(sprintf("%02d:%02d", $hour, $minute), $nick, $line);
     }
     my $text = "$table";
@@ -326,7 +338,14 @@ sub http_header {
 
 sub format_time {
     my $d = shift;
-    my @times = gmtime($d);
+	
+	my $timezone = config(backend => 'timezone') || 'gmt';
+
+    my @times;
+
+    if($timezone eq 'gmt') { @times = gmtime($d); }
+    elsif($timezone eq 'local') { @times = localtime($d); }
+
     return sprintf("%02d:%02d", $times[2], $times[1]);
 }
 

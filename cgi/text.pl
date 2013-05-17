@@ -4,11 +4,13 @@ use strict;
 use Carp qw(confess);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI;
+use Config::File;
 use Encode;
 use HTML::Entities;
 # evil hack: Text::Table lies somewhere near /irclog/ on the server...
 use lib '../lib';
 use lib 'lib';
+use Ilbot::Config qw/config/;
 use IrcLog qw(get_dbh gmt_today);
 use IrcLog::WWW qw(my_encode my_decode);
 use Text::Table;
@@ -54,7 +56,18 @@ my $table = Text::Table->new(qw(Time Nick Message));
 
 while (my $row = $db->fetchrow_hashref){
     next unless length($row->{nick});
-    my ($hour, $minute) =(gmtime $row->{timestamp})[2,1];  
+
+	my $timezone = config(backend => 'timezone') || 'gmt';
+
+    my ($hour, $minute);
+
+    if($timezone eq 'gmt') {
+        ($hour, $minute) =(gmtime $row->{timestamp})[2,1];
+    }
+    elsif($timezone eq 'local') {
+        ($hour, $minute) =(localtime $row->{timestamp})[2,1];
+    }
+
     $table->add(
             sprintf("%02d:%02d", $hour, $minute),
             $row->{nick},
