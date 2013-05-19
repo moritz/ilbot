@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.010;
 use DBI;
+use List::Util qw/max min/;
 
 our %SQL = (
     STANDARD    => {
@@ -20,8 +21,10 @@ our %SQL = (
         activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
         search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
         search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
-        search_result            => q[SELECT id, timestamp, nick, line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 50 OFFSET ?],
-        search_result_nick       => q[SELECT id, timestamp, nick, line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 50 OFFSET ?],
+        search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
+        search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
+        search_result            => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST ?, 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
+        search_result_nick       => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST ? AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
     },
 );
 
@@ -211,12 +214,44 @@ sub search_results {
     die "Missing argument 'q'" unless defined $opt{q};
     $opt{offset} //= 0;
     my @bind_param = $opt{q};
+    my $nick = $opt{nick};
     my $sql;
-    if (defined $opt{nick}) {
-        $sql = $self->sql_for(query => 'search_result_nick')
+    if (defined $nick) {
+        $sql = $self->sql_for(query => 'search_result_nick_days');
+        push @bind_param, $nick, "* $nick";
     }
-
-
+    else {
+        $sql = $sql->sql_for(query => 'search_result_days');
+    }
+    push @bind_param, $opt{offset};
+    my $days = $self->dbh->selectcol_arrayref($sql, undef, @bind_param);
+    my @res;
+    for my $d (@$days) {
+        my $sql = defined($nick)
+                    ? $sql->sql_for(query => 'search_result_nick')
+                    : $sql->sql_for(query => 'search_result');
+        @bind_param = ($opt{q}, (defined($nick) ? ($nick, "* $nick") : ()), $self->channel, $d);
+        my @d_res;
+        my $lines = $self->dbh->selectcol_arrayref($sql, undef, @bind_param);
+        # $lines now contains all the lines for that day.
+        # filter out only those lines that matched, plus a bit of context
+        # before and after. Since the context can overlap, simply
+        # mark all to-be-returned indexes, and then later get the desired
+        # lines with a slice
+        my @return_idx = (0) x @$lines;
+        my @idx = 0..$#$lines;
+        for my $idx (@idx) {
+            if ($lines->[$idx][5]) {
+                for (max($idx - 4, 0) .. min($#$lines, $idx + 4)) {
+                    $return_idx[$_] = 1;
+                }
+            }
+        }
+        @idx = grep $return_idx[$_], @idx;
+        $lines = [ @{$lines}[@idx] ];
+        push @res, $d => $lines;
+    }
+    return \@res;
 }
 
 1;

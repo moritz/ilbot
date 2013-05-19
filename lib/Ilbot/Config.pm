@@ -3,9 +3,10 @@ use 5.010;
 use strict;
 use warnings;
 use Config::File qw/read_config_file/;
+use HTML::Template;
 
 use parent 'Exporter';
-our @EXPORT_OK = qw/config/;
+our @EXPORT_OK = qw/config template/;
 
 my $path;
 my %config;
@@ -67,6 +68,18 @@ sub config {
         }
     }
     return $c;
+}
+
+sub template {
+    my $name = shift;
+    my $path = config('template') . "/$name.tmpl";
+    return HTML::Template->new(
+        filename            => $path,
+        loop_context_vars   => 1,
+        global_vars         => 1,
+        die_on_bad_params   => 0,
+        default_escape      => 'html',
+    );
 }
 
 

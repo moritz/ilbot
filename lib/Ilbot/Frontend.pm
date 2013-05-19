@@ -4,7 +4,7 @@ use warnings;
 use 5.010;
 use HTML::Template;
 
-use Ilbot::Config qw/config/;
+use Ilbot::Config qw/config template/;
 use Ilbot::Date qw/today mytime/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use Ilbot::Frontend::TextFilter qw/text_filter/;
@@ -30,12 +30,7 @@ sub backend { $_[0]{backend} }
 sub index {
     my ($self, %opt) = @_;
     die "Missing option 'out_fh'" unless $opt{out_fh};
-    my $template = HTML::Template->new(
-        filename            => config('template') . '/index.tmpl',
-        loop_context_vars   => 1,
-        global_vars         => 1,
-        die_on_bad_params   => 0,
-    );
+    my $template = Ilbot::Config::template('index');
     my @channels;
     my $has_images = 0;
     my $path = config(www => 'static_path');
@@ -63,10 +58,7 @@ sub channel_index {
     my ($self, %opt) = @_;
     die "Missing option 'out_fh'"  unless $opt{out_fh};
     die "Missing option 'channel'" unless $opt{channel};
-    my $t = HTML::Template->new(
-        filename            => config('template') . '/channel-index.tmpl',
-        die_on_bad_params   => 0,
-    );
+    my $t = Ilbot::Config::template('channel-index');
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
     $t->param(channel   => $opt{channel});
     $t->param(base_url  => config(www => 'base_url'));
@@ -157,12 +149,7 @@ sub day {
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
         my $full_channel = q{#} . $channel;
-    my $t = HTML::Template->new(
-        filename            => config('template') . '/day.tmpl',
-        loop_context_vars   => 1,
-        global_vars         => 1,
-        die_on_bad_params   => 0,
-    );
+    my $t = Ilbot::Config::template('day');
     {
         my $clf = "channels/$channel.tmpl";
         if (-e $clf) {
@@ -307,6 +294,12 @@ sub message_line {
     $h{NICK_COLOR} = $args_ref->{color};
 
     return \%h;
+}
+
+sub search {
+    my ($self, %opt) = @_;
+    die "Missing parameter 'channel'" unless defined $opt{channel};
+    my $b = $self->backend->channel(channel => $opt{channel});
 }
 
 

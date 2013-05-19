@@ -18,6 +18,7 @@ use Plack::Request;
 my $app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
+    my $channel_re = qr{[^./]+};
     my $sql      = Ilbot::Backend::SQL->new(
         config      => config('backend'),
     );
@@ -46,10 +47,20 @@ my $app = sub {
                 return [201, [], []];
             }
         }
-        when ( qr{ ^/ ([^./]+) /?$}x ) {
+        when ( qr{ ^/ ($channel_re) /?$}x ) {
             $frontend->channel_index(channel => $1, out_fh => $OUT);
         }
-        when ( qr{ ^/ ([^./]+) /today $}x ) {
+        when ( qr{ ^/ ($channel_re) /search/?$}x ) {
+            my $p = $req->body_parameters;
+            warn "Search ", Dumper $p;
+            $frontend->search(
+                channel => $1,
+                out_fh  => $OUT,
+                q       => scalar($p->{q}),
+                nick    => scalar($p->{nick}),
+            );
+        }
+        when ( qr{ ^/ ($channel_re) /today $}x ) {
             my $url = join '', 'http://',
                                $env->{HTTP_HOST},
                                "/$1/",
@@ -77,6 +88,9 @@ my $app = sub {
                 day     => $2,
             );
             return [200, ["Content-Type" => "text/plain; charset=UTF-8"], [$s]];
+        }
+        default {
+            return [404, [], []];
         }
 
     }
