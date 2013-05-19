@@ -299,7 +299,13 @@ sub message_line {
 sub search {
     my ($self, %opt) = @_;
     die "Missing parameter 'channel'" unless defined $opt{channel};
+    die "Missing parameter 'out_fh'" unless defined $opt{out_fh};
+    my $t = Ilbot::Config::template('search');
+    $t->param(channel  => $opt{channel});
+    $t->param(base_url => config(www => 'base_url'));
     my $b = $self->backend->channel(channel => $opt{channel});
+
+    $t->output(print_to => $opt{out_fh});
 }
 
 

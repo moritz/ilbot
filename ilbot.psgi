@@ -58,6 +58,7 @@ my $app = sub {
                 out_fh  => $OUT,
                 q       => scalar($p->{q}),
                 nick    => scalar($p->{nick}),
+                offset  => scalar($p->{offset}),
             );
         }
         when ( qr{ ^/ ($channel_re) /today $}x ) {

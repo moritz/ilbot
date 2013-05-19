@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <meta name="description" content="IRC LOG for channel <TMPL_VAR CHANNEL>" />
-    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>style.css" title="Purple Haze Stylesheet" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>s/style.css" title="Purple Haze Stylesheet" />
     <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>moose1.ico" type="image/x-icon" />
     <title>IRC logs - Search</title>
 </head>
@@ -13,7 +13,7 @@
 
     <p><a href="<TMPL_VAR BASE_URL>">Index</a></p>
 
-    <form action="<TMPL_VAR BASE_URL><TMP_VAR channel>/search/" method="get"
+    <form action="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/search/" method="get"
     accept-charset="utf-8">
         <label for="nick">Nick</label>
 		<input type="text" size="10" maxlength="30" name="nick"
@@ -42,23 +42,23 @@
 	</p>
 
 	<TMPL_LOOP RESULTS>
-		<h2>Results for <a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR=DAY>"><TMPL_VAR DAY></a></h2>
+		<h2>Results for <a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR DAY>"><TMPL_VAR DAY></a></h2>
 		<table>
 		<TMPL_LOOP LINES>
 			<TMPL_INCLUDE line.tmpl>
 		</TMPL_LOOP>
 		</table>
 	</TMPL_LOOP>
-	</TMPL_IF>
 
 	<p>
 	Result pages:
 	<TMPL_LOOP RESULT_PAGES>
 		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
-		NICK ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR
+		NICK ESCAPE=URL>;q=<TMPL_VAR NAME=Q>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
 		PAGE></a>
 	</TMPL_LOOP>
 	</p>
+	</TMPL_IF>
 
     <TMPL_INCLUDE footer.tmpl>
   </body>
