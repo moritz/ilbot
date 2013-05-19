@@ -51,7 +51,7 @@ my $app = sub {
             $frontend->channel_index(channel => $1, out_fh => $OUT);
         }
         when ( qr{ ^/ ($channel_re) /search/?$}x ) {
-            my $p = $req->body_parameters;
+            my $p = $req->query_parameters;
             warn "Search ", Dumper $p;
             $frontend->search(
                 channel => $1,

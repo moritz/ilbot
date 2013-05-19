@@ -15,6 +15,8 @@ use IrcLog::WWW qw/my_decode/;
 use HTML::Entities qw(encode_entities);
 use Encode qw/encode_utf8/;
 
+use Data::Dumper;
+
 use constant ENTITIES => qq{<>"&};
 use constant NBSP => "\xa0";
 
@@ -176,7 +178,7 @@ sub day {
         my $message     = $row->[3];
         my $in_summary  = $row->[4];
         next if $message =~ m/^\s*\[off\]/i;
-        push @msg, message_line( {
+        push @msg, $self->message_line( {
                 id           => $id,
                 nick        => $nick,
                 timestamp   => $timestamp,
@@ -235,7 +237,7 @@ sub update_summary {
 }
 
 sub message_line {
-    my ($args_ref, $c) = @_;
+    my ($self, $args_ref, $c) = @_;
     my $nick = $args_ref->{nick};
     my %h = (
         ID          => $args_ref->{id},
@@ -303,8 +305,40 @@ sub search {
     my $t = Ilbot::Config::template('search');
     $t->param(channel  => $opt{channel});
     $t->param(base_url => config(www => 'base_url'));
-    my $b = $self->backend->channel(channel => $opt{channel});
-
+    $t->param(nick     => $opt{nick});
+    $t->param(q        => $opt{q});
+    my $b = $self->backend->channel(channel => '#' . $opt{channel});
+    my $c = 0;
+    my $prev_nick = q[!!!];
+    my $line_number = 0;
+    if (defined $opt{q}) {
+        my $res = $b->search_results(
+            nick    => $opt{nick},
+            q       => $opt{q},
+            offset  => $opt{offset} // 0,
+        );
+        my @t;
+        while (my ($day, $lines) = splice @$res, 0, 2) {
+            my %h = (day => $day);
+            my @lines;
+            for (@$lines) {
+                push @lines, $self->message_line({
+                    id          => $_->[0],
+                    nick        => $_->[1],
+                    timestamp   => $_->[2],
+                    message     => $_->[3],
+                    search_found => $_->[5],
+                    prev_nick   => $prev_nick,
+                    date        => $day,
+                    channel     => $opt{channel},
+                    line_number => ++$line_number,
+                }, \$c);
+            }
+            $h{lines} = \@lines;
+            push @t, \%h;
+        }
+        $t->param(results => \@t);
+    }
     $t->output(print_to => $opt{out_fh});
 }
 
