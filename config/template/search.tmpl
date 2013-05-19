@@ -13,17 +13,8 @@
 
     <p><a href="<TMPL_VAR BASE_URL>">Index</a></p>
 
-    <form action="<TMPL_VAR BASE_URL>search.pl" method="get"
+    <form action="<TMPL_VAR BASE_URL><TMP_VAR channel>/search/" method="get"
     accept-charset="utf-8">
-        <label for="channel">Channel</label>
-        <select id="channel" name="channel" size="<TMPL_VAR CH_COUNT>">
-                <TMPL_LOOP CHANNELS>
-                <option <TMPL_IF SELECTED>selected="selected"</TMPL_IF>><TMPL_VAR
-                CHANNEL></option>
-                </TMPL_LOOP>
-        </select>
-		<br />
-
         <label for="nick">Nick</label>
 		<input type="text" size="10" maxlength="30" name="nick"
 		value="<TMPL_VAR NICK>" id="nick"></input>
@@ -38,23 +29,20 @@
 
     </form>
 
-	<TMPL_IF DAYS>
+	<TMPL_IF RESULTS>
 	<h1>Results</h1>
-	<p>Results from days <TMPL_VAR DAYS_LOWER> to <TMPL_VAR
-	DAYS_UPPER>, from overall <TMPL_VAR DAYS_COUNT> days</p>
 
 	<p>
 	Result pages:
 	<TMPL_LOOP RESULT_PAGES>
-		<a href="<TMPL_VAR BASE_URL>search.pl?nick=<TMPL_VAR
-		NICK ESCAPE=URL>;channel=<TMPL_VAR CURRENT_CHANNEL
-		ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR
+		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
+		NICK ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR
 		PAGE></a>
 	</TMPL_LOOP>
 	</p>
 
-	<TMPL_LOOP DAYS>
-		<h2><a href="<TMPL_VAR URL>"><TMPL_VAR DAY></a></h2>
+	<TMPL_LOOP RESULTS>
+		<h2>Results for <a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR=DAY>"><TMPL_VAR DAY></a></h2>
 		<table>
 		<TMPL_LOOP LINES>
 			<TMPL_INCLUDE line.tmpl>
@@ -66,9 +54,9 @@
 	<p>
 	Result pages:
 	<TMPL_LOOP RESULT_PAGES>
-		<a href="<TMPL_VAR BASE_URL>search.pl?nick=<TMPL_VAR
-		NAME=NICK ESCAPE=URL>;channel=<TMPL_VAR NAME=CURRENT_CHANNEL
-		ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR PAGE></a>
+		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
+		NICK ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR
+		PAGE></a>
 	</TMPL_LOOP>
 	</p>
 

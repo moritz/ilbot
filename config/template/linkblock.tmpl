@@ -16,7 +16,7 @@
         <a href="<TMPL_VAR NAME=NEXT_URL>" rel="next">
         </TMPL_IF>Next day &rarr;</a> |
     </TMPL_IF>
-    <a href="<TMPL_VAR BASE_URL>search.pl?channel=<TMPL_VAR CHANNEL>">Search</a> |
+    <a href="<TMPL_VAR BASE_URL><TMPL_VAR name=channel>/search">Search</a> |
     <a href="http://www.google.com/search?q=site%3Airclog.perlgeek.de+inurl%3A<TMPL_VAR NAME=CHANNEL ESCAPE=URL>">Google Search</a>
 	<TMPL_IF NAME=DATE>| <a href="<TMPL_VAR
 	NAME=BASE_URL>text.pl?channel=<TMPL_VAR NAME=CHANNEL>;date=<TMPL_VAR
