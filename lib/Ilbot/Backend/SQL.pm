@@ -21,7 +21,7 @@ our %SQL = (
         search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
         search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
         search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET 0],
-        search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET 0],
+        search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
         search_result            => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         search_result_nick       => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
     },
@@ -127,6 +127,7 @@ sub channel {
 
 package Ilbot::Backend::SQL::Channel;
 use List::Util qw/max min/;
+use Ilbot::Config qw/config/;
 
 # it's a hack, but works for now
 our @ISA = qw/Ilbot::Backend::SQL/;
@@ -213,6 +214,9 @@ sub search_results {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
     $opt{offset} //= 0;
+    unless ($opt{offset} =~ /^[0-9]+\z/) {
+        die "Invalid value for 'offset'";
+    }
     my @bind_param = ($self->channel, $opt{q});
     my $nick = $opt{nick};
     my $sql;
@@ -223,11 +227,18 @@ sub search_results {
     else {
         $sql = $sql->sql_for(query => 'search_result_days');
     }
-#    push @bind_param, $opt{offset};
+    # mysql doesn't seem to allow bind parameters for the offset, so
+    # needs a bit of special care
+    if (lc $self->{db} eq 'mysql') {
+        $sql =~ s/.*\K\?/$opt{offset}/;
+    }
+    else {
+        push @bind_param, $opt{offset};
+    }
     my $days = $self->dbh->selectcol_arrayref($sql, undef, @bind_param);
     my @res;
+    my $context = config(backend => 'search_context');
     for my $d (@$days) {
-        warn "Day: $d\n";
         my $sql = defined($nick)
                     ? $self->sql_for(query => 'search_result_nick')
                     : $self->sql_for(query => 'search_result');
@@ -243,7 +254,7 @@ sub search_results {
         my @idx = 0..$#$lines;
         for my $idx (@idx) {
             if ($lines->[$idx][5]) {
-                for (max($idx - 4, 0) .. min($#$lines, $idx + 4)) {
+                for (max($idx - $context, 0) .. min($#$lines, $idx + $context)) {
                     $return_idx[$_] = 1;
                 }
             }

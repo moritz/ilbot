@@ -17,11 +17,12 @@ my %known_files = (
 
 my %defaults = (
     www => {
-        base_url    => '/',
-        no_cache    => 0,
+        base_url        => '/',
+        no_cache        => 0,
     },
     backend => {
-        timzone    => 'local',
+        timzone         => 'local',
+        search_context  => 4,
     },
 );
 

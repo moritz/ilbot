@@ -52,7 +52,6 @@ my $app = sub {
         }
         when ( qr{ ^/ ($channel_re) /search/?$}x ) {
             my $p = $req->query_parameters;
-            warn "Search ", Dumper $p;
             $frontend->search(
                 channel => $1,
                 out_fh  => $OUT,

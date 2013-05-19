@@ -13,3 +13,6 @@ password = foo
 #	* 'local' for server's timezone
 #	* 'gmt' for UTC
 timezone = local
+
+# Number of lines of context to show before and after a search result:
+search_context = 3
