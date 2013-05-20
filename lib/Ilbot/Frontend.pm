@@ -302,6 +302,7 @@ sub search {
     my ($self, %opt) = @_;
     die "Missing parameter 'channel'" unless defined $opt{channel};
     die "Missing parameter 'out_fh'" unless defined $opt{out_fh};
+    $opt{offset} //= 0;
     my $t = Ilbot::Config::template('search');
     $t->param(channel  => $opt{channel});
     $t->param(base_url => config(www => 'base_url'));
@@ -312,32 +313,52 @@ sub search {
     my $prev_nick = q[!!!];
     my $line_number = 0;
     if (defined $opt{q}) {
-        my $res = $b->search_results(
+        my $count = $b->search_count(
             nick    => $opt{nick},
             q       => $opt{q},
-            offset  => $opt{offset} // 0,
+            offset  => $opt{offset},
         );
-        my @t;
-        while (my ($day, $lines) = splice @$res, 0, 2) {
-            my %h = (day => $day);
-            my @lines;
-            for (@$lines) {
-                push @lines, $self->message_line({
-                    id          => $_->[0],
-                    nick        => $_->[1],
-                    timestamp   => $_->[2],
-                    message     => $_->[3],
-                    search_found => $_->[5],
-                    prev_nick   => $prev_nick,
-                    date        => $day,
-                    channel     => $opt{channel},
-                    line_number => ++$line_number,
-                }, \$c);
-            }
-            $h{lines} = \@lines;
-            push @t, \%h;
+        if ($count == 0) {
+            $t->param(no_results => 1);
         }
-        $t->param(results => \@t);
+        else {
+            $t->param(result_count => $count);
+            my @pages;
+            for (0..int(($count - 1) / 10)) {
+                push @pages, {
+                    offset  => $_ * 10,
+                    page    => $_ + 1,
+                    is_this => ($_ * 10 == $opt{offset}),
+                };
+            }
+            $t->param(result_pages => \@pages);
+            my $res = $b->search_results(
+                nick    => $opt{nick},
+                q       => $opt{q},
+                offset  => $opt{offset} // 0,
+            );
+            my @t;
+            while (my ($day, $lines) = splice @$res, 0, 2) {
+                my %h = (day => $day);
+                my @lines;
+                for (@$lines) {
+                    push @lines, $self->message_line({
+                        id          => $_->[0],
+                        nick        => $_->[1],
+                        timestamp   => $_->[2],
+                        message     => $_->[3],
+                        search_found => $_->[5],
+                        prev_nick   => $prev_nick,
+                        date        => $day,
+                        channel     => $opt{channel},
+                        line_number => ++$line_number,
+                    }, \$c);
+                }
+                $h{lines} = \@lines;
+                push @t, \%h;
+            }
+            $t->param(results => \@t);
+        }
     }
     $t->output(print_to => $opt{out_fh});
 }

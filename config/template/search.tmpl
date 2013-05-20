@@ -35,9 +35,11 @@
 	<p>
 	Result pages:
 	<TMPL_LOOP RESULT_PAGES>
+        <TMPL_IF is_this><strong></TMPL_IF>
 		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
 		NICK ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR
 		PAGE></a>
+        <TMPL_IF is_this></strong></TMPL_IF>
 	</TMPL_LOOP>
 	</p>
 
@@ -53,9 +55,11 @@
 	<p>
 	Result pages:
 	<TMPL_LOOP RESULT_PAGES>
+        <TMPL_IF is_this><strong></TMPL_IF>
 		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
 		NICK ESCAPE=URL>;q=<TMPL_VAR NAME=Q>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
 		PAGE></a>
+        <TMPL_IF is_this></strong></TMPL_IF>
 	</TMPL_LOOP>
 	</p>
 	</TMPL_IF>
