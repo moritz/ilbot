@@ -105,7 +105,7 @@ my $c = \&config;
 
 builder {
     enable "Plack::Middleware::Static",
-            path => qr{^/s/},
+            path => qr{^/(?:robots\.txt|s/)},
             root => $c->(www => 'static_path');
     $app;
 }

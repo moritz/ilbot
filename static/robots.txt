@@ -1,0 +1,4 @@
+UserAgent: *
+Disallow: /*/search
+Disallow: /*/search/*
+Crawl-Delay: 10
