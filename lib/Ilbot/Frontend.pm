@@ -312,7 +312,7 @@ sub search {
     my $c = 0;
     my $prev_nick = q[!!!];
     my $line_number = 0;
-    if (defined $opt{q}) {
+    if (defined $opt{q} && length $opt{q}) {
         my $count = $b->search_count(
             nick    => $opt{nick},
             q       => $opt{q},

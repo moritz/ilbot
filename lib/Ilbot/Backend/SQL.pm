@@ -20,7 +20,7 @@ our %SQL = (
         activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
         search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
         search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
-        search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET 0],
+        search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
         search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
         search_result            => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         search_result_nick       => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
@@ -97,7 +97,6 @@ sub update_summary {
         my $sql = 'UPDATE irclog SET in_summary = TRUE WHERE id IN ('
                     . join(', ', ('?') x @check)
                     . ')';
-        say $sql;
         my $sth = $self->dbh->prepare($sql);
         $sth->execute(@check);
         $sth->finish;
@@ -196,7 +195,7 @@ sub search_count {
     die "Missing argument 'q'" unless defined $opt{q};
     my @bind_param = ($self->channel, $opt{q});
     my $sql;
-    if (defined $opt{nick}) {
+    if (defined $opt{nick} && length $opt{nick}) {
         $sql = $self->sql_for(query => 'search_count_nick');
         push @bind_param, $opt{nick}, "* $opt{nick}";
     }
@@ -218,14 +217,15 @@ sub search_results {
         die "Invalid value for 'offset'";
     }
     my @bind_param = ($self->channel, $opt{q});
-    my $nick = $opt{nick};
+    my $nick     = $opt{nick};
+    my $has_nick = defined($nick) && length($nick);
     my $sql;
-    if (defined $nick) {
+    if ($has_nick) {
         $sql = $self->sql_for(query => 'search_result_nick_days');
         push @bind_param, $nick, "* $nick";
     }
     else {
-        $sql = $sql->sql_for(query => 'search_result_days');
+        $sql = $self->sql_for(query => 'search_result_days');
     }
     # mysql doesn't seem to allow bind parameters for the offset, so
     # needs a bit of special care
@@ -239,10 +239,10 @@ sub search_results {
     my @res;
     my $context = config(backend => 'search_context');
     for my $d (@$days) {
-        my $sql = defined($nick)
+        my $sql = $has_nick
                     ? $self->sql_for(query => 'search_result_nick')
                     : $self->sql_for(query => 'search_result');
-        @bind_param = ($opt{q}, (defined($nick) ? ($nick, "* $nick") : ()), $self->channel, $d);
+        @bind_param = ($opt{q}, ($has_nick ? ($nick, "* $nick") : ()), $self->channel, $d);
         my @d_res;
         my $lines = $self->dbh->selectall_arrayref($sql, undef, @bind_param);
         # $lines now contains all the lines for that day.
