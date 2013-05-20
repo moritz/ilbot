@@ -9,8 +9,15 @@ use Exporter qw/import/;
 our @EXPORT_OK = qw/today mytime/;
 
 BEGIN {
-    *mytime = config(backend => 'timezone') eq 'local'
-              ? \&CORE::localtime : \&CORE::gmtime;
+    if ($^V ge v5.0.16) {
+        *mytime = config(backend => 'timezone') eq 'local'
+                ? \&CORE::localtime : \&CORE::gmtime;
+    }
+    else {
+        *mytime = config(backend => 'timezone') eq 'local'
+                ? sub { localtime $_[0] // time }
+                : sub { gmtime    $_[0] // time }
+    }
 }
 
 # returns current date in gmt or local timezone in the form YYYY-MM-DD

@@ -1,7 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/env plackup
 use lib 'lib';
 use 5.010;
 
+use Ilbot::Config '/home/moritz/src/ilbot/config/';
 use Ilbot::Frontend;
 use Ilbot::Backend::SQL;
 use Ilbot::Backend::Cached;
@@ -103,9 +104,9 @@ my $app = sub {
 
 my $c = \&config;
 
-builder {
+$app = builder {
     enable "Plack::Middleware::Static",
             path => qr{^/(?:robots\.txt|s/)},
             root => $c->(www => 'static_path');
     $app;
-}
+};
