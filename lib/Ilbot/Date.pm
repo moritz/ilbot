@@ -9,7 +9,7 @@ use Exporter qw/import/;
 our @EXPORT_OK = qw/today mytime/;
 
 BEGIN {
-    if ($^V ge v5.0.16) {
+    if ($^V ge v5.016) {
         *mytime = config(backend => 'timezone') eq 'local'
                 ? \&CORE::localtime : \&CORE::gmtime;
     }
