@@ -8,6 +8,7 @@ use Ilbot::Backend::Cached;
 use Ilbot::Date qw/today/;
 use Ilbot::Config;
 use Date::Simple qw/date/;
+use Encode qw/encode_utf8/;
 
 use Config::File qw/read_config_file/;
 use Data::Dumper;
@@ -95,8 +96,9 @@ my $app = sub {
 
     }
     my $h = $frontend->http_header( accept => $env->{HTTP_ACCEPT} );
+    close $out_fh;
 
-    return [200, $h, [$s]];
+    return [200, $h, [encode_utf8 $s]];
 };
 
 my $c = \&config;
