@@ -1,13 +1,14 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use IrcLog qw(get_dbh);
-use Date::Simple qw/date today/;
-use List::Util qw/max/;
+use lib 'lib';
+use Ilbot::Date qw/today/;
+use Ilbot::Config;
+use Date::Simple qw/date/;
 use Getopt::Long;
 use 5.010;
 
-my $dir = 'cgi/images/index/';
+my $dir = config(www => 'static_path') . '/s/images/index/';
 my $no_steps = 100;
 use File::Temp qw/tempfile/;
 
@@ -18,22 +19,12 @@ GetOptions(
 
 die "No directory '$dir'\n" unless -d $dir;
 
-my $dbh = get_dbh();
+my $backend = backend();
 
-my $sth = $dbh->prepare('SELECT MIN(day) FROM irclog');
-$sth->execute;
-my ($min_date) = $sth->fetchrow;
-$min_date = date($min_date);
-$sth->finish;
-my $max_date = today();
+my $min_date = date($backend->first_day());
+my $max_date = date(today());
 
 my $interval = int( 0.5 + ($max_date - $min_date) / $no_steps);
-my $total_max = 0;
-
-$sth = $dbh->prepare('SELECT DISTINCT(channel) FROM irclog');
-$sth->execute();
-my $count_sth = $dbh->prepare(q[SELECT COUNT(*) FROM irclog WHERE channel = ?
-    AND day BETWEEN ? AND ? AND nick <> '']);
 
 my $template = do {
     open my $IN, '<', 'lines.plot'
@@ -42,19 +33,17 @@ my $template = do {
     <$IN>;
 };
 
-while (my ($channel) = $sth->fetchrow) {
+for my $channel ($backend->channels) {
+    my $b = $backend->channel(channel => $channel);
     my @counts;
+    say $channel;
     for (my $d = $min_date; $d < $max_date; $d += $interval) {
-        $count_sth->execute($channel, $d, $d + $interval);
-        my ($data_point) = $count_sth->fetchrow;
-        push @counts, $data_point;
-        $count_sth->finish;
+        push @counts, $b->activity_count(from => $d, to => $d + $interval);
     }
 
     # the last data point is probably wrong due to rounding:
     pop @counts;
 
-    $total_max = max $total_max, @counts;
     (my $filename = $channel) =~ s/[^\w-]//g;
     $filename = "$dir/$filename.png";
     my ($TMP, $tmp_file) = tempfile();
@@ -70,6 +59,4 @@ while (my ($channel) = $sth->fetchrow) {
     close $GNU or die "Error while writing to $gnu_file: $!";
 
     system('gnuplot', $gnu_file);
-
 }
-$sth->finish;

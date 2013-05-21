@@ -7,7 +7,7 @@ use HTML::Template;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT_OK = qw/config template backend frontend/;
+our @EXPORT = qw/config template backend frontend/;
 
 my $path;
 my %config;
@@ -51,7 +51,7 @@ sub import {
     if (defined $config{backend}{lib}) {
         unshift @INC, split /:/, $config{backend}{lib}
     }
-    __PACKAGE__->export_to_level(1, __PACKAGE__, 'config');
+    __PACKAGE__->export_to_level(1, __PACKAGE__, @EXPORT);
 }
 
 sub config {
