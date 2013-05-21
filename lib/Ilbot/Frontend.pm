@@ -43,7 +43,6 @@ sub index {
         my $filename = $channel;
         $filename =~ s/[^\w-]+//g;
         $filename = "s/images/index/$filename.png";
-        warn $filename;
         if (-e "$path/$filename") {
             $data{image_path}   = $filename;
             $has_images         = 1;

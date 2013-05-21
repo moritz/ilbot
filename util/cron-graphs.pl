@@ -36,7 +36,6 @@ my $template = do {
 for my $channel ($backend->channels) {
     my $b = $backend->channel(channel => $channel);
     my @counts;
-    say $channel;
     for (my $d = $min_date; $d < $max_date; $d += $interval) {
         push @counts, $b->activity_count(from => $d, to => $d + $interval);
     }
