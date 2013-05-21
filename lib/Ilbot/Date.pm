@@ -15,14 +15,13 @@ BEGIN {
     }
     else {
         *mytime = config(backend => 'timezone') eq 'local'
-                ? sub { localtime $_[0] // time }
-                : sub { gmtime    $_[0] // time }
+                ? sub { localtime ($_[0] // time) }
+                : sub { gmtime    ($_[0] // time) }
     }
 }
 
 # returns current date in gmt or local timezone in the form YYYY-MM-DD
 sub today {
-	my $timezone = config(backend => 'timezone') || 'gmt';
     my @d = mytime();
     return sprintf("%04d-%02d-%02d", $d[5]+1900, $d[4] + 1, $d[3]);
 }
