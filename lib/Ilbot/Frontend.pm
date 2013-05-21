@@ -35,14 +35,15 @@ sub index {
     my $template = Ilbot::Config::template('index');
     my @channels;
     my $has_images = 0;
-    my $path = config(www => 'static_path');
+    my $path = config(www => 'static_path') . '/';
     for my $channel (@{ $self->backend->channels }) {
         next unless $channel =~ s/^\#+//;
         my %data = (channel => $channel);
 
         my $filename = $channel;
         $filename =~ s/[^\w-]+//g;
-        $filename = "static/images/index/$filename.png";
+        $filename = "s/images/index/$filename.png";
+        warn $filename;
         if (-e "$path/$filename") {
             $data{image_path}   = $filename;
             $has_images         = 1;
