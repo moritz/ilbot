@@ -8,7 +8,10 @@ use DBI;
 our %SQL = (
     STANDARD    => {
         channels                 => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
+        first_day                => 'SELECT MIN(day) FROM irclog',
         day_has_actitivity       => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
+        activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
+    AND day BETWEEN ? AND ? AND nick <> ''],
         days_and_activity_counts => q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day],
         activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM irclog WHERE channel = ? AND nick <> ''],
         lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id],
@@ -59,6 +62,15 @@ sub new {
 
 sub dbh { $_[0]{dbh} };
 
+sub _single_value {
+    my ($self, $sql, @bind) = @_;
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@bind);
+    my ($v) = $sth->fetchrow_array();
+    $sth->finish;
+    return $v;
+}
+
 sub sql_for {
     my ($self, %opt) = @_;
     die 'Missing option "query"' unless $opt{query};
@@ -72,6 +84,11 @@ sub sql_for {
 sub channels {
     my $self = shift;
     $self->dbh->selectcol_arrayref($self->sql_for(query => 'channels'));
+}
+
+sub first_day {
+    my $self = shift;
+    return $self->_single_value($self->sql_for(query => 'first_day'));
 }
 
 sub channels_and_days_for_ids {
@@ -264,6 +281,16 @@ sub search_results {
         push @res, $d => $lines;
     }
     return \@res;
+}
+
+sub activity_count {
+    my ($self, %opt) = @_;
+    for my $o (qw/from to/) {
+        die "Missing option '$o'" unless $opt{$o};
+    }
+    $self->_single_value($self->sql_for(query => 'activity_count'),
+            $self->channel,
+            @opt{qw/from to/});
 }
 
 1;
