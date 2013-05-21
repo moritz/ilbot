@@ -1,6 +1,6 @@
 
 requires 'Bot::BasicBot';
-requires 'Calendar::Simple'
+requires 'Calendar::Simple';
 requires 'Config::File';
 requires 'CGI';
 requires 'Date::Simple';
@@ -10,8 +10,8 @@ requires 'Encode::Guess';
 requires 'HTML::Entities';
 requires 'HTML::Template';
 requires 'HTTP::Headers';
-requires 'File::Slurp';
 requires 'Regexp::Common';
 requires 'Text::Table';
-requires 'Cache::Cache';
+requires 'CHI';
+requires 'Plack';
 requires 'DBD::mysql';
