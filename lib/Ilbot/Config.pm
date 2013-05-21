@@ -20,6 +20,7 @@ my %defaults = (
     www => {
         base_url        => '/',
         no_cache        => 0,
+        throttle        => 0,
     },
     backend => {
         timzone         => 'local',

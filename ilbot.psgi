@@ -95,8 +95,19 @@ my $app = sub {
 };
 
 my $c = \&config;
-
+my $rate = config('www' => 'throttle');
 use Plack::Builder;
+if ($rate) {
+    $app = builder {
+        enable 'Throttle::Lite',
+            limits  => "$rate req/hour",
+            backend => 'Simple',
+            routes  => qr{.},
+            ;
+        $app;
+    };
+}
+
 $app = builder {
     enable "Plack::Middleware::Static",
             path => qr{^/(?:robots\.txt|s/)},
