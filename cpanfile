@@ -1,6 +1,5 @@
-
 requires 'Bot::BasicBot';
-requires 'Calendar::Simple'
+requires 'Calendar::Simple';
 requires 'Config::File';
 requires 'CGI';
 requires 'Date::Simple';
