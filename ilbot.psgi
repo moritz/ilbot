@@ -7,29 +7,21 @@ use Ilbot::Frontend;
 use Ilbot::Backend::SQL;
 use Ilbot::Backend::Cached;
 use Ilbot::Date qw/today/;
-use Ilbot::Config;
 use Date::Simple qw/date/;
 use Encode qw/encode_utf8/;
 
 use Config::File qw/read_config_file/;
 use Data::Dumper;
 
-use Plack::Builder;
 use Plack::Request;
+
+use Ilbot::Config;
+my $frontend = Ilbot::Config::frontend();
 
 my $app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
     my $channel_re = qr{[^./]+};
-    my $sql      = Ilbot::Backend::SQL->new(
-        config      => config('backend'),
-    );
-    my $backend  = Ilbot::Backend::Cached->new(
-        backend     => $sql,
-    );
-    my $frontend = Ilbot::Frontend->new(
-        backend     => $backend,
-    );
     open my $OUT, '>', \my $s;
 
     given ($req->path_info) {
@@ -104,9 +96,11 @@ my $app = sub {
 
 my $c = \&config;
 
+use Plack::Builder;
 $app = builder {
     enable "Plack::Middleware::Static",
             path => qr{^/(?:robots\.txt|s/)},
             root => $c->(www => 'static_path');
     $app;
 };
+# vim: ft=perl

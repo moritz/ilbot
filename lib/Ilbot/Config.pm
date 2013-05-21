@@ -4,9 +4,10 @@ use strict;
 use warnings;
 use Config::File qw/read_config_file/;
 use HTML::Template;
+use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT_OK = qw/config template/;
+our @EXPORT_OK = qw/config template backend frontend/;
 
 my $path;
 my %config;
@@ -23,6 +24,7 @@ my %defaults = (
     backend => {
         timzone         => 'local',
         search_context  => 4,
+        use_cache       => 1,
     },
 );
 
@@ -83,5 +85,26 @@ sub template {
     );
 }
 
+sub backend {
+    require Ilbot::Backend::SQL;
+    my $sql = Ilbot::Backend::SQL->new(
+        config  => config('backend'),
+    );
+    if (config(backend => 'use_cache')) {
+        require Ilbot::Backend::Cached;
+        return Ilbot::Backend::Cached->new(
+            backend  => $sql,
+        );
+    }
+    return $sql;
+}
+
+sub frontend {
+    require Ilbot::Frontend;
+    Ilbot::Frontend->new(
+        backend => backend(),
+    );
+
+}
 
 1;

@@ -41,7 +41,13 @@ sub update_summary {
             }
         }
     }
+}
 
+sub first_day {
+    my $self = shift;
+    cache(namespace => 'backend')->compute('first_day', '1 year',
+        sub { $self->backend->first_day }
+    );
 }
 
 sub channel {
@@ -85,6 +91,22 @@ sub day_has_activity {
     }
     $cache->compute($cache_key, undef, sub {
         $self->backend->day_has_activity(%opt);
+    });
+}
+
+sub activity_count {
+    my ($self, %opt) = @_;
+    for my $o (qw/from to/) {
+        die "Missing option '$o'" unless $opt{$o};
+    }
+    my $cache_key = join '|', 'activity_count', $self->channel, $opt{from}, $opt{to};
+    # this one cound be cached quite long (unless $opt{to} eq today),
+    # but there isn't much use case for keeping the cache long,
+    # because the next time the information is needed, it will be with
+    # different 'from' and 'to' (otherwise there's not much point in
+    # regenerating the graphs for which this method is needed).
+    cache(namespace => 'backend')->compute($cache_key, '1 hour', sub {
+            $self->backend->activity_count(%opt)
     });
 }
 
