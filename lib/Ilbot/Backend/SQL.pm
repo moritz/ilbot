@@ -9,6 +9,8 @@ our %SQL = (
     STANDARD    => {
         channels                 => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
         first_day                => 'SELECT MIN(day) FROM irclog',
+        first_day_channel        => 'SELECT MIN(day) FROM irclog WHERE channel = ?',
+        exists_channel           => 'SELECT 1 FROM irclog WHERE channel = ? LIMIT 1',
         day_has_actitivity       => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
         activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
     AND day BETWEEN ? AND ? AND nick <> ''],
@@ -291,6 +293,16 @@ sub activity_count {
     $self->_single_value($self->sql_for(query => 'activity_count'),
             $self->channel,
             @opt{qw/from to/});
+}
+
+sub first_day {
+    my $self = shift;
+    return $self->_single_value($self->sql_for(query => 'first_day_channel'), $self->channel);
+}
+
+sub exists {
+    my $self = shift;
+    return $self->_single_value($self->sql_for(query => 'exists_channel'), $self->channel);
 }
 
 1;

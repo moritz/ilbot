@@ -60,8 +60,9 @@ sub channel_index {
     my ($self, %opt) = @_;
     die "Missing option 'out_fh'"  unless $opt{out_fh};
     die "Missing option 'channel'" unless $opt{channel};
-    my $t = Ilbot::Config::_template('channel-index');
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
+    return unless $b->exists;
+    my $t = Ilbot::Config::_template('channel-index');
     $t->param(channel   => $opt{channel});
     $t->param(base_url  => config(www => 'base_url'));
     $t->param(calendar  => $self->calendar(
@@ -72,6 +73,7 @@ sub channel_index {
             ),
     );
     $t->output(print_to => $opt{out_fh});
+    return 1;
 }
 
 sub calendar {
@@ -150,7 +152,10 @@ sub day {
     }
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
-        my $full_channel = q{#} . $channel;
+    my $full_channel = q{#} . $channel;
+    my $b         = $self->backend->channel(channel => $full_channel);
+    return unless $b->exists;
+
     my $t = Ilbot::Config::_template('day');
     {
         my $clf = "channels/$channel.tmpl";
@@ -163,7 +168,6 @@ sub day {
     }
     my $base_url = config(www => 'base_url');
     $t->param(base_url  => $base_url);
-    my $b         = $self->backend->channel(channel => '#' . $channel);
     my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary});
     my $line_no   = 0;
     my $prev_nick = q{!!!};
@@ -215,9 +219,11 @@ sub day_text {
     }
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
+    my $b = $self->backend->channel(channel => "#$channel");
+    return unless $b->exist;
     require Text::Table;
     my $table = Text::Table->new(qw/Time Nick Message/);
-    for my $row (@{ $self->backend->channel(channel => "#$channel")->lines(day => $opt{day}) }) {
+    for my $row (@{ $b->lines(day => $opt{day}) }) {
         my ($nick, $ts, $line) = ($row->[1], $row->[2], $row->[3]);
 
 		my $timezone = config(backend => 'timezone') || 'gmt';
@@ -302,13 +308,14 @@ sub search {
     my ($self, %opt) = @_;
     die "Missing parameter 'channel'" unless defined $opt{channel};
     die "Missing parameter 'out_fh'" unless defined $opt{out_fh};
+    my $b = $self->backend->channel(channel => '#' . $opt{channel});
+    return unless $b->exists;
     $opt{offset} //= 0;
     my $t = Ilbot::Config::_template('search');
     $t->param(channel  => $opt{channel});
     $t->param(base_url => config(www => 'base_url'));
     $t->param(nick     => $opt{nick});
     $t->param(q        => $opt{q});
-    my $b = $self->backend->channel(channel => '#' . $opt{channel});
     my $c = 0;
     my $prev_nick = q[!!!];
     my $line_number = 0;
@@ -361,6 +368,7 @@ sub search {
         }
     }
     $t->output(print_to => $opt{out_fh});
+    return 1;
 }
 
 

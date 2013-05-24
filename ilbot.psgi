@@ -43,7 +43,8 @@ my $app = sub {
             }
         }
         when ( qr{ ^/ ($channel_re) /?$}x ) {
-            $frontend->channel_index(channel => $1, out_fh => $OUT);
+            $frontend->channel_index(channel => $1, out_fh => $OUT)
+                or return [404, ['Content-Type' => 'text/plain'], ['No such channel']];
         }
         when ( qr{ ^/ ($channel_re) /search/?$}x ) {
             my $p = $req->query_parameters;
@@ -53,7 +54,8 @@ my $app = sub {
                 q       => scalar($p->{q}),
                 nick    => scalar($p->{nick}),
                 offset  => scalar($p->{offset}),
-            );
+            )
+                or return [404, ['Content-Type' => 'text/plain'], ['No such channel']];
         }
         when ( qr{ ^/ ($channel_re) /today $}x ) {
             my $url = join '', 'http://',
@@ -75,13 +77,15 @@ my $app = sub {
                 day     => $2,
                 out_fh  => $OUT,
                 summary => !! $3,
-            );
+            )
+                or return [404, ['Content-Type' => 'text/plain'], ['No such channel/day']];
         }
         when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /text)? ) $!x ) {
             $s = $frontend->day_text(
                 channel => $1,
                 day     => $2,
-            );
+            )
+                or return [404, ['Content-Type' => 'text/plain'], ['No such channel/day']];
             return [200, ["Content-Type" => "text/plain; charset=UTF-8"], [$s]];
         }
         default {

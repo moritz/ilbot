@@ -64,6 +64,7 @@ sub backend { $_[0]{backend} }
 
 package Ilbot::Backend::Cached::Channel;
 
+use Ilbot::Config;
 use Ilbot::Cache qw/cache/;
 use Ilbot::Date qw/today/;
 
@@ -75,6 +76,12 @@ sub new {
 }
 sub backend { $_[0]{backend} }
 sub channel { $_[0]{channel} }
+
+sub exists {
+    my $self = shift;
+    cache(namespace => 'backend')->compute("exists|" . $self->channel,
+        '1 day', sub { $self->backend->exists });
+}
 
 sub day_has_activity {
     my ($self, %opt) = @_;
@@ -146,5 +153,10 @@ sub search_results {
     $self->backend->search_results(@_);
 }
 
-
+sub first_day {
+    my $self      = shift;
+    my $cache_key = join '|', first_day => $self->channel;
+    cache(namespace => 'backend')->compute($cache_key, '1 day',
+        sub { $self->backend->first_day });
+}
 1;
