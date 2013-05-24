@@ -4,7 +4,7 @@ use warnings;
 use 5.010;
 use HTML::Template;
 
-use Ilbot::Config qw/config template/;
+use Ilbot::Config;
 use Ilbot::Date qw/today mytime/;
 use Ilbot::Frontend::NickColor qw/nick_to_color/;
 use Ilbot::Frontend::TextFilter qw/text_filter/;
@@ -32,7 +32,7 @@ sub backend { $_[0]{backend} }
 sub index {
     my ($self, %opt) = @_;
     die "Missing option 'out_fh'" unless $opt{out_fh};
-    my $template = Ilbot::Config::template('index');
+    my $template = Ilbot::Config::_template('index');
     my @channels;
     my $has_images = 0;
     my $path = config(www => 'static_path') . '/';
@@ -60,7 +60,7 @@ sub channel_index {
     my ($self, %opt) = @_;
     die "Missing option 'out_fh'"  unless $opt{out_fh};
     die "Missing option 'channel'" unless $opt{channel};
-    my $t = Ilbot::Config::template('channel-index');
+    my $t = Ilbot::Config::_template('channel-index');
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
     $t->param(channel   => $opt{channel});
     $t->param(base_url  => config(www => 'base_url'));
@@ -151,7 +151,7 @@ sub day {
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
         my $full_channel = q{#} . $channel;
-    my $t = Ilbot::Config::template('day');
+    my $t = Ilbot::Config::_template('day');
     {
         my $clf = "channels/$channel.tmpl";
         if (-e $clf) {
@@ -303,7 +303,7 @@ sub search {
     die "Missing parameter 'channel'" unless defined $opt{channel};
     die "Missing parameter 'out_fh'" unless defined $opt{out_fh};
     $opt{offset} //= 0;
-    my $t = Ilbot::Config::template('search');
+    my $t = Ilbot::Config::_template('search');
     $t->param(channel  => $opt{channel});
     $t->param(base_url => config(www => 'base_url'));
     $t->param(nick     => $opt{nick});

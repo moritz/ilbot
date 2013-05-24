@@ -7,7 +7,7 @@ use HTML::Template;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT = qw/config template backend frontend/;
+our @EXPORT = qw/config _template _backend _frontend/;
 
 my $path;
 my %config;
@@ -74,7 +74,7 @@ sub config {
     return $c;
 }
 
-sub template {
+sub _template {
     my $name = shift;
     my $path = config('template') . "/$name.tmpl";
     return HTML::Template->new(
@@ -86,7 +86,7 @@ sub template {
     );
 }
 
-sub backend {
+sub _backend {
     require Ilbot::Backend::SQL;
     my $sql = Ilbot::Backend::SQL->new(
         config  => config('backend'),
@@ -100,10 +100,10 @@ sub backend {
     return $sql;
 }
 
-sub frontend {
+sub _frontend {
     require Ilbot::Frontend;
     Ilbot::Frontend->new(
-        backend => backend(),
+        backend => _backend(),
     );
 
 }

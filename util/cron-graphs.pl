@@ -19,7 +19,7 @@ GetOptions(
 
 die "No directory '$dir'\n" unless -d $dir;
 
-my $backend = backend();
+my $backend = _backend();
 
 my $min_date = date($backend->first_day());
 my $max_date = date(today());

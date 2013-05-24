@@ -1,5 +1,6 @@
-#!/usr/bin/env plackup
+#!/usr/bin/perl
 use lib 'lib';
+use lib '/home/moritz/perl5/perlbrew/perls/perl-5.16.0/lib/site_perl/5.16.0/';
 use 5.010;
 
 use Ilbot::Config '/home/moritz/src/ilbot/config/';
@@ -16,7 +17,7 @@ use Data::Dumper;
 use Plack::Request;
 
 use Ilbot::Config;
-my $frontend = Ilbot::Config::frontend();
+my $frontend = _frontend();
 
 my $app = sub {
     my $env = shift;
