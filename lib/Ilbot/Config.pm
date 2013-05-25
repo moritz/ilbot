@@ -3,7 +3,7 @@ use 5.010;
 use strict;
 use warnings;
 use Config::File qw/read_config_file/;
-use HTML::Template;
+use HTML::Template 2.91;
 use Data::Dumper;
 
 use parent 'Exporter';
@@ -83,6 +83,7 @@ sub _template {
         global_vars         => 1,
         die_on_bad_params   => 0,
         default_escape      => 'html',
+        utf8                => 1,
     );
 }
 

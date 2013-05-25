@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 use lib 'lib';
-use lib '/home/moritz/perl5/perlbrew/perls/perl-5.16.0/lib/site_perl/5.16.0/';
 use 5.010;
 
 use Ilbot::Config '/home/moritz/src/ilbot/config/';
@@ -23,7 +22,9 @@ my $app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
     my $channel_re = qr{[^./]+};
-    open my $OUT, '>', \my $s;
+    # note that this can't be >:encoding(UTF-8), because
+    # some untracked bug then makes some pages incomplete at the end
+    open my $OUT, '>:utf8', \my $s;
 
     given ($req->path_info) {
         when ( qr{ ^/$ }x ) {
@@ -96,7 +97,7 @@ my $app = sub {
     my $h = $frontend->http_header( accept => $env->{HTTP_ACCEPT} );
     close $out_fh;
 
-    return [200, $h, [encode_utf8 $s]];
+    return [200, $h, [$s]];
 };
 
 my $c = \&config;
