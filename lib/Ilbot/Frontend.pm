@@ -146,7 +146,7 @@ sub calendar {
 
 sub day {
     my ($self, %opt) = @_;
-    $opt{day} //= gmt_today();
+    $opt{day} //= today();
     for my $attr (qw/out_fh channel/) {
         die "Missing argument '$attr'" unless defined $opt{$attr};
     }
@@ -155,6 +155,8 @@ sub day {
     my $full_channel = q{#} . $channel;
     my $b         = $self->backend->channel(channel => $full_channel);
     return unless $b->exists;
+    return if $opt{day} gt today();
+    return if $opt{day} lt $b->first_day;
 
     my $t = Ilbot::Config::_template('day');
     {
@@ -208,12 +210,13 @@ sub day {
     $t->param(PREV_DATE => $prev, PREV_URL => "$base_url$opt{channel}/$prev");
     my $next = date($opt{day}) + 1;
     $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url$opt{channel}/$next");
-    $t->output(print_to => $opt{out_fh}),
+    $t->output(print_to => $opt{out_fh});
+    return 1;
 }
 
 sub day_text {
     my ($self, %opt) = @_;
-    $opt{day} //= gmt();
+    $opt{day} //= today();
     for my $attr (qw/channel/) {
         die "Missing argument '$attr'" unless defined $opt{$attr};
     }
@@ -221,12 +224,12 @@ sub day_text {
     $channel =~ s/^\#+//;
     my $b = $self->backend->channel(channel => "#$channel");
     return unless $b->exist;
+    return if $opt{day} gt today();
+    return if $opt{day} lt $b->first_day;
     require Text::Table;
     my $table = Text::Table->new(qw/Time Nick Message/);
     for my $row (@{ $b->lines(day => $opt{day}) }) {
         my ($nick, $ts, $line) = ($row->[1], $row->[2], $row->[3]);
-
-		my $timezone = config(backend => 'timezone') || 'gmt';
 
 		my ($hour, $minute) = (mytime $ts)[2, 1];
 
