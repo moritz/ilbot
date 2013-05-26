@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.010;
 use DBI;
+use Ilbot::Date qw/today/;
 
 our %SQL = (
     STANDARD    => {
@@ -20,6 +21,7 @@ our %SQL = (
         lines_summary_nospam     => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND NOT spam AND in_summary ORDER BY id],
         lines_nosummary_spam     => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? ORDER BY id],
         lines_summary_spam       => q[SELECT id, nick, timestamp, line, in_summary FROM irclog WHERE day = ? AND channel = ? AND in_summary ORDER BY id],
+        log_line                 => q[INSERT INTO irclog (channel, nick, line) VALUES (?, ?, ?)],
     },
     mysql       => {
         activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
@@ -29,6 +31,7 @@ our %SQL = (
         search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
         search_result            => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         search_result_nick       => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
+        log_line                 => q[INSERT INTO irclog (channel, nick, line, day, timestamp) VALUES (?, ?, ?, ?, ?)],
     },
 );
 
@@ -131,6 +134,24 @@ sub update_summary {
         $sth->finish;
     }
     return;
+}
+
+sub log_line {
+    my ($self, %opt) = @_;
+    for my $o (qw/channel line nick/) {
+        die "Missing option '$o'" unless defined $opt{$o};
+    }
+    my $sql = $self->sql_for(query => 'log_line');
+    my $sth = $self->dbh->prepare_cached($sql);
+    my @ph = (@opt{qw/channel nick line/});
+    my $placeholders = $sql =~ tr/?//;
+    if ($placeholders == 5) {
+        # mysql is limited in default values, so we have to calculate some
+        # stuff on our own
+        push @ph, today(), time;
+    }
+    $sth->execute(@ph);
+    $sth->finish;
 }
 
 sub channel {

@@ -3,41 +3,30 @@ use lib 'lib';
 # TO BE REPLACED BY THE INSTALLER
 use warnings;
 use strict;
-use Config::File;
 use Bot::BasicBot 0.81;
-use Carp qw(confess);
+
+use Ilbot::Config;
+my $backend = _backend();
 
 # this is a cleaner reimplementation of ilbot, with Bot::BasicBot which 
 # in turn is based POE::* stuff
-package IrcLogBot;
-use IrcLog qw(get_dbh);
+package Ilbot::Logger;
 use Ilbot::Date qw/today/;
-use Data::Dumper;
+
 
 {
 
-    my $dbh = get_dbh();
-
-    sub prepare {
-        my $dbh = shift;
-        return $dbh->prepare("INSERT INTO irclog (channel, day, nick, timestamp, line) VALUES(?, ?, ?, ?, ?)");
-    }
-    my $q = prepare($dbh);
     sub dbwrite {
         my ($channel, $who, $line) = @_;
         return unless $channel =~ /\A#\S+\z/;
         $channel =~ s/\A##/#/;
-        # mncharity aka putter has an IRC client that prepends some lines with
-        # a BOM. Remove that:
+        # remove leading BOMs. Some clients seem to send them.
         $line =~ s/\A\x{ffef}//;
-        my @sql_args = ($channel, today(), $who, time, $line);
-        if ($dbh->ping){
-            $q->execute(@sql_args);
-        } else {
-            $q = prepare(get_dbh());
-            $q->execute(@sql_args);
-        }
-        return;
+        $backend->log_line(
+            channel => $channel,
+            nick    => $who,
+            line    => $line,
+        );
     }
 
     use base 'Bot::BasicBot';
@@ -128,13 +117,15 @@ use Data::Dumper;
 
 
 package main;
-my $conf = Config::File::read_config_file(shift @ARGV || "bot.conf");
-my $nick = shift @ARGV || $conf->{NICK} || "ilbot6";
-my $server = $conf->{SERVER} || "irc.freenode.net";
-my $port = $conf->{PORT} || 6667;
-my $channels = [ split m/\s+/, $conf->{CHANNEL}];
+# do not use the normal config() mechanism, because there can be multiple
+# bot configuration files for multiple servers
+my $conf     = Config::File::read_config_file(shift @ARGV || "bot.conf");
+my $nick     = shift @ARGV || $conf->{nick} || "ilbot6";
+my $server   = $conf->{server}  // "irc.freenode.net";
+my $port     = $conf->{port}    // 6667;
+my $channels = [ split m/\s+/, $conf->{channel}];
 
-my $bot = IrcLogBot->new(
+my $bot = Ilbot::Logger->new(
         server    => $server,
         port      => $port,
         channels  => $channels,
@@ -142,8 +133,9 @@ my $bot = IrcLogBot->new(
         alt_nicks => ["irclogbot", "logbot"],
         username  => "bot",
         name      => "irc log bot, http://moritz.faui2k3.org/en/ilbot",
-        charset   => "utf-8", 
+        charset   => "utf-8",
         );
+say "Launching logger...";
 $bot->run();
 
 # vim: ts=4 sw=4 expandtab

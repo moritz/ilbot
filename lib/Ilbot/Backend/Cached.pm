@@ -43,6 +43,10 @@ sub update_summary {
     }
 }
 
+sub log_line {
+    shift->backend->log_line(@_);
+}
+
 sub first_day {
     my $self = shift;
     cache(namespace => 'backend')->compute('first_day', '1 year',
