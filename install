@@ -244,3 +244,25 @@ EOT
         say "I don't understand this URL; please configure Apache yourself";
     }
 }
+
+print <<EOT;
+
+It's your turn now
+==================
+Write a config file for the logging bot, taking file
+config/bot.conf.example as an example. Then run the logger as
+
+    \$ perl $path/bin/ilbot2.pl config/bot.conf
+
+Since the logging stops as soon as the program terminates, it is
+advisable to run it inside a screen or tmux session.
+
+If you want to show activity graphs on the front page, please read
+file README.activity-graph.md
+
+Please add your contact details
+to $path/config/template/footer.tmpl.
+
+If you find ilbot useful, consider donating via the paypal
+button at http://moritz.faui2k3.org/en/ilbot#donate
+EOT
