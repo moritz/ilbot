@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
+use lib 'lib';
+# TO BE REPLACED BY THE INSTALLER
 use warnings;
 use strict;
-use lib 'lib';
 use Config::File;
 use Bot::BasicBot 0.81;
 use Carp qw(confess);

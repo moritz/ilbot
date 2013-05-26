@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-use lib 'lib';
+use lib 'lib'; # just for local testing
+# TO BE REPLACED BY THE INSTALLER
 use 5.010;
 
 use Ilbot::Config '/home/moritz/src/ilbot/config/';

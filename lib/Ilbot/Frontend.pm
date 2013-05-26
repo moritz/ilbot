@@ -2,7 +2,6 @@ package Ilbot::Frontend;
 use strict;
 use warnings;
 use 5.010;
-use HTML::Template;
 
 use Ilbot::Config;
 use Ilbot::Date qw/today mytime/;

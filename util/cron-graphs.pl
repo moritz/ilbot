@@ -1,7 +1,8 @@
 #!/usr/bin/perl
+use lib 'lib'; # just for local testing
+# TO BE REPLACED BY THE INSTALLER
 use warnings;
 use strict;
-use lib 'lib';
 use Ilbot::Date qw/today/;
 use Ilbot::Config;
 use Date::Simple qw/date/;
