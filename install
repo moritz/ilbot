@@ -3,6 +3,8 @@ use 5.010;
 use strict;
 use warnings;
 use autodie;
+use DBI;
+use File::Path qw/make_path/;
 
 my %files = (
     bin         => ['ilbot2..pl', 'util/cron-graphs.pl'],
@@ -29,4 +31,109 @@ if ($missing) {
 }
 say '... dependencies all OK';
 
+sub prompt {
+    my ($text, $default) = @_;
+    if (defined $default && length $default) {
+        $text .= " [$default]";
+    }
+    $| = 1;
+    print "$text> ";
+    my $answer = <>;
+    chomp $answer;
+    return $answer || $default;
+}
 
+print <<EOT;
+Database Access
+===============
+You need a mysql database where ilbot stores the logs.
+For installation you need privileges for creating tables and indxes.
+For running ilbot, you need INSERT, SELECT and UPDATE privileges.
+EOT
+my $host   = prompt('Database host', 'localhost');
+my $port   = prompt('Database port', 3306);
+my $dbname = prompt('Database name', 'ilbot');
+my $dbuser = prompt('Database username', 'ilbot');
+my $dbpass = prompt('Database password');
+
+say "Now testing your database connection...";
+my $dbh = DBI->connect("DBI:mysql:database=$dbname;host=$host;port=$port", $dbuser, $dbpass, { RaiseError => 1 });
+$dbh->do('SELECT 1');
+
+my $has_table_irclog = eval { $dbh->do('SELECT 1 FROM irclog LIMIT 1'); 1 };
+if ($has_table_irclog) {
+    print <<EOT
+The database $dbname already has a table named 'irclog'. I'm going to use
+this table, and assume that it already has the right structure. If not,
+either abort this installer with Ctrl-C and run it again with a different
+database, or drop the table and create it again from the schema in file
+'sql/schema.mysql'
+EOT
+}
+else {
+    say "Database connection is fine, creating the schema for you...";
+    eval {
+        open my $SCHEMA, '<', 'sql/schema.mysql';
+        local $/ = '';
+        while (<$SCHEMA>) {
+            $dbh->do($_);
+        }
+    };
+    if ($@) {
+        die "Schema creation failed: $@\n";
+    }
+    else {
+        say "Created that schema for you.";
+    }
+}
+$dbh->disconnect;
+
+print <<EOT;
+Time Zone
+=========
+You can either log and display the logs all in UTC/GMT, or
+in whatever timezone your computer considers "local time".
+Please enter either 'gmt' or 'local' below:
+EOT
+
+my $tz = prompt('Timezone', 'gmt');
+
+print <<EOT;
+
+Installation Path
+=================
+The installation path must
+ + be writable by you (and potentially cron jobs)
+ + be readable by Apache (if you use Apache for the web frontend)
+ + not yet exist
+EOT
+
+my $path = prompt('Installation path', $ENV{HOME} . '/ilbot');
+die "No installation path given, aborting\n" unless $path;
+
+die "$path already exists" if -e $path;
+
+make_path $path;
+make_path "$path/config";
+
+my $backend_conf = "$path/config/backend.conf";
+open my $CONFIG, '>', $backend_conf;
+
+print { $CONFIG } <<EOC;
+# Database connectivity
+dsn      = mysql
+database = $dbname
+host     = $host
+port     = $port
+user     = $dbuser
+password = $dbpass
+
+# Timezone
+# Options:
+#       * 'local' for server's timezone
+#       * 'gmt' for UTC
+timezone = $tz
+EOC
+
+close $CONFIG;
+say "Written config to $backend_conf";
