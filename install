@@ -5,10 +5,13 @@ use warnings;
 use autodie;
 use DBI;
 use File::Path qw/make_path/;
+use File::Copy qw/copy/;
+use File::Basename qw/basename/;
 
 my %files = (
-    bin         => ['ilbot2..pl', 'util/cron-graphs.pl'],
+    bin         => ['ilbot2.pl', 'util/cron-graphs.pl'],
     'www/bin'   => ['ilbot.fcgi', 'ilbot.psgi'],
+    'static'    => ['static/s/*'],
 );
 
 say 'Checking dependencies';
@@ -57,7 +60,7 @@ my $dbuser = prompt('Database username', 'ilbot');
 my $dbpass = prompt('Database password');
 
 say "Now testing your database connection...";
-my $dbh = DBI->connect("DBI:mysql:database=$dbname;host=$host;port=$port", $dbuser, $dbpass, { RaiseError => 1 });
+my $dbh = DBI->connect("DBI:mysql:database=$dbname;host=$host;port=$port", $dbuser, $dbpass, { RaiseError => 1, PrintError => 0 });
 $dbh->do('SELECT 1');
 
 my $has_table_irclog = eval { $dbh->do('SELECT 1 FROM irclog LIMIT 1'); 1 };
@@ -137,3 +140,37 @@ EOC
 
 close $CONFIG;
 say "Written config to $backend_conf";
+
+sub copy_and_replace {
+    my $replacement = "use lib '$path/lib'; use Ilbot::Confg '$path/config';\n";
+    my ($from, $to) = @_;
+    unless (-f $from) {
+        die "File '$from' seems to be missing.";
+    }
+    if (-T $from) {
+        open my $IN,  '<:encoding(UTF-8)', $from;
+        open my $OUT, '>:encoding(UTF-8)', $to;
+        while (<$IN>) {
+            s/^# TO BE REPLACED BY THE INSTALLER.*/$replacement/s;
+            print $OUT $_;
+        }
+        close $IN;
+        close $OUT;
+    }
+    else {
+        copy($from, $to);
+    }
+}
+
+for my $dest (keys %files) {
+    my $p = "$path/$dest";
+    make_path $p unless -d $p;
+    for my $file (grep -f, map glob, @{ $files{$dest} }) {
+        copy_and_replace($file, "$p/" . basename($file));
+    }
+}
+make_path "$path/$_" for glob 'lib/Ilbot/*/';
+for my $f (map glob, 'lib/Ilbot/*.pm', 'lib/Ilbot/*/*.pm') {
+    copy($f, "$path/$f") or die "Cannot copy $f to $path/$f: $!";
+}
+say "Files copied";
