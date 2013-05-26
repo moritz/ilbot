@@ -10,6 +10,10 @@ use Ilbot::Date qw/today/;
 use Date::Simple qw/date/;
 use Encode qw/encode_utf8/;
 
+# I don't know what the p5 porters where thinking
+# when they enabled this warning by default
+no if $] >= 5.018, 'warnings', "experimental::smartmatch";
+
 use Config::File qw/read_config_file/;
 use Data::Dumper;
 
