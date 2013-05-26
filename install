@@ -9,9 +9,10 @@ use File::Copy qw/copy/;
 use File::Basename qw/basename/;
 
 my %files = (
-    bin         => ['ilbot2.pl', 'util/cron-graphs.pl'],
-    'www/bin'   => ['ilbot.fcgi', 'ilbot.psgi'],
-    'static'    => ['static/s/*'],
+    bin               => ['ilbot2.pl', 'util/cron-graphs.pl'],
+    www               => ['ilbot.fcgi', 'ilbot.psgi'],
+    'static/s'        => ['static/s/*'],
+    'config/template' => ['config/template/*.tmpl'],
 );
 
 say 'Checking dependencies';
@@ -131,6 +132,9 @@ port     = $port
 user     = $dbuser
 password = $dbpass
 
+# once stuff works as it should, set this to 1
+use_cache = 0
+
 # Timezone
 # Options:
 #       * 'local' for server's timezone
@@ -142,7 +146,7 @@ close $CONFIG;
 say "Written config to $backend_conf";
 
 sub copy_and_replace {
-    my $replacement = "use lib '$path/lib'; use Ilbot::Confg '$path/config';\n";
+    my $replacement = "use lib '$path/lib'; use Ilbot::Config '$path/config';\n";
     my ($from, $to) = @_;
     unless (-f $from) {
         die "File '$from' seems to be missing.";
@@ -156,12 +160,14 @@ sub copy_and_replace {
         }
         close $IN;
         close $OUT;
+        system('chmod', "--reference=$from", $to);
     }
     else {
         copy($from, $to);
     }
 }
 
+make_path "$path/static/s";
 for my $dest (keys %files) {
     my $p = "$path/$dest";
     make_path $p unless -d $p;
@@ -174,3 +180,67 @@ for my $f (map glob, 'lib/Ilbot/*.pm', 'lib/Ilbot/*/*.pm') {
     copy($f, "$path/$f") or die "Cannot copy $f to $path/$f: $!";
 }
 say "Files copied";
+
+print <<EOT;
+
+Webserver configuration
+=======================
+You can either deploy the web frontend with Apache 2 and fasgcgi,
+or run a separate, Plack-compatiable HTTP server.
+See http://plackperl.org/#servers if you take the latter rout.
+EOT
+
+
+my $use_apache = prompt('Use Apache 2', 'yes');
+
+if ($use_apache =~ /^y/i) {
+    print <<EOT;
+What's the URL of the new ilbot instance?
+(For example http://irclog.perlgeek.de/)
+EOT
+    my $url = prompt('URL');
+
+    if ($url =~ qr{https?://([^/]+)(.*)}) {
+        my ($domain, $base) = ($1, $2);
+        open my $CONF, '>', "$path/config/www.conf";
+        print $CONF <<EOC;
+base_url    = $base
+static_path = $path/static
+
+# enable this if you want to rate limit the dynamic pages
+# (in requests per hour per IP)
+#throttle = 200
+EOC
+        close $CONF;
+
+        open $CONF, '>', "$path/$domain.conf";
+        print $CONF <<EOC;
+<VirtualHost *:80>
+        ServerName $domain
+        FastCgiServer $path/www/ilbot.fcgi -processes 3
+        Alias /s/ $path/static/s/
+        Alias /   $path/www/ilbot.fcgi/
+
+# other useful stuff; make sure that /var/log/apach2/$domain/ exists
+# before enabling it:
+#        CustomLog /var/log/apache2/$domain/access.log combined
+#        ErrorLog /var/log/apache2/$domain/error.log
+#
+#        ServerSignature On
+
+</VirtualHost>
+EOC
+        close $CONF;
+        print <<EOT;
+There's an initial apache config file in $path/$domain.conf.
+Please edit it to your liking, and then enable it.
+On Debian, you can do it with these commands (as root):
+    \$ mv $path/$domain.conf /etc/apache2/sites-available/
+    \$ a2ensite $domain.conf
+    \$ service apache2 reload
+EOT
+    }
+    else {
+        say "I don't understand this URL; please configure Apache yourself";
+    }
+}

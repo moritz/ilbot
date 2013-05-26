@@ -10,7 +10,6 @@ use Ilbot::Frontend::TextFilter qw/text_filter/;
 
 use Config::File;
 use Date::Simple qw/date/;
-use IrcLog::WWW qw/my_decode/;
 use HTML::Entities qw(encode_entities);
 use Encode qw/encode_utf8/;
 
