@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+use 5.010;
+use strict;
+use warnings;
+use autodie;
+
+my %files = (
+    bin         => ['ilbot2..pl', 'util/cron-graphs.pl'],
+    'www/bin'   => ['ilbot.fcgi', 'ilbot.psgi'],
+);
+
+say 'Checking dependencies';
+
+my $missing = 0;
+sub requires {
+    my ($module, $version) = @_;
+    my $str = $version ? "use $module $version;" : "use $module;";
+    eval $str;
+    if ($@) {
+        say "Missing dependency: Module $module",
+            ($version ? " Version $version" : "");
+        $missing++;
+    }
+}
+die "Missing file 'cpanfile'" unless -e 'cpanfile';
+do 'cpanfile';
+if ($missing) {
+    die "$missing missing dependencies; please install them, and then try running $0 again\n";
+}
+say '... dependencies all OK';
+
+
