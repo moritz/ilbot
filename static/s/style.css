@@ -229,4 +229,6 @@ table.calendar a {
     font-weight:  bold;
 }
 
-.hidden { display: none }
+.hidden {
+    display: none;
+}

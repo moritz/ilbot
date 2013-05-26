@@ -1,5 +1,5 @@
 var summary_filter_link = '<a href="javascript:hide_non_summary()">show only summary lines</a>';
-var enable_summary_mode_html = '<a href="javascript:enable_summary_mode()">Enable summary mode</a>';
+var enable_summary_mode_html = ' <a href="javascript:enable_summary_mode()">Enable summary mode</a>';
 $(document).ready(function() {
     disable_summary_mode();
 });
@@ -31,7 +31,7 @@ function save_summary_changes() {
             }
     });
     if (was_checked.length != 0 || newly_checked.length != 0) {
-        $.post("/save_summary.pl", { check: newly_checked.join('.'), uncheck: was_checked.join('.') } );
+        $.post("/e/summary", { check: newly_checked.join('.'), uncheck: was_checked.join('.') } );
     }
 }
 

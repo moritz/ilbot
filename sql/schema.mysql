@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS `irclog`;
+
+CREATE TABLE `irclog` (
+  `id` int(11) NOT NULL auto_increment,
+  `channel` varchar(30) default NULL,
+  `day` char(10) default NULL,
+  `nick` varchar(40) default NULL,
+  `timestamp` int(11) default NULL,
+  `line` mediumtext,
+  `spam` tinyint(1) default '0',
+  PRIMARY KEY  (`id`),
+  KEY `nick_index` (`nick`),
+  KEY `day_index` (`day`),
+  KEY `irclog_day_channel_idx` (`day`,`channel`),
+  KEY `channel_idx` (`channel`),
+  FULLTEXT KEY `message_index` (`line`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;

@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS irclog;
+CREATE TABLE irclog (
+	id 		SERIAL PRIMARY KEY,
+	channel 	VARCHAR(30) NOT NULL,
+	day		DATE NOT NULL DEFAULT(CURRENT_DATE),
+	nick		VARCHAR(40) NOT NULL DEFAULT(''),
+	timestamp 	INTEGER NOT NULL DEFAULT(EXTRACT(epoch FROM CURRENT_TIMESTAMP)),
+	line		VARCHAR(8192) NOT NULL,
+	spam		BOOLEAN DEFAULT(FALSE),
+	in_summary	BOOLEAN DEFAULT(FALSE)
+);
+
+CREATE INDEX irclog__nick 	            ON irclog(nick);
+CREATE INDEX irclog__channel  	        ON irclog(channel);
+CREATE INDEX irclog__day  	            ON irclog(day);
+CREATE INDEX irclog__channel_day_nick   ON irclog (channel, day, nick);

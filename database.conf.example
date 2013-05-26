@@ -1,5 +1,0 @@
-DSN = mysql
-DATABASE = moritz5 
-HOST = localhost
-USER = moritz
-PASSWORD = foo

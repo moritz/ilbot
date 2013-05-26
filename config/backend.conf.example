@@ -1,0 +1,18 @@
+# path to the perl libraries (.pm files)
+lib = lib
+
+# Database connectivity
+dsn = mysql
+database = moritz5
+host = localhost
+user = moritz
+password = foo
+
+# Timezone
+# Options:
+#	* 'local' for server's timezone
+#	* 'gmt' for UTC
+timezone = local
+
+# Number of lines of context to show before and after a search result:
+search_context = 3

@@ -1,5 +1,7 @@
 use strict;
 use warnings;
+use Ilbot::Config qw/config/;
+use Ilbot::Date qw/mytime/;
 use Test::More tests => 6;
 
 BEGIN { use_ok('IrcLog::WWW'); }
@@ -7,10 +9,11 @@ BEGIN { use_ok('IrcLog::WWW'); }
 sub link_text {
     my $text = shift;
     my $c = 1;
+
     my $h = IrcLog::WWW::message_line({
             id          => 1,
             nick        => 'somebody',
-            timestamp   => gmtime,
+            timestamp   => time(),
             message     => $text,
             line_number => 1,
             prev_nick   => '',

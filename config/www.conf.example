@@ -1,0 +1,3 @@
+base_url = /
+static_path = static
+throttle = 0
