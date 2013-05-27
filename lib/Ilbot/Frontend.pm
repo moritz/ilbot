@@ -221,7 +221,7 @@ sub day_text {
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
     my $b = $self->backend->channel(channel => "#$channel");
-    return unless $b->exist;
+    return unless $b->exists;
     return if $opt{day} gt today();
     return if $opt{day} lt $b->first_day;
     require Text::Table;
