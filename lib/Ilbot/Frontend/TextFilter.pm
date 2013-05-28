@@ -213,7 +213,7 @@ sub github_links {
             return [qq{<a href="https://github.com/MoeOrganization/moe/issues/$1">}, $key, qq{</a>}];
         }
     }
-    elsif ($key =~ m/^pull request/i) {
+    elsif ($key =~ m/^pull request #(\d+)/i) {
         if ($channel eq "moe") {
             return [qq{<a href="https://github.com/MoeOrganization/moe/pull/$1">}, $key, qq{</a>}];
         }
