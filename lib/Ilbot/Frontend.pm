@@ -29,7 +29,6 @@ sub backend { $_[0]{backend} }
 
 sub index {
     my ($self, %opt) = @_;
-    die "Missing option 'out_fh'" unless $opt{out_fh};
     my $template = Ilbot::Config::_template('index');
     my @channels;
     my $has_images = 0;
@@ -51,12 +50,11 @@ sub index {
     $template->param(has_images => $has_images);
     $template->param(base_url   => config(www => 'base_url'));
     $template->param(channels   => \@channels);
-    $template->output(print_to  => $opt{out_fh});
+    return $template->output();
 }
 
 sub channel_index {
     my ($self, %opt) = @_;
-    die "Missing option 'out_fh'"  unless $opt{out_fh};
     die "Missing option 'channel'" unless $opt{channel};
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
     return unless $b->exists;
@@ -70,8 +68,7 @@ sub channel_index {
                 average             => $b->activity_average(),
             ),
     );
-    $t->output(print_to => $opt{out_fh});
-    return 1;
+    return $t->output();
 }
 
 sub calendar {
@@ -145,7 +142,7 @@ sub calendar {
 sub day {
     my ($self, %opt) = @_;
     $opt{day} //= today();
-    for my $attr (qw/out_fh channel/) {
+    for my $attr (qw/channel/) {
         die "Missing argument '$attr'" unless defined $opt{$attr};
     }
     my $channel = $opt{channel};
@@ -208,8 +205,7 @@ sub day {
     $t->param(PREV_DATE => $prev, PREV_URL => "$base_url$opt{channel}/$prev");
     my $next = date($opt{day}) + 1;
     $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url$opt{channel}/$next");
-    $t->output(print_to => $opt{out_fh});
-    return 1;
+    return $t->output;
 }
 
 sub day_text {
@@ -235,7 +231,7 @@ sub day_text {
     }
     my $text = "$table";
     $text =~ s/\h+$//gm;
-    return encode_utf8 $text;
+    return $text;
 }
 
 sub update_summary {
@@ -308,7 +304,6 @@ sub message_line {
 sub search {
     my ($self, %opt) = @_;
     die "Missing parameter 'channel'" unless defined $opt{channel};
-    die "Missing parameter 'out_fh'" unless defined $opt{out_fh};
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
     return unless $b->exists;
     $opt{offset} //= 0;
@@ -368,8 +363,7 @@ sub search {
             $t->param(results => \@t);
         }
     }
-    $t->output(print_to => $opt{out_fh});
-    return 1;
+    return $t->output;
 }
 
 

@@ -27,13 +27,10 @@ my $app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
     my $channel_re = qr{[^./]+};
-    # note that this can't be >:encoding(UTF-8), because
-    # some untracked bug then makes some pages incomplete at the end
-    open my $OUT, '>:utf8', \my $s;
-
+    my $s;
     given ($req->path_info) {
         when ( qr{ ^/$ }x ) {
-            $frontend->index(out_fh => $OUT);
+            $s = $frontend->index;
         }
         when ( qr{ ^/e/summary }x ) {
             my $p = $req->body_parameters;
@@ -49,14 +46,13 @@ my $app = sub {
             }
         }
         when ( qr{ ^/ ($channel_re) /?$}x ) {
-            $frontend->channel_index(channel => $1, out_fh => $OUT)
+            $s = $frontend->channel_index(channel => $1, out_fh => $OUT)
                 or return [404, ['Content-Type' => 'text/plain'], ['No such channel']];
         }
         when ( qr{ ^/ ($channel_re) /search/?$}x ) {
             my $p = $req->query_parameters;
-            $frontend->search(
+            $s = $frontend->search(
                 channel => $1,
-                out_fh  => $OUT,
                 q       => scalar($p->{q}),
                 nick    => scalar($p->{nick}),
                 offset  => scalar($p->{offset}),
@@ -78,10 +74,9 @@ my $app = sub {
             return [302, [Location => $url ], []];
         }
         when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /summary)? ) $!x ) {
-            $frontend->day(
+            $s = $frontend->day(
                 channel => $1,
                 day     => $2,
-                out_fh  => $OUT,
                 summary => !! $3,
             )
                 or return [404, ['Content-Type' => 'text/plain'], ['No such channel/day']];
@@ -102,7 +97,7 @@ my $app = sub {
     my $h = $frontend->http_header( accept => $env->{HTTP_ACCEPT} );
     close $out_fh;
 
-    return [200, $h, [$s]];
+    return [200, $h, [encode_utf8 $s]];
 };
 
 my $c = \&config;
