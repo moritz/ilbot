@@ -21,6 +21,7 @@ my %defaults = (
         base_url        => '/',
         no_cache        => 0,
         throttle        => 0,
+        use_cache       => 1,
     },
     backend => {
         timzone         => 'local',
@@ -103,10 +104,16 @@ sub _backend {
 
 sub _frontend {
     require Ilbot::Frontend;
-    Ilbot::Frontend->new(
+    my $f = Ilbot::Frontend->new(
         backend => _backend(),
     );
-
+    if (config(www => 'use_cache')) {
+        require Ilbot::Frontend::Cached;
+        return Ilbot::Frontend::Cached->new(
+            frontend => $f,
+            backend  => $f->backend,
+        );
+    }
 }
 
 1;

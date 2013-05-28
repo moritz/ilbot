@@ -1,3 +1,4 @@
 base_url = /
 static_path = static
 throttle = 0
+use_cache = 1
