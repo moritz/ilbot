@@ -363,6 +363,19 @@ sub search {
     return $t->output;
 }
 
+sub summary_ids {
+    my ($self, %opt) = @_;
+    for (qw/channel day/) {
+        die "Missing argument '$_'" unless defined $opt{$_};
+    }
+    my $b   = $self->backend->channel(channel => $opt{channel});
+    my $ids = $b->summary_ids(day => $opt{day});
+    # crude way to generate JSON, I know
+    return '['
+        . join(',', @$ids)
+        . ']';
+}
+
 
 sub http_header {
     my ($self, %opt) = @_;

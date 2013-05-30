@@ -32,6 +32,7 @@ our %SQL = (
         search_result            => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         search_result_nick       => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         log_line                 => q[INSERT INTO irclog (channel, nick, line, day, timestamp) VALUES (?, ?, ?, ?, ?)],
+        summary_ids              => q[SELECT id FROM irclog WHERE channel = ? AND day = ? AND in_summary = 1 ORDER BY id],
     },
 );
 
@@ -184,6 +185,12 @@ sub new {
 
 sub dbh     { $_[0]{dbh}     };
 sub channel { $_[0]{channel} };
+
+sub summary_ids {
+    my ($self, %opt) = @_;
+    die "Missing argument 'day'" unless $opt{day};
+    $self->dbh->selectall_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->channel, $opt{day});
+}
 
 sub day_has_actitivity {
     my ($self, %opt) = @_;

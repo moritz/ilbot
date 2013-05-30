@@ -32,6 +32,11 @@ my $app = sub {
         when ( qr{ ^/$ }x ) {
             $s = $frontend->index;
         }
+        when (qr!^/e/($channel_re)/(\d{4}-\d{2}-\d{2})/summary\z!) {
+            $s = $frontend->summary_ids(channel => "#$1", day => $2);
+            use Data::Dumper; print Dumper $s;
+            return [200, ['Content-Type', 'application/json'], [$s]];
+        }
         when ( qr{ ^/e/summary }x ) {
             my $p = $req->body_parameters;
             my %actions;

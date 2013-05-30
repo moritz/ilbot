@@ -34,12 +34,8 @@ sub update_summary {
     my $cache = cache(namespace => 'backend');
     for my $cd (@$c_d) {
         my ($channel, $day) = @$cd;
-        for my $summary (0, 1) {
-            for my $spam (0, 1) {
-                my $key = join '|', 'lines', $channel, $day, $spam, $summary;
-                $cache->remove($key);
-            }
-        }
+        my $key = join '|', 'summary_ids', $channel, $day;
+        $cache->remove($key);
     }
 }
 
@@ -162,5 +158,15 @@ sub first_day {
     my $cache_key = join '|', first_day => $self->channel;
     cache(namespace => 'backend')->compute($cache_key, '1 day',
         sub { $self->backend->first_day });
+}
+
+sub summary_ids {
+    my ($self, %opt) = @_;
+    for (qw/day/) {
+        die "Missing argument '$_'" unless defined $opt{$_};
+    }
+    my $cache_key = join '|', 'summary_ids', $self->channel, $opt{day};
+    cache(namespace => 'backend')->compute($cache_key, '10 days',
+        sub { $self->backend->summary_ids(%opt) });
 }
 1;
