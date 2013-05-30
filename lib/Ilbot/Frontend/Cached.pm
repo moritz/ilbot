@@ -40,7 +40,7 @@ sub day {
     # TODO: cache if number of lines stayed the same
     return $self->frontend->day(%opt) if $opt{day} eq today();
     # TODO: this messes up the summary :/
-    my $cache_key = join '|', 'day', $opt{channel}, $opt{day};
+    my $cache_key = join '|', 'day', $opt{channel}, $opt{day}, $opt{summary};
     $cache->compute($cache_key, '3 days', sub { $self->frontend->day(%opt) });
 }
 

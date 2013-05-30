@@ -173,11 +173,9 @@ sub day {
     my $self_url  = $base_url . join '/',  $channel, $opt{day};
     for my $row (@$rows) {
         my $id          = $row->[0];
-        # TODO: decode?
         my $nick        = $row->[1];
         my $timestamp   = $row->[2];
         my $message     = $row->[3];
-        my $in_summary  = $row->[4];
         next if $message =~ m/^\s*\[off\]/i;
         push @msg, $self->message_line( {
                 id           => $id,
@@ -189,7 +187,6 @@ sub day {
                 color       => nick_to_color($nick),
                 self_url    => $self_url,
                 channel     => $channel,
-                in_summary  => $in_summary,
             },
             \$c,
         );

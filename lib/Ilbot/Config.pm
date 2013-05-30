@@ -114,6 +114,7 @@ sub _frontend {
             backend  => $f->backend,
         );
     }
+    return $f;
 }
 
 1;
