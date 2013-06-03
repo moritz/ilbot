@@ -22,6 +22,7 @@ use Ilbot::Date qw/today/;
         $channel =~ s/\A##/#/;
         # remove leading BOMs. Some clients seem to send them.
         $line =~ s/\A\x{ffef}//;
+        return if $line =~ /^\[off\]/i;
         $backend->log_line(
             channel => $channel,
             nick    => $who,
