@@ -249,7 +249,6 @@ sub message_line {
                             }
                         ),
         LINE_NUMBER => ++$args_ref->{line_number},
-        IN_SUMMARY  => $args_ref->{in_summary},
     );
     $h{DATE}         = $args_ref->{date} if $args_ref->{date};
     $h{SEARCH_FOUND} = 'search_found' if ($args_ref->{search_found});
@@ -347,7 +346,7 @@ sub search {
                         nick        => $_->[1],
                         timestamp   => $_->[2],
                         message     => $_->[3],
-                        search_found => $_->[5],
+                        search_found => $_->[4],
                         prev_nick   => $prev_nick,
                         date        => $day,
                         channel     => $opt{channel},

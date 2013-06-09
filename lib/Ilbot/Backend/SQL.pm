@@ -29,8 +29,8 @@ our %SQL = (
         search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
         search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
         search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
-        search_result            => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
-        search_result_nick       => q[SELECT id, nick, timestamp, line, in_summary, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
+        search_result            => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
+        search_result_nick       => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         log_line                 => q[INSERT INTO irclog (channel, nick, line, day, timestamp) VALUES (?, ?, ?, ?, ?)],
         summary_ids              => q[SELECT id FROM irclog WHERE channel = ? AND day = ? AND in_summary = 1 ORDER BY id],
     },
@@ -300,7 +300,7 @@ sub search_results {
         my @return_idx = (0) x @$lines;
         my @idx = 0..$#$lines;
         for my $idx (@idx) {
-            if ($lines->[$idx][5]) {
+            if ($lines->[$idx][4]) {
                 for (max($idx - $context, 0) .. min($#$lines, $idx + $context)) {
                     $return_idx[$_] = 1;
                 }
