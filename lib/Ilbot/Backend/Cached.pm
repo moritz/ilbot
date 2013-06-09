@@ -32,10 +32,12 @@ sub update_summary {
     my @all_ids = grep !$seen{$_}++, @{ $opt{check} // [] }, @{ $opt{uncheck} // [] };
     my $c_d = $self->backend->channels_and_days_for_ids(ids => \@all_ids);
     my $cache = cache(namespace => 'backend');
+    my $frontend_cache = cache(namespace => 'frontend');
     for my $cd (@$c_d) {
         my ($channel, $day) = @$cd;
         my $key = join '|', 'summary_ids', $channel, $day;
         $cache->remove($key);
+        $frontend_cache->remove("day|$channel|$day|1");
         for (0, 1) {
             $key = join '|', 'lines', $channel, $day, $_, 1;
             $cache->remove($key);
