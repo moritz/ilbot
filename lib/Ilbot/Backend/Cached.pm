@@ -36,6 +36,10 @@ sub update_summary {
         my ($channel, $day) = @$cd;
         my $key = join '|', 'summary_ids', $channel, $day;
         $cache->remove($key);
+        for (0, 1) {
+            $key = join '|', 'lines', $channel, $day, $_, 1;
+            $cache->remove($key);
+        }
     }
 }
 
