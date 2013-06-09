@@ -26,7 +26,7 @@ $(document).ready(function() {
             if ($(elem).hasClass('dark')) {
                 extra_class = 'dark';
             }
-            $(elem).before('<tr class="special ' + extra_class + '"><td /> <td /><td class="summary" /><td>' + c + ' more elements. <a href="javascript:show_collapsed(\'' + $(elem).attr('id') + '\')">Show/hide.</a></td></tr>');
+            $(elem).before('<tr class="special ' + extra_class + '"><td class="nick" /> <td /><td>' + c + ' more elements. <a href="javascript:show_collapsed(\'' + $(elem).attr('id') + '\')">Show/hide.</a></td></tr>');
 	   if (uncollapse) {
                 show_collapsed(uncollapse);
            }

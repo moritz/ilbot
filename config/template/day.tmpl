@@ -48,8 +48,7 @@
     <TMPL_ELSE>
     <form action="#" name="summary_form" id="summary_form">
 	</TMPL_IF>
-	
-	
+    <span id="top" />
     <table id="log" style="clear:both">
         <tr class="head">
 		<TMPL_IF ADMIN>
@@ -57,7 +56,6 @@
 			<th>Single</th>
 		</TMPL_IF>
             <th>Time</th>
-            <th class="summary">S</th>
             <th>Nick</th>
             <th>Message</th>
         </tr>
@@ -71,13 +69,22 @@
 	<div style="clear:both"></div>
 	</TMPL_IF>
 	</form>
+    
+    <span id="bottom" />
 
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
 
     <TMPL_INCLUDE NAME="footer.tmpl">
-		
+
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/jquery.min.js"></script>
+    <script type="text/javascript">
+    IlbotConfig = {
+        base_url:  '<TMPL_VAR BASE_URL ESCAPE=JS>',
+        channel:   '<TMPL_VAR CHANNEL ESCAPE=JS>',
+        day:       '<TMPL_VAR DATE ESCAPE=JS>'
+    };
+    </script>
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/collapse.js"></script>		
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/nickfilter.js"></script>		
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/summary.js"></script>		
