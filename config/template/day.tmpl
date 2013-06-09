@@ -76,8 +76,15 @@
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
 
     <TMPL_INCLUDE NAME="footer.tmpl">
-		
+
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/jquery.min.js"></script>
+    <script type="text/javascript">
+    IlbotConfig = {
+        base_url:  '<TMPL_VAR BASE_URL ESCAPE=JS>',
+        channel:   '<TMPL_VAR CHANNEL ESCAPE=JS>',
+        day:       '<TMPL_VAR DATE ESCAPE=JS>'
+    };
+    </script>
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/collapse.js"></script>		
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/nickfilter.js"></script>		
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/summary.js"></script>		

@@ -189,7 +189,7 @@ sub channel { $_[0]{channel} };
 sub summary_ids {
     my ($self, %opt) = @_;
     die "Missing argument 'day'" unless $opt{day};
-    $self->dbh->selectall_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->channel, $opt{day});
+    $self->dbh->selectcol_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->channel, $opt{day});
 }
 
 sub day_has_actitivity {
