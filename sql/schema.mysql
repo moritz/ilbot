@@ -15,6 +15,7 @@ CREATE TABLE `ilbot_day` (
     `day` char(10) NOT NULL,
     `cache_number_lines` int(11),
     PRIMARY KEY  (`id`),
+    FOREIGN KEY (`channel`) REFERENCES `ilbot_channel` (`id`),
     UNIQUE KEY `channel_day` (`channel`, `day`)
 ) ENGINE = INNODB CHARACTER SET utf8;
 
