@@ -8,10 +8,10 @@ use Ilbot::Date qw/today/;
 
 our %SQL = (
     STANDARD    => {
-        channels                 => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
-        first_day                => 'SELECT MIN(day) FROM irclog',
-        first_day_channel        => 'SELECT MIN(day) FROM irclog WHERE channel = ?',
-        exists_channel           => 'SELECT 1 FROM irclog WHERE channel = ? LIMIT 1',
+        channels                 => 'SELECT DISTINCT(channel) FROM ilbot_channel ORDER BY channel',
+        first_day                => 'SELECT MIN(day) FROM ilbot_day',
+        first_day_channel        => 'SELECT MIN(day) FROM ilbot_day JOIN ilbot_channel ON ilbot_day.channel = ilbot_channel.id WHERE ilbot_channel.channel = ?',
+        exists_channel           => 'SELECT 1 FROM ilbot_channel WHERE channel = ? LIMIT 1',
         day_has_actitivity       => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
         activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
     AND day BETWEEN ? AND ? AND nick <> ''],
@@ -31,7 +31,7 @@ our %SQL = (
         search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
         search_result            => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         search_result_nick       => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
-        log_line                 => q[INSERT INTO irclog (channel, nick, line, day, timestamp) VALUES (?, ?, ?, ?, ?)],
+        log_line                 => q[CALL ilbot_log_line (?, ?, ?)],
         summary_ids              => q[SELECT id FROM irclog WHERE channel = ? AND day = ? AND in_summary = 1 ORDER BY id],
     },
 );
@@ -145,12 +145,6 @@ sub log_line {
     my $sql = $self->sql_for(query => 'log_line');
     my $sth = $self->dbh->prepare_cached($sql);
     my @ph = (@opt{qw/channel nick line/});
-    my $placeholders = $sql =~ tr/?//;
-    if ($placeholders == 5) {
-        # mysql is limited in default values, so we have to calculate some
-        # stuff on our own
-        push @ph, today(), time;
-    }
     $sth->execute(@ph);
     $sth->finish;
 }
