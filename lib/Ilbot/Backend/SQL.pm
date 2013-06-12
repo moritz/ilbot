@@ -9,22 +9,22 @@ use Ilbot::Date qw/today/;
 our %SQL = (
     STANDARD    => {
         channels                 => 'SELECT DISTINCT(channel) FROM ilbot_channel ORDER BY channel',
+        channel_id               => 'SELECT id FROM ilbot_channel WHERE channel = ?',
+        day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_day.channel = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
         first_day                => 'SELECT MIN(day) FROM ilbot_day',
-        first_day_channel        => 'SELECT MIN(day) FROM ilbot_day JOIN ilbot_channel ON ilbot_day.channel = ilbot_channel.id WHERE ilbot_channel.channel = ?',
-        exists_channel           => 'SELECT 1 FROM ilbot_channel WHERE channel = ? LIMIT 1',
-        day_has_actitivity       => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
+        first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
         activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
     AND day BETWEEN ? AND ? AND nick <> ''],
         days_and_activity_counts => q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day],
-        activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM irclog WHERE channel = ? AND nick <> ''],
-        lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id],
-        lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? AND NOT spam AND in_summary ORDER BY id],
-        lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? ORDER BY id],
-        lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? AND in_summary ORDER BY id],
+        activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
+        lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam ORDER BY id],
+        lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam AND in_summary ORDER BY id],
+        lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? ORDER BY id],
+        lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND in_summary ORDER BY id],
         log_line                 => q[INSERT INTO irclog (channel, nick, line) VALUES (?, ?, ?)],
     },
     mysql       => {
-        activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
+        activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
         search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
         search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
         search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
@@ -32,7 +32,7 @@ our %SQL = (
         search_result            => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         search_result_nick       => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         log_line                 => q[CALL ilbot_log_line (?, ?, ?)],
-        summary_ids              => q[SELECT id FROM irclog WHERE channel = ? AND day = ? AND in_summary = 1 ORDER BY id],
+        summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary = 1 ORDER BY id],
     },
 );
 
@@ -180,25 +180,34 @@ sub new {
 sub dbh     { $_[0]{dbh}     };
 sub channel { $_[0]{channel} };
 
+sub _channel_id {
+    my $self = shift;
+    $self->_single_value($self->sql_for(query => 'channel_id'), $self->channel);
+}
+
+sub _day_id {
+    my ($self, %opt) = @_;
+    die 'Missing argument "day"' unless $opt{day};
+    $self->_single_value($self->sql_for(query => 'day_id'), $self->channel, $opt{day});
+}
+
 sub summary_ids {
     my ($self, %opt) = @_;
     die "Missing argument 'day'" unless $opt{day};
-    $self->dbh->selectcol_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->channel, $opt{day});
+
+    $self->dbh->selectcol_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->_day_id(day => $opt{day}));
 }
 
 sub day_has_actitivity {
     my ($self, %opt) = @_;
     die "Missing option 'day'" unless $opt{day};
-    my $sth = $self->prepare($self->sql_for(query => 'day_has_actitivity'));
-    $sth->execute($self->chanenl, $opt{day});
-    my ($res) = $sth->fetchrow;
-    $sth->finish;
+    return !! $self->_day_id(day => $opt{day});
 }
 
 sub activity_average {
     my $self = shift;
     my $sth = $self->dbh->prepare($self->sql_for(query => 'activity_average'));
-    $sth->execute($self->channel);
+    $sth->execute($self->_channel_id);
     my ($count, $days) = $sth->fetchrow;
     $sth->finish;
     return ($count || 1) / ($days || 1);
@@ -218,14 +227,13 @@ sub days_and_activity_counts {
 sub lines {
     my ($self, %opt) = @_;
     die "Missing option 'day'" unless $opt{day};
+    my $di = $self->_day_id(day => $opt{day});
+    return [] unless $di;
     my $key = join '_', 'lines',
                 ($opt{summary_only} ? 'summary' : 'nosummary'),
                 ($opt{exclude_spam} // 0 ? 'spam' : 'nospam');
     my $r = $self->dbh->selectall_arrayref(
-        $self->sql_for(query => $key),
-        undef,
-        $opt{day},
-        $self->channel,
+        $self->sql_for(query => $key), undef, $di,
     );
 
     return $r;
@@ -319,12 +327,12 @@ sub activity_count {
 
 sub first_day {
     my $self = shift;
-    return $self->_single_value($self->sql_for(query => 'first_day_channel'), $self->channel);
+    return $self->_single_value($self->sql_for(query => 'first_day_channel'), $self->_channel_id);
 }
 
 sub exists {
     my $self = shift;
-    return $self->_single_value($self->sql_for(query => 'exists_channel'), $self->channel);
+    return !! $self->_channel_id;
 }
 
 1;
