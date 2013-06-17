@@ -1,0 +1,16 @@
+INSERT INTO ilbot_channel (channel)
+    SELECT DISTINCT channel FROM irclog WHERE channel LIKE '#%';
+
+INSERT INTO ilbot_day (channel, day)
+    SELECT DISTINCT ilbot_channel.id, irclog.day
+        FROM irclog
+        JOIN ilbot_channel ON ilbot_channel.channel = irclog.channel
+        WHERE irclog.channel LIKE '#%';
+
+INSERT INTO ilbot_lines (id, day,nick, timestamp, line, spam, in_summary)
+    SELECT irclog.id, ilbot_day.id, IF(irclog.nick = '', NULL, irclog.nick), irclog.timestamp, irclog.line, irclog.spam, irclog.in_summary
+        FROM irclog
+        JOIN ilbot_channel ON ilbot_channel.channel = irclog.channel
+        JOIN ilbot_day     ON ilbot_day.channel = ilbot_channel.id AND ilbot_day.day = irclog.day
+        WHERE irclog.channel LIKE '#%'
+        ORDER BY irclog.id;
