@@ -10,7 +10,7 @@ our %SQL = (
     STANDARD    => {
         channels                 => 'SELECT DISTINCT(channel) FROM ilbot_channel ORDER BY channel',
         channel_id               => 'SELECT id FROM ilbot_channel WHERE channel = ?',
-        day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_day.channel = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
+        day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_channel.id = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
         first_day                => 'SELECT MIN(day) FROM ilbot_day',
         first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
         activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
@@ -24,7 +24,7 @@ our %SQL = (
         log_line                 => q[INSERT INTO irclog (channel, nick, line) VALUES (?, ?, ?)],
     },
     mysql       => {
-        activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
+        activity_average         => q[SELECT SUM(cache_number_lines), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_day WHERE channel = ?],
         search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
         search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
         search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
