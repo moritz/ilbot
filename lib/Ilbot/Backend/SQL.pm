@@ -13,9 +13,8 @@ our %SQL = (
         day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_channel.id = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
         first_day                => 'SELECT MIN(day) FROM ilbot_day',
         first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
-        activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
-    AND day BETWEEN ? AND ? AND nick <> ''],
-        days_and_activity_counts => q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day],
+        activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ? AND nick <> ''],
+        days_and_activity_counts => q[SELECT day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
         activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
         lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam ORDER BY id],
         lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam AND in_summary ORDER BY id],
@@ -218,7 +217,7 @@ sub days_and_activity_counts {
     my $r = $self->dbh->selectall_arrayref(
         $self->sql_for(query => 'days_and_activity_counts'),
         undef,
-        $self->channel,
+        $self->_channel_id,
     );
 
     return $r;
@@ -321,7 +320,7 @@ sub activity_count {
         die "Missing option '$o'" unless $opt{$o};
     }
     $self->_single_value($self->sql_for(query => 'activity_count'),
-            $self->channel,
+            $self->_channel_id,
             @opt{qw/from to/});
 }
 
