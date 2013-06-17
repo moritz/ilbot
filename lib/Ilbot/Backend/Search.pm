@@ -8,6 +8,10 @@ use Lucy::Plan::Int64Type;
 
 use Ilbot::Config;
 
+sub new {
+    return bless {}, shift;
+}
+
 sub indexer {
     my ($self, %opt) = @_;
     die 'Missing argument "channel"' unless $opt{channel};

@@ -13,7 +13,8 @@ my $path;
 my %config;
 
 my %known_files = (
-    www => 1,
+    www     => 1,
+    search  => 1,
 );
 
 my %defaults = (
@@ -28,6 +29,9 @@ my %defaults = (
         search_context  => 4,
         use_cache       => 1,
     },
+    search => {
+        language        => 'en',
+    }
 );
 
 sub import {
