@@ -116,7 +116,7 @@ sub update_summary {
     # can't simply be obtained with sql_for
     my @check = @{ $opt{check} // [] };
     if (@check) {
-        my $sql = 'UPDATE irclog SET in_summary = TRUE WHERE id IN ('
+        my $sql = 'UPDATE ilbot_lines SET in_summary = TRUE WHERE id IN ('
                     . join(', ', ('?') x @check)
                     . ')';
         my $sth = $self->dbh->prepare($sql);
@@ -126,7 +126,7 @@ sub update_summary {
 
     my @uncheck = @{ $opt{uncheck} // [] };
     if (@uncheck) {
-        my $sql = 'UPDATE irclog SET in_summary = FALSE WHERE id IN ('
+        my $sql = 'UPDATE ilbot_lines SET in_summary = FALSE WHERE id IN ('
                     . join(', ', ('?') x @uncheck)
                     . ')';
         my $sth = $self->dbh->prepare($sql);
