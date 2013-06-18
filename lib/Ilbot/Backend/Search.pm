@@ -1,4 +1,6 @@
 package Ilbot::Backend::Search;
+use strict;
+use warnings;
 
 use Lucy::Index::Indexer;
 use Lucy::Plan::Schema;
@@ -40,7 +42,7 @@ sub indexer {
 
     my $indexer = Lucy::Index::Indexer->new(
         schema => $schema,
-        index  => join '/', config('config_root'), 'search-idx', $channel,
+        index  => join('/', config('config_root'), '../search-idx', $channel),
         create => 1,
     );
     return $indexer;
@@ -48,7 +50,7 @@ sub indexer {
 
 sub index_all {
     my $self = shift;
-    for my $channel (@{ $backend->channels }) {
+    for my $channel (@{ $self->backend->channels }) {
         my $b = $self->backend->channel(channel => $channel);
         my $i = $self->indexer(channel => $channel);
         for my $d (@{ $b->days_and_activity_counts }) {
@@ -66,3 +68,5 @@ sub index_all {
     }
 
 }
+
+1;
