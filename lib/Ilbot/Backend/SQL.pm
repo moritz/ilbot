@@ -8,7 +8,7 @@ use Ilbot::Date qw/today/;
 
 our %SQL = (
     STANDARD    => {
-        channels                 => 'SELECT DISTINCT(channel) FROM ilbot_channel ORDER BY channel',
+        channels                 => 'SELECT channel FROM ilbot_channel ORDER BY channel',
         channel_id               => 'SELECT id FROM ilbot_channel WHERE channel = ?',
         day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_channel.id = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
         first_day                => 'SELECT MIN(day) FROM ilbot_day',

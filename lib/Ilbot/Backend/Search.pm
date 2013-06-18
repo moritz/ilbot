@@ -9,8 +9,16 @@ use Lucy::Plan::Int64Type;
 use Ilbot::Config;
 
 sub new {
-    return bless {}, shift;
+    my ($class, %opt) = @_;
+    my %self;
+    for my $arg (qw/backend/) {
+        die "Missing argument $arg" unless defined $opt{$arg};
+        $self{$arg} = $opt{$arg};
+    }
+    return bless \%self, $class;
 }
+
+sub backend { $_[0]->{backend} };
 
 sub indexer {
     my ($self, %opt) = @_;
@@ -25,7 +33,8 @@ sub indexer {
     my $type = Lucy::Plan::FullTextType->new(
         analyzer => $polyanalyzer,
     );
-    $schema->spec_field( name => 'id',      type =>  Lucy::Plan::Int64Type->new() );
+    $schema->spec_field( name => 'id',      type => Lucy::Plan::Int64Type->new() );
+    $schema->spec_field( name => 'day',     type => Lucy::Plan::StringType->new);
     $schema->spec_field( name => 'nick',    type => $type );
     $schema->spec_field( name => 'line',    type => $type );
 
@@ -35,4 +44,25 @@ sub indexer {
         create => 1,
     );
     return $indexer;
+}
+
+sub index_all {
+    my $self = shift;
+    for my $channel (@{ $backend->channels }) {
+        my $b = $self->backend->channel(channel => $channel);
+        my $i = $self->indexer(channel => $channel);
+        for my $d (@{ $b->days_and_activity_counts }) {
+            my $day = $d->[0];
+            for my $line (@{ $b->lines(day => $day) }) {
+                $i->add_doc({
+                    day     => $day,
+                    id      => $line->[0],
+                    nick    => $line->[1],
+                    line    => $line->[3],
+                });
+            }
+        }
+        $i->commit;
+    }
+
 }
