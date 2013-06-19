@@ -12,4 +12,8 @@ unless (-d $path) {
     die "Storage path '$path' for the search index doesn't exist, and can't reate it\n";
 }
 
-_search_backend()->index_all();
+my $before = time;
+my $count  = _search_backend()->index_all();
+my $after  = time;
+
+say "Written $count records in ", $before - $after, " seconds";

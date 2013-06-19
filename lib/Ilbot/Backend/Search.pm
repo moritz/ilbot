@@ -7,7 +7,6 @@ use Lucy::Index::Indexer;
 use Lucy::Plan::Schema;
 use Lucy::Analysis::PolyAnalyzer;
 use Lucy::Plan::FullTextType;
-use Lucy::Plan::Int64Type;
 
 use Ilbot::Config;
 
@@ -38,7 +37,7 @@ sub indexer {
     my $type = Lucy::Plan::FullTextType->new(
         analyzer => $polyanalyzer,
     );
-    $schema->spec_field( name => 'id',      type => Lucy::Plan::Int64Type->new( indexed => 0, sortable => 1) );
+    $schema->spec_field( name => 'ids',     type => Lucy::Plan::StringType->new( indexed => 0, sortable => 0) );
     $schema->spec_field( name => 'day',     type => Lucy::Plan::StringType->new( indexed => 0, sortable => 1));
     $schema->spec_field( name => 'nick',    type => $type );
     $schema->spec_field( name => 'line',    type => $type );
@@ -53,6 +52,7 @@ sub indexer {
 
 sub index_all {
     my $self = shift;
+    my $count++;
     for my $channel (@{ $self->backend->channels }) {
         my $b = $self->backend->channel(channel => $channel);
         my $i = $self->indexer(channel => $channel);
@@ -61,15 +61,26 @@ sub index_all {
         for my $d (@{ $b->days_and_activity_counts }) {
             my $day = $d->[0];
             print "\r$day";
+            my $prev;
             for my $line (@{ $b->lines(day => $day) }) {
-                next unless defined $line->[1];
-                $i->add_doc({
-                    day     => $day,
-                    id      => $line->[0],
-                    nick    => $line->[1],
-                    line    => $line->[3],
-                });
+                my ($id, undef, $nick, $line) = @$line;
+                next unless defined $nick;
+                $nick =~ s/^\*\s*//;
+                if ($prev && $prev->{nick} eq $nick) {
+                    $prev->{ids} .= ",$id";
+                    $prev->{line} .= "\n$line";
+                }
+                else {
+                    ++$count, $i->add_doc($prev) if $prev;
+                    $prev = {
+                        ids     => $id,
+                        nick    => $nick,
+                        line    => $line,
+                        day     => $day,
+                    };
+                }
             }
+            ++$count, $i->add_doc($prev) if $prev;
         }
         print "\rcommitting ...";
         $i->commit;
@@ -77,7 +88,7 @@ sub index_all {
         $i->optimize;
         print "\rdone optimizing";
     }
-
+    return $count;
 }
 
 1;
