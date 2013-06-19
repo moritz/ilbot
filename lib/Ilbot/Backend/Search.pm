@@ -47,7 +47,7 @@ sub indexer {
     );
     $schema->spec_field( name => 'ids',     type => Lucy::Plan::StringType->new( indexed => 0, sortable => 0) );
     $schema->spec_field( name => 'day',     type => Lucy::Plan::StringType->new( indexed => 0, sortable => 1));
-    $schema->spec_field( name => 'nick',    type => Lucy::Plan::StringType->new( indexed => 1, sortable => 0));
+    $schema->spec_field( name => 'nick',    type => Lucy::Plan::StringType->new( indexed => 1, sortable => 0, stored => 0));
     $schema->spec_field( name => 'line',    type => $type );
 
     my $indexer = Lucy::Index::Indexer->new(
