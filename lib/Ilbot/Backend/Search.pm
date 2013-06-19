@@ -178,7 +178,7 @@ sub search_results {
         @{$days{$day}}{ split /,/, $h->{ids} } = undef;
     }
     my @days;
-    for my $d (sort keys %days) {
+    for my $d (reverse sort keys %days) {
         push @days, $d, $self->_enrich_search_result(
             day     => $d,
             ids     => $days{$d},
