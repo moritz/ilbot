@@ -43,10 +43,9 @@ sub indexer {
     $schema->spec_field( name => 'nick',    type => $type );
     $schema->spec_field( name => 'line',    type => $type );
 
-    say "idx-path: ", join('/', config('config_root'), '../search-idx', $channel);
     my $indexer = Lucy::Index::Indexer->new(
         schema => $schema,
-        index  => join('/', config('config_root'), '../search-idx', $channel),
+        index  => join('/', config('search_idx_root'), $channel),
         create => 1,
     );
     return $indexer;
@@ -72,7 +71,11 @@ sub index_all {
                 });
             }
         }
+        print "\rcommitting ...";
         $i->commit;
+        print "\roptimizing ...";
+        $i->optimize;
+        print "\rdone optimizing";
     }
 
 }

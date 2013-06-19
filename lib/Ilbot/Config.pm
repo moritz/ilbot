@@ -7,7 +7,7 @@ use HTML::Template 2.91;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT = qw/config _template _backend _frontend/;
+our @EXPORT = qw/config _template _backend _frontend _search_backend/;
 
 my $path;
 my %config;
@@ -54,6 +54,7 @@ sub import {
     $config{config_root} = $path;
     $config{template}    = "$path/template";
     $config{backend}     = read_config_file("$path/backend.conf");
+    $config{search_idx_root} = "$path/../search-idx";
     if (defined $config{backend}{lib}) {
         unshift @INC, split /:/, $config{backend}{lib}
     }
@@ -104,6 +105,13 @@ sub _backend {
         );
     }
     return $sql;
+}
+
+sub _search_backend {
+    require Ilbot::Backend::Search;
+    return Ilbot::Backend::Search->new(
+        backend => _backend(),
+    );
 }
 
 sub _frontend {
