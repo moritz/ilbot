@@ -238,7 +238,7 @@ sub update_summary {
 
 sub message_line {
     my ($self, $args_ref, $c) = @_;
-    my $nick = $args_ref->{nick};
+    my $nick = $args_ref->{nick} // '';
     my %h = (
         ID          => $args_ref->{id},
         TIME        => format_time($args_ref->{timestamp}),
@@ -258,7 +258,7 @@ sub message_line {
     my $display_nick = $nick;
     $display_nick =~ s/\A\*\ /'*' . NBSP/exms;
     $h{NICK} = encode_entities($display_nick, ENTITIES);
-    if ($nick ne $args_ref->{prev_nick}){
+    if ($nick ne ($args_ref->{prev_nick} // '')) {
         # $c++ is used to alternate the background color
         $$c++;
         push @classes, 'new';
@@ -312,32 +312,28 @@ sub search {
     my $prev_nick = q[!!!];
     my $line_number = 0;
     if (defined $opt{q} && length $opt{q}) {
-        my $count = $b->search_count(
+        my $res = $b->search_results(
             nick    => $opt{nick},
             q       => $opt{q},
-            offset  => $opt{offset},
+            offset  => $opt{offset} // 0,
         );
+        my $count = $res->{total};
         if ($count == 0) {
             $t->param(no_results => 1);
         }
         else {
             $t->param(result_count => $count);
             my @pages;
-            for (0..int(($count - 1) / 10)) {
+            for (0..int(($count - 1) / 100)) {
                 push @pages, {
-                    offset  => $_ * 10,
+                    offset  => $_ * 100,
                     page    => $_ + 1,
-                    is_this => ($_ * 10 == $opt{offset}),
+                    is_this => ($_ * 100 == $opt{offset}),
                 };
             }
             $t->param(result_pages => \@pages);
-            my $res = $b->search_results(
-                nick    => $opt{nick},
-                q       => $opt{q},
-                offset  => $opt{offset} // 0,
-            );
             my @t;
-            while (my ($day, $lines) = splice @$res, 0, 2) {
+            while (my ($day, $lines) = splice @{ $res->{days} }, 0, 2) {
                 my %h = (day => $day);
                 my @lines;
                 for (@$lines) {
@@ -352,6 +348,7 @@ sub search {
                         channel     => $opt{channel},
                         line_number => ++$line_number,
                     }, \$c);
+                    $prev_nick = $_->[1];
                 }
                 $h{lines} = \@lines;
                 push @t, \%h;

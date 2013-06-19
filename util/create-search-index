@@ -16,4 +16,4 @@ my $before = time;
 my $count  = _search_backend()->index_all();
 my $after  = time;
 
-say "Written $count records in ", $before - $after, " seconds";
+say "Written $count records in ", $after - $before, " seconds";

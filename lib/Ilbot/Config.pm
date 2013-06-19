@@ -7,7 +7,7 @@ use HTML::Template 2.91;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT = qw/config _template _backend _frontend _search_backend/;
+our @EXPORT = qw/config _template _backend _frontend _search_backend sanitize_channel_for_fs/;
 
 my $path;
 my %config;
@@ -127,6 +127,12 @@ sub _frontend {
         );
     }
     return $f;
+}
+
+sub sanitize_channel_for_fs {
+    my $c = shift;
+    $c =~ tr/a-zA-Z0-9_-//cd;
+    return $c;
 }
 
 1;

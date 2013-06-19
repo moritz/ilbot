@@ -159,7 +159,6 @@ sub channel {
 }
 
 package Ilbot::Backend::SQL::Channel;
-use List::Util qw/max min/;
 use Ilbot::Config qw/config/;
 
 # it's a hack, but works for now
@@ -230,7 +229,7 @@ sub lines {
     return [] unless $di;
     my $key = join '_', 'lines',
                 ($opt{summary_only} ? 'summary' : 'nosummary'),
-                ($opt{exclude_spam} // 0 ? 'spam' : 'nospam');
+                ($opt{exclude_spam} // 1 ? 'spam' : 'nospam');
     my $r = $self->dbh->selectall_arrayref(
         $self->sql_for(query => $key), undef, $di,
     );
@@ -238,25 +237,9 @@ sub lines {
     return $r;
 }
 
-sub search_count {
-    my ($self, %opt) = @_;
-    die "Missing argument 'q'" unless defined $opt{q};
-    my @bind_param = ($self->channel, $opt{q});
-    my $sql;
-    if (defined $opt{nick} && length $opt{nick}) {
-        $sql = $self->sql_for(query => 'search_count_nick');
-        push @bind_param, $opt{nick}, "* $opt{nick}";
-    }
-    else {
-        $sql = $self->sql_for(query => 'search_count');
-    }
-    my $sth = $self->dbh->prepare($sql);
-    $sth->execute(@bind_param);
-    my ($count) = $sth->fetchrow_array;
-    $sth->finish;
-    return $count;
-}
-
+# XXX search_results doesn't really belong here, 
+# but I'm too lazy to write yet anothe wrapper class around Backend::Search
+# and Backend::SQL
 sub search_results {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
@@ -264,54 +247,11 @@ sub search_results {
     unless ($opt{offset} =~ /^[0-9]+\z/) {
         die "Invalid value for 'offset'";
     }
-    my @bind_param = ($self->channel, $opt{q});
-    my $nick     = $opt{nick};
-    my $has_nick = defined($nick) && length($nick);
-    my $sql;
-    if ($has_nick) {
-        $sql = $self->sql_for(query => 'search_result_nick_days');
-        push @bind_param, $nick, "* $nick";
-    }
-    else {
-        $sql = $self->sql_for(query => 'search_result_days');
-    }
-    # mysql doesn't seem to allow bind parameters for the offset, so
-    # needs a bit of special care
-    if (lc $self->{db} eq 'mysql') {
-        $sql =~ s/.*\K\?/$opt{offset}/;
-    }
-    else {
-        push @bind_param, $opt{offset};
-    }
-    my $days = $self->dbh->selectcol_arrayref($sql, undef, @bind_param);
-    my @res;
-    my $context = config(backend => 'search_context');
-    for my $d (@$days) {
-        my $sql = $has_nick
-                    ? $self->sql_for(query => 'search_result_nick')
-                    : $self->sql_for(query => 'search_result');
-        @bind_param = ($opt{q}, ($has_nick ? ($nick, "* $nick") : ()), $self->channel, $d);
-        my @d_res;
-        my $lines = $self->dbh->selectall_arrayref($sql, undef, @bind_param);
-        # $lines now contains all the lines for that day.
-        # filter out only those lines that matched, plus a bit of context
-        # before and after. Since the context can overlap, simply
-        # mark all to-be-returned indexes, and then later get the desired
-        # lines with a slice
-        my @return_idx = (0) x @$lines;
-        my @idx = 0..$#$lines;
-        for my $idx (@idx) {
-            if ($lines->[$idx][4]) {
-                for (max($idx - $context, 0) .. min($#$lines, $idx + $context)) {
-                    $return_idx[$_] = 1;
-                }
-            }
-        }
-        @idx = grep $return_idx[$_], @idx;
-        $lines = [ @{$lines}[@idx] ];
-        push @res, $d => $lines;
-    }
-    return \@res;
+    return _search_backend()->channel(channel => $self->channel)->search_results(
+        q       => $opt{q},
+        nick    => $opt{nick},
+        offset  => $opt{offset},
+    );
 }
 
 sub activity_count {
