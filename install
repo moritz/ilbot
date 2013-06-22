@@ -9,7 +9,7 @@ use File::Copy qw/copy/;
 use File::Basename qw/basename/;
 
 my %files = (
-    bin               => ['ilbot2.pl', 'util/cron-graphs.pl'],
+    bin               => ['ilbot2.pl', 'util/cron-graphs.pl', 'util/create-search-index'],
     www               => ['ilbot.fcgi', 'ilbot.psgi'],
     'static/s'        => ['static/s/*'],
     'config/template' => ['config/template/*.tmpl'],
