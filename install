@@ -31,7 +31,8 @@ Valid options are:
     --dbpass=geheim     Database password
     --timezone=gmt      Timezone ("gmt" or "local")
     --prefix=/here/     Installation prefix path
-    --use-apache        Use Apache as web server?
+    --use-apache        Use Apache 2 as web server
+    --no-use-apache     Don't use Apache
     --url=http://1.to/  Full URL to the new ilbot instance
     --language=en       Language code (for the search index)
 
