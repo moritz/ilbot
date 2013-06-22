@@ -229,7 +229,7 @@ sub _enrich_search_result {
         die "Missing argument $_" unless $args{$_};
     }
     my $matched_ids = $args{ids};
-    my $context = config(backend => 'search_context');
+    my $context = config(search => 'context');
     my $lines = $self->backend->channel(channel => $self->{orig_channel})->lines(
         day     => $args{day},
     );

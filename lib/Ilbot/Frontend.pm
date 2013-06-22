@@ -202,6 +202,12 @@ sub day {
     $t->param(PREV_DATE => $prev, PREV_URL => "$base_url$opt{channel}/$prev");
     my $next = date($opt{day}) + 1;
     $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url$opt{channel}/$next");
+    if (config(backend => 'timezone') eq 'local') {
+        $t->param(TIMEZONE => config(backend => 'timezone_descr'));
+    }
+    else {
+        $t->param(UTC => 1);
+    }
     return $t->output;
 }
 

@@ -25,12 +25,13 @@ my %defaults = (
         use_cache       => 1,
     },
     backend => {
-        timzone         => 'local',
-        search_context  => 4,
+        timezone        => 'utc',
+        timezone_descr  => "the server's local time",
         use_cache       => 1,
     },
     search => {
         language        => 'en',
+        context         => 4,
     }
 );
 

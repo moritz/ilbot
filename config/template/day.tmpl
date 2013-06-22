@@ -33,7 +33,7 @@
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
-    <p>All times shown according to <abbr title="Coordinated Universal Time">TIMEZONE</abbr>.</p>
+    <p>All times shown according to <TMPL_IF UTC><abbr title="Coordinated Universal Time">UTC</abbr><TMPL_ELSE><TMPL_VAR TIMEZONE></TMPL_IF>.</p>
     <TMPL_UNLESS NAME=IS_SUMMARY>
     <div>
 	<span style="display: none;" id="filter_toggle"></span>
