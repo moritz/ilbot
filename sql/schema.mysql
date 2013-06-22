@@ -34,7 +34,7 @@ CREATE TABLE `ilbot_lines` (
 
 
 DELIMITER //
-
+-- no empty lines, would confuse the installer
 CREATE PROCEDURE `ilbot_log_line`(IN p_channel VARCHAR(30), IN p_nick VARCHAR(40), IN p_line mediumtext)
 LANGUAGE SQL
 NOT DETERMINISTIC
@@ -43,23 +43,19 @@ COMMENT 'Log a line from IRC'
 BEGIN
     DECLARE channel_id, day_id INT(11);
     DECLARE today CHAR(10);
-
     START TRANSACTION;
     SELECT id INTO channel_id FROM ilbot_channel WHERE channel = p_channel;
     IF (channel_id IS NULL) THEN BEGIN
         INSERT INTO ilbot_channel (channel) VALUES (p_channel);
         SELECT id INTO channel_id FROM ilbot_channel WHERE channel = p_channel;
     END; END IF;
-
     SELECT DATE(NOW()) INTO today;
     SELECT id INTO day_id FROM ilbot_day WHERE channel = channel_id AND day = today;
     IF (day_id IS NULL) THEN BEGIN
         INSERT INTO ilbot_day (channel, day) VALUES (channel_id, today);
         SELECT id INTO day_id FROM ilbot_day WHERE channel = channel_id AND day = today;
     END; END IF;
-
     INSERT INTO ilbot_lines (day, nick, timestamp, line)
         VALUES(day_id, p_nick, UNIX_TIMESTAMP(NOW()), p_line);
     COMMIT;
-
 END//

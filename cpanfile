@@ -1,3 +1,4 @@
+requires 'Getopt::Long';
 requires 'Bot::BasicBot', 0.81;
 requires 'Calendar::Simple';
 requires 'Config::File';
