@@ -5,6 +5,11 @@ use 5.010;
 use File::Path qw/mkpath/;
 
 use Ilbot::Config;
+use Getopt::Long qw/GetOptions/;
+
+GetOptions(
+    verbose => \my $verbose,
+) or die "Usage: $0 [--verbose]\n";
 
 my $path = config('search_idx_root');
 mkpath $path;
@@ -13,7 +18,7 @@ unless (-d $path) {
 }
 
 my $before = time;
-my $count  = _search_backend()->index_all(verbose => 1);
+my $count  = _search_backend()->index_all(verbose => $verbose);
 my $after  = time;
 
-say "Written $count records in ", $after - $before, " seconds";
+say "Written $count records in ", $after - $before, " seconds" if $verbose;

@@ -82,7 +82,6 @@ sub index_all {
         my $last_day;
         if (defined $last_id) {
             my ($c, $d) = @{ $self->backend->channels_and_days_for_ids(ids => [$last_id])->[0] };
-            warn "'$c' vs. '$channel'";
             if (defined $d && $c eq $channel) {
                 $last_day = $d;
             }
