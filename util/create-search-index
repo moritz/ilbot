@@ -13,7 +13,7 @@ unless (-d $path) {
 }
 
 my $before = time;
-my $count  = _search_backend()->index_all();
+my $count  = _search_backend()->index_all(verbose => 1);
 my $after  = time;
 
 say "Written $count records in ", $after - $before, " seconds";

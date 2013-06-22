@@ -30,12 +30,17 @@ sub new {
 
 sub backend { $_[0]->{backend} };
 
+sub index_dir {
+    my ($self, %opt) = @_;
+    die "Missing argument 'channel'" unless defined $opt{channel};
+    return join '/', config('search_idx_root'), sanitize_channel_for_fs($opt{channel});
+}
+
 sub indexer {
     my ($self, %opt) = @_;
     die 'Missing argument "channel"' unless $opt{channel};
 
     $| = 1;
-    my $channel = sanitize_channel_for_fs $opt{channel};
     # Create a Schema which defines index fields.
     my $schema = Lucy::Plan::Schema->new;
     my $polyanalyzer = Lucy::Analysis::PolyAnalyzer->new(
@@ -52,25 +57,48 @@ sub indexer {
 
     my $indexer = Lucy::Index::Indexer->new(
         schema => $schema,
-        index  => join('/', config('search_idx_root'), $channel),
+        index  => $self->index_dir(channel => $opt{channel}),
         create => 1,
     );
     return $indexer;
 }
 
 sub index_all {
-    my $self = shift;
+    my ($self, %opt) = @_;
+    my $verbose = $opt{verbose};
     my $count++;
     for my $channel (@{ $self->backend->channels }) {
         my $b = $self->backend->channel(channel => $channel);
         my $i = $self->indexer(channel => $channel);
-        say $channel;
+        say $channel if $verbose;
+        my $last_id;
+        my $last_id_file = $self->index_dir(channel => $channel) . '/ilbot-last-id';
+        if (open my $LAST_ID_FH, '<', $last_id_file) {
+            $last_id = <$LAST_ID_FH>;
+            chomp $last_id;
+            close $LAST_ID_FH;
+        }
+        my $last_written_id;
+        my $last_day;
+        if (defined $last_written_id) {
+            my ($c, $d) = @{ $self->backend->channels_and_days_for_ids(ids => [$last_id]) };
+            if (defined $d && $c eq $channel) {
+                $last_day = $d;
+            }
+            else {
+                warn "Inconsistency detected with the index for $channel; you might want to delete it and then re-index it";
+                $last_id = undef;
+            }
+        }
         for my $d (@{ $b->days_and_activity_counts }) {
             my $day = $d->[0];
-            print "\r$day";
+            next if defined($last_day) && $day lt $last_day;
+            print "\r$day" if $verbose;
             my $prev;
             for my $line (@{ $b->lines(day => $day) }) {
                 my ($id, $nick, undef, $line) = @$line;
+                next if defined($last_id) && $id < $last_id;
+                $last_written_id = $id;
                 next unless defined $nick;
                 $nick =~ s/^\*\s*//;
                 if ($prev && $prev->{nick} eq $nick) {
@@ -89,11 +117,15 @@ sub index_all {
             }
             ++$count, $i->add_doc($prev) if $prev;
         }
-        print "\rcommitting ...";
+        print "\rcommitting ..." if $verbose;
         $i->commit;
-        print "\roptimizing ...";
+        print "\roptimizing ..." if $verbose;
         $i->optimize;
-        say "\rdone optimizing";
+        say "\rdone optimizing" if $verbose;
+        open my $LAST_ID_FH, '>', $last_id_file
+            or die "Cannot open '$last_id_file' for writing: $!";
+        say $LAST_ID_FH $last_written_id;
+        close $LAST_ID_FH or die "Cannot write to '$last_id_file': $!";
     }
     return $count;
 }
