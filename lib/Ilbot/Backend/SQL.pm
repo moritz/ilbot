@@ -20,18 +20,11 @@ our %SQL = (
         lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam AND in_summary ORDER BY id],
         lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? ORDER BY id],
         lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND in_summary ORDER BY id],
-        log_line                 => q[INSERT INTO irclog (channel, nick, line) VALUES (?, ?, ?)],
+        summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary = 1 ORDER BY id],
     },
     mysql       => {
         activity_average         => q[SELECT SUM(cache_number_lines), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_day WHERE channel = ?],
-        search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
-        search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
-        search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
-        search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
-        search_result            => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
-        search_result_nick       => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
         log_line                 => q[CALL ilbot_log_line (?, ?, ?)],
-        summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary = 1 ORDER BY id],
     },
 );
 
@@ -103,9 +96,15 @@ sub channels_and_days_for_ids {
     return [] unless @ids;
     # SQL depends on the number of elements, so
     # can't simply be obtained with sql_for
-    my $sql = 'SELECT channel, day FROM  irclog WHERE id IN ('
+    my $sql = q[
+        SELECT ilbot_channel.channel, ilbot_day.day
+        FROM   ilbot_channel
+        JOIN   ilbot_day ON ilbot_day.channel = ilbot_channel.id
+        JOIN   ilbot_lines ON ilbot_lines.day = ilbot_day.id
+        WHERE ilbot_lines.id IN (
+        ]
                 . join(', ', ('?') x @ids)
-                . ') GROUP BY channel, day';
+        . ') GROUP BY ilbot_channel.channel, ilbot_day.day';
     return $self->dbh->selectall_arrayref($sql, undef, @ids);
 }
 
