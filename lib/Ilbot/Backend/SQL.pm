@@ -29,7 +29,10 @@ our %SQL = (
 );
 
 my %post_connect = (
-    mysql   => sub { $_[0]{mysql_enable_utf8} = 1 },
+    mysql   => sub {
+        $_[0]{mysql_enable_utf8} = 1;
+        $_[0]{mysql_auto_reconnect} = 1;
+    },
     Pg      => sub { $_[0]{pg_enable_utf8}    = 1 },
 );
 
