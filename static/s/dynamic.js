@@ -419,10 +419,9 @@ function show_all_rows() {
                 $('table#log tr').last().after(data.text);
             }
         });
-        setTimeout(poll, timeout);
     }
-    $(document).ready(function() {
-        setTimeout(poll, timeout);
-    });
+    IlbotConfig['Timer'] = $.timer(poll);
+    IlbotConfig.Timer.set({time: 20000, autostart: false});
+    IlbotConfig.Timer.play();
 })()
 
