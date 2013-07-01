@@ -16,3 +16,4 @@ requires 'CHI';
 requires 'Plack';
 requires 'DBD::mysql';
 requires 'Lucy';
+requires 'JSON';

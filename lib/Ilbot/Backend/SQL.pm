@@ -16,6 +16,7 @@ our %SQL = (
         activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ? AND nick <> ''],
         days_and_activity_counts => q[SELECT day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
         activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
+        lines_after_id           => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND id > ? AND NOT spam ORDER BY id],
         lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam ORDER BY id],
         lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam AND in_summary ORDER BY id],
         lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? ORDER BY id],
@@ -229,6 +230,12 @@ sub lines {
     die "Missing option 'day'" unless $opt{day};
     my $di = $self->_day_id(day => $opt{day});
     return [] unless $di;
+    if ($opt{after_id}) {
+        return $self->dbh->selectall_arrayref(
+            $self->sql_for(query => 'lines_after_id'),
+            undef, $di, $opt{after_id}
+        );
+    }
     my $key = join '_', 'lines',
                 ($opt{summary_only} ? 'summary' : 'nosummary'),
                 ($opt{exclude_spam} // 1 ? 'spam' : 'nospam');

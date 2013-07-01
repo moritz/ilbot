@@ -154,6 +154,12 @@ sub day {
     return if $opt{day} lt $b->first_day;
 
     my $t = Ilbot::Config::_template('day');
+    if ($opt{after_id}) {
+        my $TMPL = qq[<TMPL_LOOP MESSAGES>
+<TMPL_INCLUDE NAME='line.tmpl'>
+        </TMPL_LOOP>];
+        $t = Ilbot::Config::_template(\$TMPL);
+    }
     {
         my $clf = "channels/$channel.tmpl";
         if (-e $clf) {
@@ -165,7 +171,11 @@ sub day {
     }
     my $base_url = config(www => 'base_url');
     $t->param(base_url  => $base_url);
-    my $rows      = $b->lines(day => $opt{day}, summary_only => $opt{summary});
+    my $rows      = $b->lines(
+        day          => $opt{day},
+        summary_only => $opt{summary},
+        after_id     => $opt{after_id},
+    );
     my $line_no   = 0;
     my $prev_nick = q{!!!};
     my $c         = 0;
@@ -202,6 +212,7 @@ sub day {
     $t->param(PREV_DATE => $prev, PREV_URL => "$base_url$opt{channel}/$prev");
     my $next = date($opt{day}) + 1;
     $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url$opt{channel}/$next");
+    $t->param(IS_TODAY => $opt{day} eq today() ? 'true' : 'false');
     if (config(backend => 'timezone') eq 'local') {
         $t->param(TIMEZONE => config(backend => 'timezone_descr'));
     }

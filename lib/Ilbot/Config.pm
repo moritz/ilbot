@@ -83,15 +83,26 @@ sub config {
 
 sub _template {
     my $name = shift;
-    my $path = config('template') . "/$name.tmpl";
-    return HTML::Template->new(
-        filename            => $path,
+    my @args = (
         loop_context_vars   => 1,
         global_vars         => 1,
         die_on_bad_params   => 0,
         default_escape      => 'html',
         utf8                => 1,
     );
+    if (ref $name) {
+        return HTML::Template->new(
+            scalarref   => $name,
+            path        => config('template'),
+            @args,
+        );
+    } else {
+        my $path = config('template') . "/$name.tmpl";
+        return HTML::Template->new(
+            filename            => $path,
+            @args,
+        );
+    }
 }
 
 sub _backend {

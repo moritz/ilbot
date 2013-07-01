@@ -395,3 +395,34 @@ function show_all_rows() {
     $('#toggle_summary').html(summary_filter_link);
     $('tr.cont td.nick').css('visibility', 'hidden');
 }
+
+/* polling */
+(function() {
+    var is_today = IlbotConfig.still_today;
+    var timeout = 20000;
+
+    function get_id(e) {
+        return e.children().first().attr('id');
+    }
+
+    function poll() {
+        if (!is_today) {
+            return;
+        }
+
+        var last_id = get_id($('table#log tr').last()).split('_')[1];
+        var url = IlbotConfig.base_url + 'e/' + IlbotConfig.channel + '/' + IlbotConfig.day + '/ajax/' + last_id;
+        $.ajax(url, {
+            accepts: 'application/json',
+            success: function(data) {
+                is_today = data.still_today;
+                $('table#log tr').last().after(data.text);
+            }
+        });
+        setTimeout(poll, timeout);
+    }
+    $(document).ready(function() {
+        setTimeout(poll, timeout);
+    });
+})()
+
