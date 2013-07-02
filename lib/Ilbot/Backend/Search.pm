@@ -109,7 +109,7 @@ sub index_all {
                     ++$count, $i->add_doc($prev) if $prev;
                     $prev = {
                         ids     => $id,
-                        nick    => $nick,
+                        nick    => lc($nick),
                         line    => $line,
                         day     => $day,
                     };
@@ -174,7 +174,7 @@ sub _query {
     if (length $opt{nick}) {
         my $q_nick = Lucy::Search::TermQuery->new(
             field   => 'nick',
-            term    => $opt{nick},
+            term    => lc($opt{nick}),
         );
         $query = Lucy::Search::ANDQuery->new(
             children => [$query, $q_nick],
