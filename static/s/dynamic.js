@@ -399,16 +399,14 @@ function show_all_rows() {
 /* polling */
 (function() {
     var is_today = IlbotConfig.still_today;
-    var timeout = 20000;
+    IlbotConfig.poll_timeout = 20000;
 
     function get_id(e) {
         return e.children().first().attr('id');
     }
 
-    function poll() {
-        if (!is_today) {
-            return;
-        }
+    IlbotConfig.poll = function poll() {
+        if (!is_today) { return }
 
         var last_id = get_id($('table#log tr').last()).split('_')[1];
         var url = IlbotConfig.base_url + 'e/' + IlbotConfig.channel + '/' + IlbotConfig.day + '/ajax/' + last_id;
@@ -416,13 +414,26 @@ function show_all_rows() {
             accepts: 'application/json',
             success: function(data) {
                 is_today = data.still_today;
+                if (!is_today) {
+                    $('#poll').hide();
+                }
                 $('table#log tr').last().after(data.text);
+            },
+            complete: function() {
+                if (IlbotConfig.polling) {
+                    setTimeout(poll, IlbotConfig.poll_timeout);
+                };
             }
         });
-        setTimeout(poll, timeout);
     }
     $(document).ready(function() {
-        setTimeout(poll, timeout);
+        if (IlbotConfig.still_today) {
+            $('#bottom').before(
+                '<p id="poll">'
+                +    '<input type="button" onclick="IlbotConfig.poll()" value="Look for new lines" /> '
+                + '</p>'
+            );
+        }
     });
 })()
 
