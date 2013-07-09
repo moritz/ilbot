@@ -66,7 +66,7 @@ sub channel {
 }
 
 sub backend { $_[0]{backend} }
-
+sub ping { $_[0]->backend->ping }
 
 package Ilbot::Backend::Cached::Channel;
 
@@ -175,4 +175,5 @@ sub summary_ids {
     cache(namespace => 'backend')->compute($cache_key, '10 days',
         sub { $self->backend->summary_ids(%opt) });
 }
+
 1;

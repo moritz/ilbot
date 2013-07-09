@@ -45,25 +45,34 @@ sub new {
     my ($class, %opt) = @_;
 
     die "Missing option 'config'" unless $opt{config};
-    my $self = bless {}, $class;
+    my $self = bless {config => $opt{config}}, $class;
+    $self->_connect(%opt);
 
-    {
-        my $conf    = $opt{config};
-        my $dbs     = $conf->{dsn}      || "mysql";
-        $self->{db} = $dbs;
-        my $db_name = $conf->{database} || "irclog";
-        my $host    = $conf->{host}     || "localhost";
-        my $user    = $conf->{user}     || "irclog";
-        my $passwd  = $conf->{password} || "";
-
-        my $db_dsn  = "DBI:$dbs:database=$db_name;host=$host";
-        $self->{dbh} = DBI->connect($db_dsn, $user, $passwd,
-                {RaiseError=>1, AutoCommit => 1});
-        if (my $post = $post_connect{$self->{db}}) {
-            $post->($self->{dbh});
-        }
-    }
     return $self;
+}
+
+sub _connect {
+    my ($self, %opt) = @_;
+
+    my $conf    = $opt{config};
+    my $dbs     = $conf->{dsn}      || "mysql";
+    $self->{db} = $dbs;
+    my $db_name = $conf->{database} || "irclog";
+    my $host    = $conf->{host}     || "localhost";
+    my $user    = $conf->{user}     || "irclog";
+    my $passwd  = $conf->{password} || "";
+
+    my $db_dsn  = "DBI:$dbs:database=$db_name;host=$host";
+    $self->{dbh} = DBI->connect($db_dsn, $user, $passwd,
+            {RaiseError=>1, AutoCommit => 1});
+    if (my $post = $post_connect{$self->{db}}) {
+        $post->($self->{dbh});
+    }
+}
+
+sub ping {
+    my $self = shift;
+    $self->_connect(config => $self->{config}) unless $self->{dbh}->ping;
 }
 
 sub dbh { $_[0]{dbh} };
@@ -142,6 +151,7 @@ sub log_line {
     for my $o (qw/channel line nick/) {
         die "Missing option '$o'" unless defined $opt{$o};
     }
+    $self->ping;
     my $sql = $self->sql_for(query => 'log_line');
     my $sth = $self->dbh->prepare_cached($sql);
     my @ph = (@opt{qw/channel nick line/});

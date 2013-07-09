@@ -408,4 +408,6 @@ sub sanitize_nick {
 }
 
 
+sub ping { $_[0]->backend->ping }
+
 1;
