@@ -92,7 +92,7 @@ my $app = sub {
                                date(today()) - 1;
             return [302, [Location => $url ], []];
         }
-        when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /summary)? ) $!x ) {
+        when ( qr! ^/ ($channel_re) / (\d{4}-\d{2}-\d{2}) ( (?: /summary)? ) $!x ) {
             $s = $frontend->day(
                 channel => $1,
                 day     => $2,
@@ -100,13 +100,13 @@ my $app = sub {
             )
                 or return [404, ['Content-Type' => 'text/plain'], ['No such channel/day']];
         }
-        when ( qr! ^/ ([^./]+) / (\d{4}-\d{2}-\d{2}) ( (?: /text)? ) $!x ) {
+        when ( qr! ^/ ($channel_re) / (\d{4}-\d{2}-\d{2}) /text $!x ) {
             $s = $frontend->day_text(
                 channel => $1,
                 day     => $2,
             )
                 or return [404, ['Content-Type' => 'text/plain'], ['No such channel/day']];
-            return [200, ["Content-Type" => "text/plain; charset=UTF-8"], [$s]];
+            return [200, ["Content-Type" => "text/plain; charset=UTF-8"], [encode_utf8 $s]];
         }
         default {
             return [404, [], []];
