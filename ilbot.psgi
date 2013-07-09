@@ -26,6 +26,7 @@ my $frontend = _frontend();
 
 my $app = sub {
     my $env = shift;
+    $frontend->ping();
     my $req = Plack::Request->new($env);
     my $channel_re = qr{[^./]+};
     my $s;
