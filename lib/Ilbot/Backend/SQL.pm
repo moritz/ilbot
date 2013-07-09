@@ -5,6 +5,7 @@ use warnings;
 use 5.010;
 use DBI;
 use Ilbot::Date qw/today/;
+use Ilbot::Config;
 
 our %SQL = (
     STANDARD    => {
@@ -33,8 +34,14 @@ my %post_connect = (
     mysql   => sub {
         $_[0]{mysql_enable_utf8} = 1;
         $_[0]{mysql_auto_reconnect} = 1;
+        $_[0]->do(q[set time_zone = '+0:00'])
+            if config(backend => 'timezone') ne 'local';
     },
-    Pg      => sub { $_[0]{pg_enable_utf8}    = 1 },
+    Pg      => sub {
+        $_[0]{pg_enable_utf8}    = 1;
+        my $tz = config(backend => 'timezone') eq 'local' ? 'DEFAULT' : 'UTC';
+        $_[0]->do(qq[SET TIMEZONE TO $tz]);
+    },
 );
 
 sub new {
