@@ -43,6 +43,7 @@ _
 my %files = (
     bin               => ['ilbot2.pl', 'util/cron-graphs.pl', 'util/create-search-index'],
     www               => ['ilbot.fcgi', 'ilbot.psgi'],
+    sql               => ['sql/update-cache.mysql'],
     'static/s'        => ['static/s/*'],
     'config/template' => ['config/template/*.tmpl'],
 );
@@ -306,7 +307,9 @@ Since the logging stops as soon as the program terminates, it is
 advisable to run it inside a screen or tmux session.
 
 Periodically run `$path/bin/create-search index` to create or update
-the search index.
+the search index, and
+`mysql -h $Dbhost -u $Dbuser $Dbname < $path/sql/update-cache.mysql`
+to update some in-database caches.
 
 If you want to show activity graphs on the front page, please read
 file README.activity-graph.md
