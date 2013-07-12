@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use 5.010;
 use DBI;
-use Ilbot::Date qw/today/;
 use Ilbot::Config;
 
 our %SQL = (
@@ -15,7 +14,9 @@ our %SQL = (
         first_day                => 'SELECT MIN(day) FROM ilbot_day',
         first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
         activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ? AND nick <> ''],
-        days_and_activity_counts => q[SELECT day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
+        days_and_activity_counts => q[SELECT id, day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
+        activity_uncached        => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ?],
+        update_cache             => q[UPDATE ilbot_day SET cache_number_lines = ? WHERE id = ?],
         activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
         lines_after_id           => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND id > ? AND NOT spam ORDER BY id],
         lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam ORDER BY id],
@@ -82,7 +83,7 @@ sub dbh { $_[0]{dbh} };
 
 sub _single_value {
     my ($self, $sql, @bind) = @_;
-    my $sth = $self->dbh->prepare($sql);
+    my $sth = $self->dbh->prepare_cached($sql);
     $sth->execute(@bind);
     my ($v) = $sth->fetchrow_array();
     $sth->finish;
@@ -179,7 +180,8 @@ sub channel {
 }
 
 package Ilbot::Backend::SQL::Channel;
-use Ilbot::Config qw/config/;
+use Ilbot::Config;
+use Ilbot::Date qw/today/;
 
 # it's a hack, but works for now
 our @ISA = qw/Ilbot::Backend::SQL/;
@@ -238,8 +240,20 @@ sub days_and_activity_counts {
         undef,
         $self->_channel_id,
     );
+    my @res;
+    my $sql_fetch  = $self->sql_for(query => 'activity_uncached');
+    my $sql_update = $self->sql_for(query => 'update_cache');
+    my $today = today();
+    for my $row (@$r) {
+        my ($id, $day, $activity) = @$row;
+        unless (defined $activity) {
+            $activity = $self->_single_value($sql_fetch, $id);
+            $self->dbh->do($sql_update, undef, $activity, $id) if $day ne $today;
+        }
+        push @res, [$day, $activity];
+    }
 
-    return $r;
+    return \@res;
 }
 
 sub lines {
