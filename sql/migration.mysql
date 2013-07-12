@@ -7,14 +7,16 @@ INSERT INTO ilbot_day (channel, day)
     SELECT DISTINCT ilbot_channel.id, irclog.day
         FROM irclog
         JOIN ilbot_channel ON ilbot_channel.channel = irclog.channel
+        LEFT JOIN ilbot_day ON ilbot_day.channel = ilbot_channel.id AND ilbot_day.day = irclog.day
         WHERE irclog.channel LIKE '#%'
-        AND NOT EXISTS (SELECT * FROM ilbot_day WHERE ilbot_day.channel = ilbot_channel.id AND ilbot_day.day = irclog.day);
+        AND ilbot_day.id IS NULL;
 
 INSERT INTO ilbot_lines (id, day,nick, timestamp, line, spam, in_summary)
     SELECT irclog.id, ilbot_day.id, IF(irclog.nick = '', NULL, irclog.nick), irclog.timestamp, irclog.line, irclog.spam, irclog.in_summary
         FROM irclog
         JOIN ilbot_channel ON ilbot_channel.channel = irclog.channel
         JOIN ilbot_day     ON ilbot_day.channel = ilbot_channel.id AND ilbot_day.day = irclog.day
+        LEFT JOIN ilbot_lines ON ilbot_lines.id = irclog.id
         WHERE irclog.channel LIKE '#%'
-        AND  NOT EXISTS (SELECT * FROM ilbot_lines WHERE ilbot_lines.id = irclog.id)
+            AND ilbot_lines.id IS NULL
         ORDER BY irclog.id;
