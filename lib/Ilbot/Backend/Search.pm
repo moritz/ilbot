@@ -122,10 +122,12 @@ sub index_all {
         print "\roptimizing ..." if $verbose;
         $i->optimize;
         say "\rdone optimizing" if $verbose;
-        open my $LAST_ID_FH, '>', $last_id_file
-            or die "Cannot open '$last_id_file' for writing: $!";
-        say $LAST_ID_FH $last_written_id;
-        close $LAST_ID_FH or die "Cannot write to '$last_id_file': $!";
+        if ($last_written_id) {
+            open my $LAST_ID_FH, '>', $last_id_file
+                or die "Cannot open '$last_id_file' for writing: $!";
+            say $LAST_ID_FH $last_written_id;
+            close $LAST_ID_FH or die "Cannot write to '$last_id_file': $!";
+        }
     }
     return $count;
 }
