@@ -15,7 +15,7 @@ our %SQL = (
         first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
         activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ? AND nick <> ''],
         days_and_activity_counts => q[SELECT id, day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
-        activity_uncached        => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ? AND NOT spam],
+        activity_uncached        => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ? AND nick IS NOT NULL AND NOT spam],
         update_cache             => q[UPDATE ilbot_day SET cache_number_lines = ? WHERE id = ?],
         activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
         lines_after_id           => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND id > ? AND NOT spam ORDER BY id],
