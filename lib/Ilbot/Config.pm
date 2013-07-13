@@ -28,6 +28,7 @@ my %defaults = (
         timezone        => 'utc',
         timezone_descr  => "the server's local time",
         use_cache       => 1,
+        log_joins       => 1,
     },
     search => {
         language        => 'en',

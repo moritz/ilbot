@@ -13,6 +13,7 @@ my $backend = _backend();
 package Ilbot::Logger;
 use Ilbot::Date qw/today/;
 
+my $log_joins = config(backend => 'log_joins');
 
 {
 
@@ -23,6 +24,7 @@ use Ilbot::Date qw/today/;
         # remove leading BOMs. Some clients seem to send them.
         $line =~ s/\A\x{ffef}//;
         return if $line =~ /^\[off\]/i;
+        return unless $log_joins || length($who // '');
         $backend->log_line(
             channel => $channel,
             nick    => $who,
