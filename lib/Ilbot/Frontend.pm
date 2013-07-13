@@ -113,8 +113,9 @@ sub calendar {
 
                 if ($day) {
                     my $D       = sprintf '%02d', $day;
+                    my $count = $count{"$Y-$M-$D"};
                     my $link = $link{"$Y-$M-$D"};
-                    $content = $link ? qq{<a href="$link">$day</a>}
+                    $content = $link && ($count || !defined $count) ? qq{<a href="$link">$day</a>}
                                      : $day;
                     if ($link) {
                         use constant W => 74;
