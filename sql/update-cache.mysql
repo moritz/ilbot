@@ -1,0 +1,10 @@
+UPDATE ilbot_day
+JOIN   ilbot_lines ON ilbot_day.id = ilbot_lines.day
+SET    ilbot_day.cache_number_lines = (
+            SELECT COUNT(ilbot_lines.id)
+            FROM ilbot_lines
+            WHERE ilbot_lines.day = ilbot_day.id
+                  AND ilbot_lines.nick IS NOT NULL
+        )
+WHERE  ilbot_day.cache_number_lines IS NULL
+       AND ilbot_day.day <> DATE(NOW());

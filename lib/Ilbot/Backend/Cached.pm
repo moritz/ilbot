@@ -136,11 +136,12 @@ sub lines {
     $opt{day}           //= die "Missing option 'day'";
     $opt{exclude_spam}  //= 1;
     $opt{summary_only}  //= 0;
+    $opt{after_id}      //= '';
 
     # for now, don't cache for today at all:
     return $self->backend->lines(%opt) if $opt{day} eq today();
 
-    my $cache_key = join '|', 'lines', $self->channel, @opt{qw/day exclude_spam summary_only/};
+    my $cache_key = join '|', 'lines', $self->channel, @opt{qw/day exclude_spam summary_only after_id/};
     cache(namespace => 'backend')->compute($cache_key, undef, sub { $self->backend->lines(%opt) });
 }
 

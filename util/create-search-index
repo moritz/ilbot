@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use 5.010;
+use File::Path qw/mkpath/;
+
+use Ilbot::Config;
+use Getopt::Long qw/GetOptions/;
+
+GetOptions(
+    verbose => \my $verbose,
+) or die "Usage: $0 [--verbose]\n";
+
+my $path = config('search_idx_root');
+mkpath $path;
+unless (-d $path) {
+    die "Storage path '$path' for the search index doesn't exist, and can't reate it\n";
+}
+
+my $before = time;
+my $count  = _search_backend()->index_all(verbose => $verbose);
+my $after  = time;
+
+say "Written $count records in ", $after - $before, " seconds" if $verbose;

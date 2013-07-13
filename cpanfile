@@ -1,3 +1,4 @@
+requires 'Getopt::Long';
 requires 'Bot::BasicBot', 0.81;
 requires 'Calendar::Simple';
 requires 'Config::File';
@@ -14,3 +15,5 @@ requires 'Text::Table';
 requires 'CHI';
 requires 'Plack';
 requires 'DBD::mysql';
+requires 'Lucy';
+requires 'JSON';

@@ -10,6 +10,7 @@ use Ilbot::Backend::Cached;
 use Ilbot::Date qw/today/;
 use Date::Simple qw/date/;
 use Encode qw/encode_utf8/;
+use JSON;
 
 # I don't know what the p5 porters where thinking
 # when they enabled this warning by default
@@ -36,6 +37,20 @@ my $app = sub {
         when (qr!^/e/($channel_re)/(\d{4}-\d{2}-\d{2})/summary\z!) {
             $s = $frontend->summary_ids(channel => "#$1", day => $2);
             return [200, ['Content-Type', 'application/json'], [$s]];
+        }
+        when (qr!^/e/($channel_re)/(\d{4}-\d{2}-\d{2})/ajax/(\d+)\z!) {
+            $s = $frontend->day(
+                channel     => $1,
+                day         => $2,
+                after_id    => $3,
+            );
+            return [200, ['Content-Type', 'application/json'], [
+                    encode_json({
+                            text         => $s,
+                            still_today  => $2 eq today() ? JSON::true : JSON::false,
+                    }),
+            ]];
+            # TODO: return value!
         }
         when ( qr{ ^/e/summary }x ) {
             my $p = $req->body_parameters;

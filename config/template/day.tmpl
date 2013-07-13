@@ -33,7 +33,7 @@
     <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
-    <p>All times shown according to <abbr title="Coordinated Universal Time">TIMEZONE</abbr>.</p>
+    <p>All times shown according to <TMPL_IF UTC><abbr title="Coordinated Universal Time">UTC</abbr><TMPL_ELSE><TMPL_VAR TIMEZONE></TMPL_IF>.</p>
     <TMPL_UNLESS NAME=IS_SUMMARY>
     <div>
 	<span style="display: none;" id="filter_toggle"></span>
@@ -82,7 +82,8 @@
     IlbotConfig = {
         base_url:  '<TMPL_VAR BASE_URL ESCAPE=JS>',
         channel:   '<TMPL_VAR CHANNEL ESCAPE=JS>',
-        day:       '<TMPL_VAR DATE ESCAPE=JS>'
+        day:       '<TMPL_VAR DATE ESCAPE=JS>',
+        still_today:  <TMPL_VAR IS_TODAY ESCAPE=js>
     };
     </script>
 	<script type="text/javascript" src="<TMPL_VAR BASE_URL>s/dynamic.js"></script>		

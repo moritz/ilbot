@@ -8,9 +8,42 @@ use File::Path qw/make_path/;
 use File::Copy qw/copy/;
 use File::Basename qw/basename/;
 
+use Getopt::Long qw/GetOptions/;
+GetOptions(
+    'dbhost=s'      => \my $Dbhost,
+    'dbport=s'      => \my $Dbport,
+    'dbname=s'      => \my $Dbname,
+    'dbuser=s'      => \my $Dbuser,
+    'dbpass=s'      => \my $Dbpass,
+    'timezone=s'    => \my $Timezone,
+    'prefix=s'      => \my $Prefix,
+    'url=s'         => \my $Url,
+    'use-apache!'   => \my $Use_apache,
+    'language=s'    => \my $Language,
+) or die <<_;
+Usage: $0 [options]
+
+Valid options are:
+    --dbhost=host       Host of the database server
+    --dbport=3306       Port of the database server
+    --dbname=ilbot      Name of the database
+    --dbuser=ilbot      Database user name
+    --dbpass=geheim     Database password
+    --timezone=gmt      Timezone ("gmt" or "local")
+    --prefix=/here/     Installation prefix path
+    --use-apache        Use Apache 2 as web server
+    --no-use-apache     Don't use Apache
+    --url=http://1.to/  Full URL to the new ilbot instance
+    --language=en       Language code (for the search index)
+
+If you don't supply some of these options, $0 will
+ask for them interactively.
+_
+
 my %files = (
-    bin               => ['ilbot2.pl', 'util/cron-graphs.pl'],
+    bin               => ['ilbot2.pl', 'util/cron-graphs.pl', 'util/create-search-index'],
     www               => ['ilbot.fcgi', 'ilbot.psgi'],
+    sql               => ['sql/update-cache.mysql'],
     'static/s'        => ['static/s/*'],
     'config/template' => ['config/template/*.tmpl'],
 );
@@ -54,24 +87,24 @@ You need a mysql database where ilbot stores the logs.
 For installation you need privileges for creating tables and indxes.
 For running ilbot, you need INSERT, SELECT and UPDATE privileges.
 EOT
-my $host   = prompt('Database host', 'localhost');
-my $port   = prompt('Database port', 3306);
-my $dbname = prompt('Database name', 'ilbot');
-my $dbuser = prompt('Database username', 'ilbot');
-my $dbpass = prompt('Database password');
+my $host   = $Dbhost // prompt('Database host', 'localhost');
+my $port   = $Dbport // prompt('Database port', 3306);
+my $dbname = $Dbname // prompt('Database name', 'ilbot');
+my $dbuser = $Dbuser // prompt('Database username', 'ilbot');
+my $dbpass = $Dbpass // prompt('Database password');
 
 say "Now testing your database connection...";
 my $dbh = DBI->connect("DBI:mysql:database=$dbname;host=$host;port=$port", $dbuser, $dbpass, { RaiseError => 1, PrintError => 0 });
 $dbh->do('SELECT 1');
 
-my $has_table_irclog = eval { $dbh->do('SELECT 1 FROM irclog LIMIT 1'); 1 };
+my $has_table_irclog = eval { $dbh->do('SELECT 1 FROM ilbot_channel LIMIT 1'); 1 };
 if ($has_table_irclog) {
     print <<EOT
-The database $dbname already has a table named 'irclog'. I'm going to use
-this table, and assume that it already has the right structure. If not,
-either abort this installer with Ctrl-C and run it again with a different
-database, or drop the table and create it again from the schema in file
-'sql/schema.mysql'
+The database $dbname already has a table named 'ilbot_channel'. I'm going to
+use this table (and the others going along with it), and assume that they
+already have the right structure. If not, either abort this installer with
+Ctrl-C and run it again with a different database, or drop the relevant
+tables and create them again from the schema in file 'sql/schema.mysql'
 EOT
 }
 else {
@@ -100,7 +133,7 @@ in whatever timezone your computer considers "local time".
 Please enter either 'gmt' or 'local' below:
 EOT
 
-my $tz = prompt('Timezone', 'gmt');
+my $tz = $Timezone // prompt('Timezone', 'gmt');
 
 print <<EOT;
 
@@ -112,7 +145,7 @@ The installation path must
  + not yet exist
 EOT
 
-my $path = prompt('Installation path', $ENV{HOME} . '/ilbot');
+my $path = $Prefix // prompt('Installation path', $ENV{HOME} . '/ilbot');
 die "No installation path given, aborting\n" unless $path;
 
 die "$path already exists" if -e $path;
@@ -144,6 +177,22 @@ EOC
 
 close $CONFIG;
 say "Written config to $backend_conf";
+
+print <<_;
+The search indexer stems words, and for that it needs to know the
+language that will be logged primarily. Use the usual two-letter
+language codes. For a list of supported languages, please see
+http://search.cpan.org/perldoc?Lucy%3A%3AAnalysis%3A%3APolyAnalyzer
+_
+my $language = $Language // prompt('language', 'en');
+
+my $search_config = "$path/config/search.conf";
+open $CONFIG, '>', $search_config;
+print { $CONFIG } <<_;
+language = $language
+context  = 3
+_
+close $CONFIG;
 
 sub copy_and_replace {
     my $replacement = "use lib '$path/lib'; use Ilbot::Config '$path/config';\n";
@@ -191,14 +240,14 @@ See http://plackperl.org/#servers if you take the latter rout.
 EOT
 
 
-my $use_apache = prompt('Use Apache 2', 'yes');
+my $use_apache = $Use_apache // prompt('Use Apache 2', 'yes');
 
 if ($use_apache =~ /^y/i) {
     print <<EOT;
 What's the URL of the new ilbot instance?
 (For example http://irclog.perlgeek.de/)
 EOT
-    my $url = prompt('URL');
+    my $url = $Url // prompt('URL');
 
     if ($url =~ qr{https?://([^/]+)(.*)}) {
         my ($domain, $base) = ($1, $2);
@@ -257,11 +306,15 @@ config/bot.conf.example as an example. Then run the logger as
 Since the logging stops as soon as the program terminates, it is
 advisable to run it inside a screen or tmux session.
 
+Periodically run `$path/bin/create-search index` to create or update
+the search index, and
+`mysql -h $Dbhost -u $Dbuser $Dbname < $path/sql/update-cache.mysql`
+to update some in-database caches.
+
 If you want to show activity graphs on the front page, please read
 file README.activity-graph.md
 
-Please add your contact details
-to $path/config/template/footer.tmpl.
+Please add your contact details to $path/config/template/footer.tmpl.
 
 If you find ilbot useful, consider donating via the paypal
 button at http://moritz.faui2k3.org/en/ilbot#donate

@@ -1,0 +1,118 @@
+=head1 Upgrade Instructions
+
+ilbot went through some major changes. If your installation of ilbot is older
+than 2013-07-13, you need to follow the instructions below.
+
+=head2 Background
+
+The old versions of ilbot used a single database table called C<irclog> for
+everything. This doesn't scale well, so newer versions use a better normalized
+database schema.
+
+In addition, search is now handled by the I<Lucy> search engine. See
+L<http://lucy.apache.org/> for more information on Lucy.
+
+=head2 Instructions
+
+The following commands all assume that the
+database (for both the new and the old tables) is called C<ilbot>, and that
+the current system user has sufficient database priviliges to execute all
+commands. If that's not the case, modify the commands accordingly.
+
+If you have much log data, and want to minimize downtime, please see the notes
+at the end of this file.
+
+=over
+
+=item *
+
+Change into the ilbot source directory:
+
+    cd ilbot
+
+=item *
+
+Create the new database tables:
+
+    mysql ilbot < sql/schema.mysql
+
+=item *
+
+Stop the logging bot
+
+=item *
+
+Migrate the data:
+
+    mysql ilbot < sql/migration.mysql
+    mysql ilbot < sql/update-cache.mysql
+
+(This step might take a few minutes)
+
+=item *
+
+If the ilbot database user doesn't have full priviliges on the database
+(recommended), you need to add the privileges to execute a stored procedure
+
+    echo "GRANT EXECUTE ON PROCEDURE ilbot.ilbot_log_line TO 'ilbot'@'localhost'" | mysql
+
+=item *
+
+Install the new version of ilbot
+
+    ./install
+
+
+=item *
+
+Change into the installation directory
+
+    cd $install_path
+
+=item *
+
+Create the search indexes
+
+    bin/create-search-index -verbose
+
+=item *
+
+Check that the web frontend works correctly.
+
+=item *
+
+Start the logging bot again.
+
+=item *
+
+Set up daily cronjobs that run these commands:
+
+    mysql ilbot < sql/update-cache.mysql
+    bin/create-search-index
+
+=item *
+
+Make a backup of the old database table, and then drop it:
+
+    mysqldump ilbot irclog | gzip > ilbot-irclog-$(date --rfc-3339=date).sql.gz
+    echo 'DROP TABLE irclog' | mysql ilbot
+
+=back
+
+=head2 Notes
+
+The C<sql/migration.sql> file is safe against multiple executions, and on
+subsequent execution only migrates the database rows that haven't been
+migrated (for example because new rows were logged since the last execution).
+
+This means you an do something like this to minimize the downtime during
+upgrade:
+
+    1) run the migration while the bot still runs
+    2) install the new version of ilbot, and make everything reading for
+       running the bot with the new database schema
+    3) kill the old bot
+    4) run the migration again
+    5) start the new bot
+
+=cut

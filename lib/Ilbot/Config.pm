@@ -7,13 +7,14 @@ use HTML::Template 2.91;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT = qw/config _template _backend _frontend/;
+our @EXPORT = qw/config _template _backend _frontend _search_backend sanitize_channel_for_fs/;
 
 my $path;
 my %config;
 
 my %known_files = (
-    www => 1,
+    www     => 1,
+    search  => 1,
 );
 
 my %defaults = (
@@ -24,10 +25,14 @@ my %defaults = (
         use_cache       => 1,
     },
     backend => {
-        timzone         => 'local',
-        search_context  => 4,
+        timezone        => 'utc',
+        timezone_descr  => "the server's local time",
         use_cache       => 1,
     },
+    search => {
+        language        => 'en',
+        context         => 4,
+    }
 );
 
 sub import {
@@ -50,6 +55,7 @@ sub import {
     $config{config_root} = $path;
     $config{template}    = "$path/template";
     $config{backend}     = read_config_file("$path/backend.conf");
+    $config{search_idx_root} = "$path/../search-idx";
     if (defined $config{backend}{lib}) {
         unshift @INC, split /:/, $config{backend}{lib}
     }
@@ -77,15 +83,26 @@ sub config {
 
 sub _template {
     my $name = shift;
-    my $path = config('template') . "/$name.tmpl";
-    return HTML::Template->new(
-        filename            => $path,
+    my @args = (
         loop_context_vars   => 1,
         global_vars         => 1,
         die_on_bad_params   => 0,
         default_escape      => 'html',
         utf8                => 1,
     );
+    if (ref $name) {
+        return HTML::Template->new(
+            scalarref   => $name,
+            path        => config('template'),
+            @args,
+        );
+    } else {
+        my $path = config('template') . "/$name.tmpl";
+        return HTML::Template->new(
+            filename            => $path,
+            @args,
+        );
+    }
 }
 
 sub _backend {
@@ -102,6 +119,13 @@ sub _backend {
     return $sql;
 }
 
+sub _search_backend {
+    require Ilbot::Backend::Search;
+    return Ilbot::Backend::Search->new(
+        backend => _backend(),
+    );
+}
+
 sub _frontend {
     require Ilbot::Frontend;
     my $f = Ilbot::Frontend->new(
@@ -115,6 +139,12 @@ sub _frontend {
         );
     }
     return $f;
+}
+
+sub sanitize_channel_for_fs {
+    my $c = shift;
+    $c =~ tr/a-zA-Z0-9_-//cd;
+    return $c;
 }
 
 1;

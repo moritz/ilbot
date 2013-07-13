@@ -1,17 +1,61 @@
-DROP TABLE IF EXISTS `irclog`;
+DROP PROCEDURE IF EXISTS `ilbot_log_line`;
+DROP TABLE IF EXISTS `ilbot_lines`;
+DROP TABLE IF EXISTS `ilbot_day`;
+DROP TABLE IF EXISTS `ilbot_channel`;
+CREATE TABLE `ilbot_channel` (
+    `id` int(11) NOT NULL auto_increment,
+    `channel` VARCHAR(30) NOT NULL,
+    PRIMARY KEY  (`id`),
+    UNIQUE KEY `channel` (`channel`)
+) ENGINE = INNODB CHARACTER SET utf8;
 
-CREATE TABLE `irclog` (
-  `id` int(11) NOT NULL auto_increment,
-  `channel` varchar(30) default NULL,
-  `day` char(10) default NULL,
-  `nick` varchar(40) default NULL,
-  `timestamp` int(11) default NULL,
-  `line` mediumtext,
-  `spam` tinyint(1) default '0',
-  PRIMARY KEY  (`id`),
-  KEY `nick_index` (`nick`),
-  KEY `day_index` (`day`),
-  KEY `irclog_day_channel_idx` (`day`,`channel`),
-  KEY `channel_idx` (`channel`),
-  FULLTEXT KEY `message_index` (`line`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+CREATE TABLE `ilbot_day` (
+    `id` int(11) NOT NULL auto_increment,
+    `channel` int(11) NOT NULL,
+    `day` char(10) NOT NULL,
+    `cache_number_lines` int(11),
+    PRIMARY KEY  (`id`),
+    FOREIGN KEY (`channel`) REFERENCES `ilbot_channel` (`id`),
+    UNIQUE KEY `channel_day` (`channel`, `day`)
+) ENGINE = INNODB CHARACTER SET utf8;
+
+CREATE TABLE `ilbot_lines` (
+    `id` int(11) NOT NULL auto_increment,
+    `day` int(11) NOT NULL,
+    `nick` varchar(40),
+    `timestamp` int(11) NOT NULL,
+    `line` mediumtext,
+    `spam` bit(1) NOT NULL default 0,
+    `in_summary` bit(1) NOT NULL default 0,
+
+    PRIMARY KEY  (`id`),
+    FOREIGN KEY (`day`) REFERENCES `ilbot_day` (`id`) ON DELETE CASCADE
+) ENGINE = INNODB CHARACTER SET utf8;
+
+
+DELIMITER //
+-- no empty lines, would confuse the installer
+CREATE PROCEDURE `ilbot_log_line`(IN p_channel VARCHAR(30), IN p_nick VARCHAR(40), IN p_line mediumtext)
+LANGUAGE SQL
+NOT DETERMINISTIC
+SQL SECURITY INVOKER
+COMMENT 'Log a line from IRC'
+BEGIN
+    DECLARE channel_id, day_id INT(11);
+    DECLARE today CHAR(10);
+    START TRANSACTION;
+    SELECT id INTO channel_id FROM ilbot_channel WHERE channel = p_channel;
+    IF (channel_id IS NULL) THEN BEGIN
+        INSERT INTO ilbot_channel (channel) VALUES (p_channel);
+        SELECT id INTO channel_id FROM ilbot_channel WHERE channel = p_channel;
+    END; END IF;
+    SELECT DATE(NOW()) INTO today;
+    SELECT id INTO day_id FROM ilbot_day WHERE channel = channel_id AND day = today;
+    IF (day_id IS NULL) THEN BEGIN
+        INSERT INTO ilbot_day (channel, day) VALUES (channel_id, today);
+        SELECT id INTO day_id FROM ilbot_day WHERE channel = channel_id AND day = today;
+    END; END IF;
+    INSERT INTO ilbot_lines (day, nick, timestamp, line)
+        VALUES(day_id, p_nick, UNIX_TIMESTAMP(NOW()), p_line);
+    COMMIT;
+END//

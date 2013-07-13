@@ -4,41 +4,45 @@ use strict;
 use warnings;
 use 5.010;
 use DBI;
-use Ilbot::Date qw/today/;
+use Ilbot::Config;
 
 our %SQL = (
     STANDARD    => {
-        channels                 => 'SELECT DISTINCT(channel) FROM irclog ORDER BY channel',
-        first_day                => 'SELECT MIN(day) FROM irclog',
-        first_day_channel        => 'SELECT MIN(day) FROM irclog WHERE channel = ?',
-        exists_channel           => 'SELECT 1 FROM irclog WHERE channel = ? LIMIT 1',
-        day_has_actitivity       => 'SELECT 1 FROM irclog WHERE channel = ? AND day = ? AND not spam LIMIT 1',
-        activity_count           => q[SELECT COUNT(id) FROM irclog WHERE channel = ?
-    AND day BETWEEN ? AND ? AND nick <> ''],
-        days_and_activity_counts => q[SELECT day, count(*) FROM irclog WHERE channel = ? AND nick <> '' GROUP BY day ORDER BY day],
-        activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM irclog WHERE channel = ? AND nick <> ''],
-        lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? AND NOT spam ORDER BY id],
-        lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? AND NOT spam AND in_summary ORDER BY id],
-        lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? ORDER BY id],
-        lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM irclog WHERE day = ? AND channel = ? AND in_summary ORDER BY id],
-        log_line                 => q[INSERT INTO irclog (channel, nick, line) VALUES (?, ?, ?)],
+        channels                 => 'SELECT channel FROM ilbot_channel ORDER BY channel',
+        channel_id               => 'SELECT id FROM ilbot_channel WHERE channel = ?',
+        day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_channel.id = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
+        first_day                => 'SELECT MIN(day) FROM ilbot_day',
+        first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
+        activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ? AND nick <> ''],
+        days_and_activity_counts => q[SELECT id, day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
+        activity_uncached        => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ? AND nick IS NOT NULL AND NOT spam],
+        update_cache             => q[UPDATE ilbot_day SET cache_number_lines = ? WHERE id = ?],
+        activity_average         => q[SELECT COUNT(*), MAX(day) - MIN(day) FROM ilbot_lines WHERE channel = ? AND nick IS NOT NULL],
+        lines_after_id           => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND id > ? AND NOT spam ORDER BY id],
+        lines_nosummary_nospam   => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam ORDER BY id],
+        lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam AND in_summary ORDER BY id],
+        lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? ORDER BY id],
+        lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND in_summary ORDER BY id],
+        summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary = 1 ORDER BY id],
     },
     mysql       => {
-        activity_average         => q[SELECT COUNT(*), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM irclog WHERE channel = ? AND nick <> ''],
-        search_count             => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?)],
-        search_count_nick        => q[SELECT COUNT(id) FROM irclog WHERE channel = ? AND MATCH(line) AGAINST(?) AND (nick IN (?, ?))],
-        search_result_days       => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) ORDER BY id DESC LIMIT 10 OFFSET ?],
-        search_result_nick_days  => q[SELECT DISTINCT(day) line FROM irclog WHERE channel = ? AND MATCH(line) AGAINST (?) AND nick IN (?, ?) LIMIT 10 OFFSET ?],
-        search_result            => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
-        search_result_nick       => q[SELECT id, nick, timestamp, line, IF(MATCH(line) AGAINST(?) AND nick IN (?, ?), 1, 0) FROM irclog WHERE channel = ? AND day = ? AND nick <> ''],
-        log_line                 => q[INSERT INTO irclog (channel, nick, line, day, timestamp) VALUES (?, ?, ?, ?, ?)],
-        summary_ids              => q[SELECT id FROM irclog WHERE channel = ? AND day = ? AND in_summary = 1 ORDER BY id],
+        activity_average         => q[SELECT SUM(cache_number_lines), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_day WHERE channel = ?],
+        log_line                 => q[CALL ilbot_log_line (?, ?, ?)],
     },
 );
 
 my %post_connect = (
-    mysql   => sub { $_[0]{mysql_enable_utf8} = 1 },
-    Pg      => sub { $_[0]{pg_enable_utf8}    = 1 },
+    mysql   => sub {
+        $_[0]{mysql_enable_utf8} = 1;
+        $_[0]{mysql_auto_reconnect} = 1;
+        $_[0]->do(q[set time_zone = '+0:00'])
+            if config(backend => 'timezone') ne 'local';
+    },
+    Pg      => sub {
+        $_[0]{pg_enable_utf8}    = 1;
+        my $tz = config(backend => 'timezone') eq 'local' ? 'DEFAULT' : 'UTC';
+        $_[0]->do(qq[SET TIMEZONE TO $tz]);
+    },
 );
 
 sub new {
@@ -79,7 +83,7 @@ sub dbh { $_[0]{dbh} };
 
 sub _single_value {
     my ($self, $sql, @bind) = @_;
-    my $sth = $self->dbh->prepare($sql);
+    my $sth = $self->dbh->prepare_cached($sql);
     $sth->execute(@bind);
     my ($v) = $sth->fetchrow_array();
     $sth->finish;
@@ -113,9 +117,15 @@ sub channels_and_days_for_ids {
     return [] unless @ids;
     # SQL depends on the number of elements, so
     # can't simply be obtained with sql_for
-    my $sql = 'SELECT channel, day FROM  irclog WHERE id IN ('
+    my $sql = q[
+        SELECT ilbot_channel.channel, ilbot_day.day
+        FROM   ilbot_channel
+        JOIN   ilbot_day ON ilbot_day.channel = ilbot_channel.id
+        JOIN   ilbot_lines ON ilbot_lines.day = ilbot_day.id
+        WHERE ilbot_lines.id IN (
+        ]
                 . join(', ', ('?') x @ids)
-                . ') GROUP BY channel, day';
+        . ') GROUP BY ilbot_channel.channel, ilbot_day.day';
     return $self->dbh->selectall_arrayref($sql, undef, @ids);
 }
 
@@ -126,7 +136,7 @@ sub update_summary {
     # can't simply be obtained with sql_for
     my @check = @{ $opt{check} // [] };
     if (@check) {
-        my $sql = 'UPDATE irclog SET in_summary = TRUE WHERE id IN ('
+        my $sql = 'UPDATE ilbot_lines SET in_summary = TRUE WHERE id IN ('
                     . join(', ', ('?') x @check)
                     . ')';
         my $sth = $self->dbh->prepare($sql);
@@ -136,7 +146,7 @@ sub update_summary {
 
     my @uncheck = @{ $opt{uncheck} // [] };
     if (@uncheck) {
-        my $sql = 'UPDATE irclog SET in_summary = FALSE WHERE id IN ('
+        my $sql = 'UPDATE ilbot_lines SET in_summary = FALSE WHERE id IN ('
                     . join(', ', ('?') x @uncheck)
                     . ')';
         my $sth = $self->dbh->prepare($sql);
@@ -155,12 +165,6 @@ sub log_line {
     my $sql = $self->sql_for(query => 'log_line');
     my $sth = $self->dbh->prepare_cached($sql);
     my @ph = (@opt{qw/channel nick line/});
-    my $placeholders = $sql =~ tr/?//;
-    if ($placeholders == 5) {
-        # mysql is limited in default values, so we have to calculate some
-        # stuff on our own
-        push @ph, today(), time;
-    }
     $sth->execute(@ph);
     $sth->finish;
 }
@@ -176,8 +180,8 @@ sub channel {
 }
 
 package Ilbot::Backend::SQL::Channel;
-use List::Util qw/max min/;
-use Ilbot::Config qw/config/;
+use Ilbot::Config;
+use Ilbot::Date qw/today/;
 
 # it's a hack, but works for now
 our @ISA = qw/Ilbot::Backend::SQL/;
@@ -196,25 +200,34 @@ sub new {
 sub dbh     { $_[0]{dbh}     };
 sub channel { $_[0]{channel} };
 
+sub _channel_id {
+    my $self = shift;
+    $self->_single_value($self->sql_for(query => 'channel_id'), $self->channel);
+}
+
+sub _day_id {
+    my ($self, %opt) = @_;
+    die 'Missing argument "day"' unless $opt{day};
+    $self->_single_value($self->sql_for(query => 'day_id'), $self->channel, $opt{day});
+}
+
 sub summary_ids {
     my ($self, %opt) = @_;
     die "Missing argument 'day'" unless $opt{day};
-    $self->dbh->selectcol_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->channel, $opt{day});
+
+    $self->dbh->selectcol_arrayref($self->sql_for(query => 'summary_ids'), undef, $self->_day_id(day => $opt{day}));
 }
 
 sub day_has_actitivity {
     my ($self, %opt) = @_;
     die "Missing option 'day'" unless $opt{day};
-    my $sth = $self->prepare($self->sql_for(query => 'day_has_actitivity'));
-    $sth->execute($self->chanenl, $opt{day});
-    my ($res) = $sth->fetchrow;
-    $sth->finish;
+    return !! $self->_day_id(day => $opt{day});
 }
 
 sub activity_average {
     my $self = shift;
     my $sth = $self->dbh->prepare($self->sql_for(query => 'activity_average'));
-    $sth->execute($self->channel);
+    $sth->execute($self->_channel_id);
     my ($count, $days) = $sth->fetchrow;
     $sth->finish;
     return ($count || 1) / ($days || 1);
@@ -225,47 +238,48 @@ sub days_and_activity_counts {
     my $r = $self->dbh->selectall_arrayref(
         $self->sql_for(query => 'days_and_activity_counts'),
         undef,
-        $self->channel,
+        $self->_channel_id,
     );
+    my @res;
+    my $sql_fetch  = $self->sql_for(query => 'activity_uncached');
+    my $sql_update = $self->sql_for(query => 'update_cache');
+    my $today = today();
+    for my $row (@$r) {
+        my ($id, $day, $activity) = @$row;
+        unless (defined $activity) {
+            $activity = $self->_single_value($sql_fetch, $id);
+            $self->dbh->do($sql_update, undef, $activity, $id) if $day ne $today;
+        }
+        push @res, [$day, $activity];
+    }
 
-    return $r;
+    return \@res;
 }
 
 sub lines {
     my ($self, %opt) = @_;
     die "Missing option 'day'" unless $opt{day};
+    my $di = $self->_day_id(day => $opt{day});
+    return [] unless $di;
+    if ($opt{after_id}) {
+        return $self->dbh->selectall_arrayref(
+            $self->sql_for(query => 'lines_after_id'),
+            undef, $di, $opt{after_id}
+        );
+    }
     my $key = join '_', 'lines',
                 ($opt{summary_only} ? 'summary' : 'nosummary'),
-                ($opt{exclude_spam} // 0 ? 'spam' : 'nospam');
+                ($opt{exclude_spam} // 1 ? 'spam' : 'nospam');
     my $r = $self->dbh->selectall_arrayref(
-        $self->sql_for(query => $key),
-        undef,
-        $opt{day},
-        $self->channel,
+        $self->sql_for(query => $key), undef, $di,
     );
 
     return $r;
 }
 
-sub search_count {
-    my ($self, %opt) = @_;
-    die "Missing argument 'q'" unless defined $opt{q};
-    my @bind_param = ($self->channel, $opt{q});
-    my $sql;
-    if (defined $opt{nick} && length $opt{nick}) {
-        $sql = $self->sql_for(query => 'search_count_nick');
-        push @bind_param, $opt{nick}, "* $opt{nick}";
-    }
-    else {
-        $sql = $self->sql_for(query => 'search_count');
-    }
-    my $sth = $self->dbh->prepare($sql);
-    $sth->execute(@bind_param);
-    my ($count) = $sth->fetchrow_array;
-    $sth->finish;
-    return $count;
-}
-
+# XXX search_results doesn't really belong here, 
+# but I'm too lazy to write yet anothe wrapper class around Backend::Search
+# and Backend::SQL
 sub search_results {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
@@ -273,54 +287,11 @@ sub search_results {
     unless ($opt{offset} =~ /^[0-9]+\z/) {
         die "Invalid value for 'offset'";
     }
-    my @bind_param = ($self->channel, $opt{q});
-    my $nick     = $opt{nick};
-    my $has_nick = defined($nick) && length($nick);
-    my $sql;
-    if ($has_nick) {
-        $sql = $self->sql_for(query => 'search_result_nick_days');
-        push @bind_param, $nick, "* $nick";
-    }
-    else {
-        $sql = $self->sql_for(query => 'search_result_days');
-    }
-    # mysql doesn't seem to allow bind parameters for the offset, so
-    # needs a bit of special care
-    if (lc $self->{db} eq 'mysql') {
-        $sql =~ s/.*\K\?/$opt{offset}/;
-    }
-    else {
-        push @bind_param, $opt{offset};
-    }
-    my $days = $self->dbh->selectcol_arrayref($sql, undef, @bind_param);
-    my @res;
-    my $context = config(backend => 'search_context');
-    for my $d (@$days) {
-        my $sql = $has_nick
-                    ? $self->sql_for(query => 'search_result_nick')
-                    : $self->sql_for(query => 'search_result');
-        @bind_param = ($opt{q}, ($has_nick ? ($nick, "* $nick") : ()), $self->channel, $d);
-        my @d_res;
-        my $lines = $self->dbh->selectall_arrayref($sql, undef, @bind_param);
-        # $lines now contains all the lines for that day.
-        # filter out only those lines that matched, plus a bit of context
-        # before and after. Since the context can overlap, simply
-        # mark all to-be-returned indexes, and then later get the desired
-        # lines with a slice
-        my @return_idx = (0) x @$lines;
-        my @idx = 0..$#$lines;
-        for my $idx (@idx) {
-            if ($lines->[$idx][4]) {
-                for (max($idx - $context, 0) .. min($#$lines, $idx + $context)) {
-                    $return_idx[$_] = 1;
-                }
-            }
-        }
-        @idx = grep $return_idx[$_], @idx;
-        $lines = [ @{$lines}[@idx] ];
-        push @res, $d => $lines;
-    }
-    return \@res;
+    return _search_backend()->channel(channel => $self->channel)->search_results(
+        q       => $opt{q},
+        nick    => $opt{nick},
+        offset  => $opt{offset},
+    );
 }
 
 sub activity_count {
@@ -329,18 +300,18 @@ sub activity_count {
         die "Missing option '$o'" unless $opt{$o};
     }
     $self->_single_value($self->sql_for(query => 'activity_count'),
-            $self->channel,
+            $self->_channel_id,
             @opt{qw/from to/});
 }
 
 sub first_day {
     my $self = shift;
-    return $self->_single_value($self->sql_for(query => 'first_day_channel'), $self->channel);
+    return $self->_single_value($self->sql_for(query => 'first_day_channel'), $self->_channel_id);
 }
 
 sub exists {
     my $self = shift;
-    return $self->_single_value($self->sql_for(query => 'exists_channel'), $self->channel);
+    return !! $self->_channel_id;
 }
 
 1;
