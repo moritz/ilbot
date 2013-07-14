@@ -203,7 +203,8 @@ sub synopsis_links {
 
 
 sub github_links {
-    my ($key, $state, $channel, $nick) = @_;
+    my ($key, $opt) = @_;
+    my $channel = $opt->{channel};
     if ($key =~ m/^GH/i) {
         $key =~ m/(\d+)/;
         if ($channel eq "parrot") {
