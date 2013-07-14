@@ -417,6 +417,7 @@ function show_all_rows() {
                 if (!is_today) {
                     $('#poll').hide();
                 }
+                $('table#log tr').last().css('border-bottom-style', 'solid');
                 $('table#log tr').last().after(data.text);
             },
             complete: function() {
