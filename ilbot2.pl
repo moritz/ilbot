@@ -5,13 +5,14 @@ use warnings;
 use strict;
 use Bot::BasicBot 0.81;
 
-use Ilbot::Config;
-my $backend = _backend();
 
 # this is a cleaner reimplementation of ilbot, with Bot::BasicBot which 
 # in turn is based POE::* stuff
 package Ilbot::Logger;
 use Ilbot::Date qw/today/;
+
+use Ilbot::Config;
+my $backend = _backend();
 
 my $log_joins = config(backend => 'log_joins');
 
