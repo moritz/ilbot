@@ -9,7 +9,7 @@ $(document).ready(function() {
             if ($(e).hasClass('special')) {
                 $(e).addClass('hidden');
                 if (hash && $(e).find(hash).length) {
-		    uncollapse = ids[0];
+                    uncollapse = ids[0];
                 }
                 ids.push($(e).attr('id'));
             }
@@ -28,7 +28,7 @@ $(document).ready(function() {
                 extra_class = 'dark';
             }
             $(elem).before('<tr class="special ' + extra_class + '"><td class="nick" /> <td /><td>' + c + ' more elements. <a href="javascript:show_collapsed(\'' + $(elem).attr('id') + '\')">Show/hide.</a></td></tr>');
-	   if (uncollapse) {
+            if (uncollapse) {
                 show_collapsed(uncollapse);
            }
         }
