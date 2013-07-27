@@ -10,7 +10,7 @@ CREATE TABLE "ilbot_channel" (
 CREATE TABLE "ilbot_day" (
     "id" SERIAL PRIMARY KEY,
     "channel" INTEGER NOT NULL REFERENCES ilbot_channel (id),
-    "day" char(10) NOT NULL,
+    "day" DATE NOT NULL,
     "cache_number_lines" INTEGER,
     UNIQUE ("channel", "day")
 );
@@ -30,7 +30,7 @@ DECLARE
     channel_id INTEGER;
     day_id     INTEGER;
     line_id    INTEGER;
-    today      CHAR(10);
+    today      DATE;
 BEGIN
     SELECT id INTO channel_id FROM ilbot_channel WHERE channel = p_channel;
     IF channel_id IS NULL THEN
