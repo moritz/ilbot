@@ -29,6 +29,9 @@ our %SQL = (
         activity_average         => q[SELECT SUM(cache_number_lines), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_day WHERE channel = ?],
         log_line                 => q[CALL ilbot_log_line (?, ?, ?)],
     },
+    Pg           => {
+        log_line                 => q[SELECT ilbot_log_line (?, ?, ?)],
+    }
 );
 
 my %post_connect = (

@@ -66,7 +66,8 @@ sub channel {
 }
 
 sub backend { $_[0]{backend} }
-sub ping { $_[0]->backend->ping }
+sub dbh     { $_[0]{backend}->dbh() };
+sub ping    { $_[0]->backend->ping }
 
 package Ilbot::Backend::Cached::Channel;
 

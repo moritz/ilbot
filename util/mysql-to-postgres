@@ -1,0 +1,38 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use 5.010;
+use lib 'lib';
+use Config::File qw/read_config_file/;
+
+my $pg_conf_file = shift(@ARGV) // 'config/postgresql.conf';
+my $pg_config    = read_config_file $pg_conf_file;
+
+use Ilbot::Config;
+use DBI;
+
+my $mysql_dbh = _backend->dbh();
+my $pg_dbh    = Ilbot::Backend::SQL->new(config => $pg_config)->dbh();
+
+my %count = (
+    ilbot_channel => 2,
+    ilbot_day     => 4,
+    ilbot_lines   => 7,
+);
+
+for my $table (qw/ilbot_channel ilbot_day ilbot_lines/) {
+    say "$table... ";
+    my $fetch = $mysql_dbh->prepare("SELECT * FROM $table ORDER BY id");
+    my $ph    = join ', ', ('?') x $count{$table};
+    my $store = $pg_dbh->prepare("INSERT INTO $table VALUES ($ph)");
+
+    $fetch->execute;
+    while (my @row = $fetch->fetchrow_array) {
+        $store->execute(@row);
+    }
+    $fetch->finish;
+    $store->finish;
+    my $max = 1 + _backend()->_single_value("SELECT MAX(id) FROM $table");
+    $pg_dbh->do("ALTER SEQUENCE ${table}_id_seq RESTART WITH $max");
+    say "done $table!";
+}
