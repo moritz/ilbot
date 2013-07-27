@@ -1,16 +1,49 @@
-DROP TABLE IF EXISTS irclog;
-CREATE TABLE irclog (
-	id 		SERIAL PRIMARY KEY,
-	channel 	VARCHAR(30) NOT NULL,
-	day		DATE NOT NULL DEFAULT(CURRENT_DATE),
-	nick		VARCHAR(40) NOT NULL DEFAULT(''),
-	timestamp 	INTEGER NOT NULL DEFAULT(EXTRACT(epoch FROM CURRENT_TIMESTAMP)),
-	line		VARCHAR(8192) NOT NULL,
-	spam		BOOLEAN DEFAULT(FALSE),
-	in_summary	BOOLEAN DEFAULT(FALSE)
+DROP FUNCTION IF EXISTS ilbot_log_line(VARCHAR(30), VARCHAR(40), VARCHAR(512));
+DROP TABLE IF EXISTS "ilbot_lines";
+DROP TABLE IF EXISTS "ilbot_day";
+DROP TABLE IF EXISTS "ilbot_channel";
+CREATE TABLE "ilbot_channel" (
+    "id" SERIAL PRIMARY KEY,
+    "channel" VARCHAR(30) NOT NULL UNIQUE
 );
 
-CREATE INDEX irclog__nick 	            ON irclog(nick);
-CREATE INDEX irclog__channel  	        ON irclog(channel);
-CREATE INDEX irclog__day  	            ON irclog(day);
-CREATE INDEX irclog__channel_day_nick   ON irclog (channel, day, nick);
+CREATE TABLE "ilbot_day" (
+    "id" SERIAL PRIMARY KEY,
+    "channel" INTEGER NOT NULL REFERENCES ilbot_channel (id),
+    "day" char(10) NOT NULL,
+    "cache_number_lines" INTEGER,
+    UNIQUE ("channel", "day")
+);
+
+CREATE TABLE "ilbot_lines" (
+    "id" SERIAL PRIMARY KEY,
+    "day" INTEGER NOT NULL REFERENCES ilbot_day (id),
+    "nick" varchar(40),
+    "timestamp" INTEGER NOT NULL DEFAULT EXTRACT(epoch FROM NOW()),
+    "line" VARCHAR(512),
+    "spam" BOOLEAN NOT NULL default FALSE,
+    "in_summary" BOOLEAN NOT NULL default FALSE
+);
+
+CREATE FUNCTION ilbot_log_line(IN p_channel VARCHAR(30), IN p_nick VARCHAR(40), IN p_line VARCHAR(512)) RETURNS INTEGER AS $PROC$
+DECLARE
+    channel_id INTEGER;
+    day_id     INTEGER;
+    line_id    INTEGER;
+    today      CHAR(10);
+BEGIN
+    SELECT id INTO channel_id FROM ilbot_channel WHERE channel = p_channel;
+    IF channel_id IS NULL THEN
+        INSERT INTO ilbot_channel (channel) VALUES (p_channel) RETURNING id INTO channel_id;
+    END IF;
+    today := DATE(NOW());
+    day_id := id FROM ilbot_day WHERE channel = channel_id AND day = today;
+    IF day_id IS NULL THEN
+        INSERT INTO ilbot_day (channel, day) VALUES (channel_id, today) RETURNING id INTO day_id;
+    END IF;
+    INSERT INTO ilbot_lines (day, nick, line) VALUES (day_id, p_nick, p_line) RETURNING id INTO line_id;
+    RETURN line_id;
+END
+$PROC$ LANGUAGE plpgsql
+VOLATILE
+;
