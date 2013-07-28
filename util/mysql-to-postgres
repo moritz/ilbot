@@ -4,6 +4,9 @@ use warnings;
 use 5.010;
 use lib 'lib';
 use Config::File qw/read_config_file/;
+use Data::Dumper;
+$Data::Dumper::Useqq = 1;
+$| = 1;
 
 my $pg_conf_file = shift(@ARGV) // 'config/postgresql.conf';
 my $pg_config    = read_config_file $pg_conf_file;
@@ -22,17 +25,35 @@ my %count = (
 
 for my $table (qw/ilbot_channel ilbot_day ilbot_lines/) {
     say "$table... ";
+    $pg_dbh->begin_work;
     my $fetch = $mysql_dbh->prepare("SELECT * FROM $table ORDER BY id");
     my $ph    = join ', ', ('?') x $count{$table};
     my $store = $pg_dbh->prepare("INSERT INTO $table VALUES ($ph)");
 
     $fetch->execute;
+    my $c = 0;
     while (my @row = $fetch->fetchrow_array) {
+        if ($table eq 'ilbot_lines') {
+            $row[5] = $row[5] ? 'true' : 'false';
+            $row[6] = $row[5] ? 'true' : 'false';
+            unless (utf8::valid($row[4])) {
+                print Dumper \@row;
+                $row[4] =~ s/[^0-\177]/./g;
+            }
+        }
         $store->execute(@row);
+        ++$c;
+        if ($c % 10_000 == 0) {
+            $pg_dbh->commit;
+            $pg_dbh->begin_work;
+            print '.';
+        }
     }
     $fetch->finish;
     $store->finish;
+    $pg_dbh->commit;
     my $max = 1 + _backend()->_single_value("SELECT MAX(id) FROM $table");
     $pg_dbh->do("ALTER SEQUENCE ${table}_id_seq RESTART WITH $max");
-    say "done $table!";
+    say "\ndone $table!";
 }
+
