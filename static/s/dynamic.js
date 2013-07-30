@@ -399,7 +399,6 @@ function show_all_rows() {
 /* polling */
 (function() {
     var is_today = IlbotConfig.still_today;
-    IlbotConfig.poll_timeout = 20000;
     IlbotConfig.currently_polling = false;
 
     function get_id(e) {
@@ -428,9 +427,6 @@ function show_all_rows() {
             },
             complete: function() {
                 IlbotConfig.currently_polling = false;
-                if (IlbotConfig.polling) {
-                    setTimeout(poll, IlbotConfig.poll_timeout);
-                };
             }
         });
     }
@@ -438,7 +434,7 @@ function show_all_rows() {
         if (IlbotConfig.still_today) {
             $('#bottom').before(
                 '<p id="poll">'
-                +    '<input type="button" onclick="IlbotConfig.poll()" value="Look for new lines" /> '
+                +    '<input type="button" onclick="IlbotConfig.poll()" value="Look for new lines (r)" /> '
                 + '</p>'
             );
         }
