@@ -400,6 +400,7 @@ function show_all_rows() {
 (function() {
     var is_today = IlbotConfig.still_today;
     IlbotConfig.poll_timeout = 20000;
+    IlbotConfig.currently_polling = false;
 
     function get_id(e) {
         return e.children().first().attr('id');
@@ -407,6 +408,8 @@ function show_all_rows() {
 
     IlbotConfig.poll = function poll() {
         if (!is_today) { return }
+        if (IlbotConfig.currently_polling) { return; }
+        IlbotConfig.currently_polling = true;
 
         var last_id = get_id($('table#log tr').last()).split('_')[1];
         var url = IlbotConfig.base_url + 'e/' + IlbotConfig.channel + '/' + IlbotConfig.day + '/ajax/' + last_id;
@@ -416,6 +419,7 @@ function show_all_rows() {
                 is_today = data.still_today;
                 if (!is_today) {
                     $('#poll').hide();
+                    $('document').unbind('keydown');
                 }
                 $('#poll input').blur();
                 $('table#log tr').css('border-bottom-style', 'none');
@@ -423,6 +427,7 @@ function show_all_rows() {
                 $('table#log tr').last().after(data.text);
             },
             complete: function() {
+                IlbotConfig.currently_polling = false;
                 if (IlbotConfig.polling) {
                     setTimeout(poll, IlbotConfig.poll_timeout);
                 };
@@ -437,6 +442,7 @@ function show_all_rows() {
                 + '</p>'
             );
         }
+        $(document).bind('keydown', 'r', IlbotConfig.poll);
     });
 })()
 
