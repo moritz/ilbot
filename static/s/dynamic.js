@@ -354,6 +354,9 @@ function enable_summary_mode() {
                 $(selector).parent().find('input').attr('checked', 'checked').addClass('originally_checked');
             }
             $('#summary_container').html(summary_mode_html);
+            $('input.summary_checkbox').click(function() {
+                window.onbeforeunload = function () { return 'You have unsaved changes!' };
+            });
         }
     });
 }
@@ -380,7 +383,12 @@ function save_summary_changes() {
             }
     });
     if (was_checked.length != 0 || newly_checked.length != 0) {
-        $.post(IlbotConfig.base_url +  "e/summary", { check: newly_checked.join('.'), uncheck: was_checked.join('.') } );
+        $.post(IlbotConfig.base_url +  "e/summary",
+            { check: newly_checked.join('.'), uncheck: was_checked.join('.') },
+            function () {
+                window.onbeforeunload = null;
+            }
+        );
     }
 }
 
