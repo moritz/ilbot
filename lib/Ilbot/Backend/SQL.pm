@@ -13,7 +13,7 @@ our %SQL = (
         day_id                   => 'SELECT ilbot_day.id FROM ilbot_day JOIN ilbot_channel ON ilbot_channel.id = ilbot_day.channel WHERE ilbot_channel.channel = ? AND ilbot_day.day = ?',
         first_day                => 'SELECT MIN(day) FROM ilbot_day',
         first_day_channel        => 'SELECT MIN(day) FROM ilbot_day WHERE channel = ?',
-        activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ? AND nick <> ''],
+        activity_count           => q[SELECT SUM(cache_number_lines) FROM ilbot_day WHERE channel = ?  AND day BETWEEN ? AND ?],
         days_and_activity_counts => q[SELECT id, day, cache_number_lines FROM ilbot_day WHERE channel = ?  ORDER BY day],
         activity_uncached        => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ? AND nick IS NOT NULL AND NOT spam],
         update_cache             => q[UPDATE ilbot_day SET cache_number_lines = ? WHERE id = ?],

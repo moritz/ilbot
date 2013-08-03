@@ -34,11 +34,11 @@ my $template = do {
     <$IN>;
 };
 
-for my $channel ($backend->channels) {
+for my $channel (@{ $backend->channels }) {
     my $b = $backend->channel(channel => $channel);
     my @counts;
     for (my $d = $min_date; $d < $max_date; $d += $interval) {
-        push @counts, $b->activity_count(from => $d, to => $d + $interval);
+        push @counts, $b->activity_count(from => $d, to => $d + $interval) // 0;
     }
 
     # the last data point is probably wrong due to rounding:
