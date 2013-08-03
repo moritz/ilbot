@@ -53,21 +53,21 @@ my $log_joins = config(backend => 'log_joins');
     sub chanjoin {
         my $self = shift;
         my $e = shift;
-        dbwrite($e->{channel}, '',  $e->{who} . ' joined ' . $e->{channel});
+        dbwrite($e->{channel}, undef,  $e->{who} . ' joined ' . $e->{channel});
         return undef;
     }
 
     sub chanquit {
         my $self = shift;
         my $e = shift;
-        dbwrite($e->{channel}, '', $e->{who} . ' left ' . $e->{channel});
+        dbwrite($e->{channel}, undef, $e->{who} . ' left ' . $e->{channel});
         return undef;
     }
 
     sub chanpart {
         my $self = shift;
         my $e = shift;
-        dbwrite($e->{channel}, '',  $e->{who} . ' left ' . $e->{channel});
+        dbwrite($e->{channel}, undef,  $e->{who} . ' left ' . $e->{channel});
         return undef;
     }
 

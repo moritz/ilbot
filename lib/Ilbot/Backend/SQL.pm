@@ -162,8 +162,9 @@ sub update_summary {
 sub log_line {
     my ($self, %opt) = @_;
     for my $o (qw/channel line nick/) {
-        die "Missing option '$o'" unless defined $opt{$o};
+        die "Missing option '$o'" unless exists $opt{$o};
     }
+    $opt{nick} = undef if defined($opt{nick}) && length($opt{nick}) == 0;
     $self->ping;
     my $sql = $self->sql_for(query => 'log_line');
     my $sth = $self->dbh->prepare_cached($sql);
