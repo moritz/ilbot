@@ -69,6 +69,8 @@ sub backend { $_[0]{backend} }
 sub dbh     { $_[0]{backend}->dbh() };
 sub ping    { $_[0]->backend->ping }
 
+sub channels_and_days_for_ids { shift->backend->channels_and_days_for_ids(@_) }
+
 package Ilbot::Backend::Cached::Channel;
 
 use Ilbot::Config;
