@@ -322,14 +322,19 @@ function filtering_off() {
 
 // Summary features
 var summary_filter_link = '<a href="javascript:hide_non_summary()">show only summary lines</a>';
-var enable_summary_mode_html = ' <a href="javascript:enable_summary_mode()">Enable summary mode</a>';
+var enable_summary_mode_html = ' <a href="javascript:ui_enable_summary_mode()">Enable summary mode</a>';
 var summary_mode_html = '<a href="javascript:save_summary_changes()">Save summary changes</a>, <span id="toggle_summary">' + summary_filter_link + '</span> <a href="javascript:disable_summary_mode()">disable summary mode</a>';
 $(document).ready(function() {
     disable_summary_mode();
 });
 
-function enable_summary_mode() {
-    if ($('.summary').length) {
+function ui_enable_summary_mode() {
+    var $s = $('#log th').add($('#log tr'));
+    enable_summary_mode($s);
+}
+
+function enable_summary_mode($s, force) {
+    if (!force && $('.summary').length) {
         $('.summary').show();
         $('#summary_container').html(summary_mode_html);
         return;
@@ -339,8 +344,8 @@ function enable_summary_mode() {
     $.ajax(url, {
         accept: 'application/json',
         success: function(d) {
-            $('#log th').eq(0).after('<th class="summary">S</th>');
-            $('#log tr').each(function (idx, e) {
+            $s.filter('th').eq(0).after('<th class="summary">S</th>');
+            $s.filter('tr').each(function (idx, e) {
                 var id = $(e).find('.time').attr('id');
                 if (id) {
                     var i = id.substr(2);
@@ -360,12 +365,14 @@ function enable_summary_mode() {
             $('input.summary_checkbox').click(function() {
                 window.onbeforeunload = function () { return 'You have unsaved changes!' };
             });
+            IlbotConfig.in_summary_mode = true;
         }
     });
 }
 function disable_summary_mode() {
     $('.summary').hide();
     $('#summary_container').html(enable_summary_mode_html);
+    IlbotConfig.in_summary_mode = false;
 }
 
 function save_summary_changes() {
@@ -436,7 +443,9 @@ function show_all_rows() {
                 $('table#log tr').css('border-bottom-style', 'none');
                 $last.css('border-bottom-style', 'solid');
                 $last.after(data.text);
-                collapse($last.nextAll());
+                var $newly_loaded = $last.nextAll();
+                enable_summary_mode($newly_loaded, true);
+                collapse($newly_loaded);
             },
             complete: function() {
                 IlbotConfig.currently_polling = false;
