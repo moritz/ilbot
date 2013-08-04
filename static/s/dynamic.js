@@ -1,9 +1,8 @@
-// collapse mulitple joins/quits into one line
-$(document).ready(function() {
+function collapse($e) {
     var hash = window.location.hash;
     var uncollapse;
 
-    $('tr.special.new').each(function (idx, elem) {
+    $e.filter('.special.new').each(function (idx, elem) {
         var ids = [$(elem).attr('id')];
         $(elem).nextAll().each(function (i, e) {
             if ($(e).hasClass('special')) {
@@ -33,6 +32,10 @@ $(document).ready(function() {
            }
         }
     });
+}
+// collapse mulitple joins/quits into one line
+$(document).ready(function() {
+    collapse($('table#log tr'))
 });
 
 function show_collapsed(id) {
@@ -429,9 +432,11 @@ function show_all_rows() {
                     $('document').unbind('keydown');
                 }
                 $('#poll input').blur();
+                var $last = $('table#log tr').last();
                 $('table#log tr').css('border-bottom-style', 'none');
-                $('table#log tr').last().css('border-bottom-style', 'solid');
-                $('table#log tr').last().after(data.text);
+                $last.css('border-bottom-style', 'solid');
+                $last.after(data.text);
+                collapse($last.nextAll());
             },
             complete: function() {
                 IlbotConfig.currently_polling = false;
