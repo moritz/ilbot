@@ -444,7 +444,9 @@ function show_all_rows() {
                 $last.css('border-bottom-style', 'solid');
                 $last.after(data.text);
                 var $newly_loaded = $last.nextAll();
-                enable_summary_mode($newly_loaded, true);
+                if (IlbotConfig.in_summary_mode) {
+                    enable_summary_mode($newly_loaded, true);
+                }
                 collapse($newly_loaded);
             },
             complete: function() {
