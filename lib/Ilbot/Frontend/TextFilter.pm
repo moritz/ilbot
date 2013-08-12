@@ -223,10 +223,11 @@ sub github_links {
 }
 
 sub rt_links {
-    my $key = shift;
-    $key =~ s/^#//;
+    my $text = shift;
+    my $key  = $text+;
+    $key =~ s/[^0-9]+//g;
     return [qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$key">},
-        "$key",
+        $text,
         qq{</a>},
     ];
 }
@@ -250,3 +251,4 @@ sub break_apart {
 
 
 1;
+# vim: ft=perl expandtab sw=4 ts=4
