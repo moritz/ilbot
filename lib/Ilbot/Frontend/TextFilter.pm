@@ -224,7 +224,7 @@ sub github_links {
 
 sub rt_links {
     my $text = shift;
-    my $key  = $text+;
+    my $key  = $text;
     $key =~ s/[^0-9]+//g;
     return [qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$key">},
         $text,
