@@ -1,7 +1,7 @@
-* fix context in search results for adjacent hits
 * fix spam.pl with rewritten URLs
 
 Already done:
+* fix context in search results for adjacent hits
 * import of colabti irclogs
 * add context to search results?
 * full text search
