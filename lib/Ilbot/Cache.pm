@@ -26,6 +26,7 @@ sub cache {
     package FakeCache;
     sub new { bless [], shift };
     sub delete { };
+    sub compute { $_[2]->() }
 }
 
 
