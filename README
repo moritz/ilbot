@@ -2,18 +2,6 @@ This is an IRC logging bot, and a CGI web interface for showing the logs.
 
 The documentation can be found at http://moritz.faui2k3.org/en/ilbot
 
-Installation instructs are still sorely missing, sorry about that.
+For installation please run ./install
 
-Note that in production mode, pages are cached for performance reason.
-During the installation, you should have caching disabled (by
-setting NO_CACHE = 1 in cgi.conf). Once you're confident with your setup,
-remove that setting again.
-
-WARNING: When upgrading from previous versions of ilbot, and if you haven't
-done it yet, you might need to change the SQL schema by running the
-update-sql-add-summary.sql SQL file against your database, like
-
-    mysql yourdatabse < update-sql-add-summary.sql
-
-This might take a while, depending on the size of your database. During that
-time, the IRC logs won't work properly.
+When upgrading from older versions of ilbot, please read UPGRADE.pod.
