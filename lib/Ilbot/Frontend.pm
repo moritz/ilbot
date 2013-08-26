@@ -239,6 +239,7 @@ sub day_text {
     my $table = Text::Table->new(qw/Time Nick Message/);
     for my $row (@{ $b->lines(day => $opt{day}) }) {
         my ($nick, $ts, $line) = ($row->[1], $row->[2], $row->[3]);
+        next unless $nick;
 
 		my ($hour, $minute) = (mytime $ts)[2, 1];
 
