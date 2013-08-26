@@ -162,10 +162,10 @@ sub day {
         $t = Ilbot::Config::_template(\$TMPL);
     }
     {
-        my $clf = "channels/$channel.tmpl";
+        my $clf = config('template') . "/channels/$channel.tmpl";
         if (-e $clf) {
             open my $IN, '<', $clf;
-            my $contents = do { local $/; <$clf> };
+            my $contents = do { local $/; <$IN> };
             close $IN;
             $t->param(CHANNEL_LINKS => $contents);
         }
