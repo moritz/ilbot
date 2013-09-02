@@ -45,6 +45,7 @@ sub hsv2rgb {
 sub nick_to_color {
     my $nick = lc $_[0] // 0;
     $nick    =~ s/_+$//;
+    $nick    =~ s/^\*\s+//;
     use Digest::MD5 qw/md5/;
     use Data::Dumper; $Data::Dumper::Useqq = 1;
     my ($h, $s, $v) = unpack 'SCC', md5($nick);
