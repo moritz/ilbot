@@ -3,8 +3,9 @@ function collapse($e) {
     var uncollapse;
 
     $e.filter('.special.new').each(function (idx, elem) {
-        var ids = [$(elem).attr('id')];
-        $(elem).nextAll().each(function (i, e) {
+        var $elem = $(elem);
+        var ids = [$elem.attr('id')];
+        $elem.nextAll().each(function (i, e) {
             if ($(e).hasClass('special')) {
                 $(e).addClass('hidden');
                 if (hash && $(e).find(hash).length) {
@@ -20,13 +21,13 @@ function collapse($e) {
         });
         var c = ids.length;
         if (c > 1) {
-            $(elem).data('ids', ids);
-            $(elem).addClass('hidden');
+            $elem.data('ids', ids);
+            $elem.addClass('hidden');
             var extra_class = 'light';
-            if ($(elem).hasClass('dark')) {
+            if ($elem.hasClass('dark')) {
                 extra_class = 'dark';
             }
-            $(elem).before('<tr class="special ' + extra_class + '"><td class="nick" /> <td /><td>' + c + ' more elements. <a href="javascript:show_collapsed(\'' + $(elem).attr('id') + '\')">Show/hide.</a></td></tr>');
+            $elem.before('<tr class="special ' + extra_class + '"><td class="nick" /> <td /><td>' + c + ' more elements. <a href="javascript:show_collapsed(\'' + $elem.attr('id') + '\')">Show/hide.</a></td></tr>');
             if (uncollapse) {
                 show_collapsed(uncollapse);
            }
