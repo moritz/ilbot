@@ -152,6 +152,10 @@ sub activity_average {
     cache(namespace => 'backend')->compute($cache_key, '1 day', sub { $self->backend->activity_average } );
 }
 
+sub count_upto {
+    shift->backend->count_upto(@_);
+}
+
 sub search_count {
     my $self = shift;
     $self->backend->search_count(@_);

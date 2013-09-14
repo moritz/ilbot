@@ -154,12 +154,18 @@ sub day {
     return if $opt{day} gt today();
     return if $opt{day} lt $b->first_day;
 
-    my $t = Ilbot::Config::_template('day');
+    my $line_no   = 0;
+
+    my $t;
     if ($opt{after_id}) {
         my $TMPL = qq[<TMPL_LOOP MESSAGES>
 <TMPL_INCLUDE NAME='line.tmpl'>
         </TMPL_LOOP>];
         $t = Ilbot::Config::_template(\$TMPL);
+        $line_no = $b->count_upto(day => $opt{day}, id => $opt{after_id});
+    }
+    else {
+        $t = Ilbot::Config::_template('day');
     }
     {
         my $clf = config('template') . "/channels/$channel.tmpl";
@@ -177,7 +183,6 @@ sub day {
         summary_only => $opt{summary},
         after_id     => $opt{after_id},
     );
-    my $line_no   = 0;
     my $prev_nick = q{!!!};
     my $c         = 0;
     my @msg;

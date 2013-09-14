@@ -24,6 +24,7 @@ our %SQL = (
         lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? ORDER BY id],
         lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND in_summary ORDER BY id],
         summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary = 1 ORDER BY id],
+        count_upto               => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ? AND id <= ?],
     },
     mysql       => {
         activity_average         => q[SELECT SUM(cache_number_lines), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_day WHERE channel = ?],
@@ -279,6 +280,17 @@ sub lines {
     );
 
     return $r;
+}
+
+sub count_upto {
+    my ($self, %opt) = @_;
+    die "Missing option 'day'" unless $opt{day};
+    die "Missing option 'id'"  unless $opt{id};
+    $self->_single_value(
+        $self->sql_for(query => 'count_upto'),
+        $self->_day_id(day   => $opt{day}),
+        $opt{id},
+    );
 }
 
 # XXX search_results doesn't really belong here, 
