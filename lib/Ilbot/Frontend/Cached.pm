@@ -38,8 +38,8 @@ sub day {
     die 'Missing attribute "channel"' unless defined $opt{channel};
     die 'Missing attribute "day"'     unless defined $opt{day};
     # TODO: cache if number of lines stayed the same
-    return $self->frontend->day(%opt) if $opt{day} eq today();
-    my $cache_key = join '|', 'day', $opt{channel}, $opt{day}, $opt{summary};
+    return $self->frontend->day(%opt) if $opt{day} eq today() || $opt{summary};
+    my $cache_key = join '|', 'day', $opt{channel}, $opt{day};
     $cache->compute($cache_key, '1 year', sub { $self->frontend->day(%opt) });
 }
 
