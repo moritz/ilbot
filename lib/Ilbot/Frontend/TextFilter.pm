@@ -33,17 +33,9 @@ my $re_abbr  = qr/(?!)/;
 my $base_url = config(www => 'base_url');
 
 my @filter = (
-    irc_color_codes => {
-        re      => qr/\03\d{2}/,
-        match   => '',
-    },
     ansi_color_codes => {
         re      => qr{$color_start.*?(?:$color_reset|(?=$color_start)\z)}s,
         match   => \&ansi_color_codes,
-    },
-    nonprint_clean => {
-        re      => qr/[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+/,
-        match   => '',
     },
     links => {
         re      => qr{$uri_regexp(?:#[\w_%:/!*+?;&=-]+)?(?<![.,])},
@@ -112,6 +104,8 @@ for (my $i = 0; $i < @filter - 2; $i += 2) {
 
 sub text_filter {
     my ($str, $opt) = @_;
+    # remove IRC color codes and "forbidden" characters
+    $str =~ s/\03\d{2}|[^\x{90}\x{0A}\x{0D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+//g;
     process($str, {%$opt, step => $first});
 }
 
