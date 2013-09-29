@@ -148,11 +148,10 @@ sub process {
                 );
             }
         }
-        else {
+        elsif (length $replacement) {
             push @res, process($replacement,
                 { %$opt, step => $next }
             );
-
         }
         $prev_pos = pos($str);
     }
