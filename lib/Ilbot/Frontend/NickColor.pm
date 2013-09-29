@@ -43,7 +43,8 @@ sub hsv2rgb {
 }
 
 sub nick_to_color {
-    my $nick = lc $_[0] // 0;
+    return 0 unless defined $_[0];
+    my $nick = lc $_[0];
     $nick    =~ s/_+$//;
     $nick    =~ s/^\*\s+//;
     use Digest::MD5 qw/md5/;
