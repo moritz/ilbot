@@ -24,11 +24,22 @@ use Plack::Request;
 use Ilbot::Config;
 my $frontend = _frontend();
 
+# some channels like #perl.pl contain dots,
+# be we can't generally allow dots in channel names,
+# because then robots.txt etc. would be handled that way.
+my $channel_re = join '|', '[^./]+',
+    map quotemeta,
+    grep /\W/,
+    map { s/^#+//; $_ }
+    @{ $frontend->backend->channels };
+$channel_re    = qr{(?:$channel_re)};
+
+say $channel_re;
+
 my $app = sub {
     my $env = shift;
     $frontend->ping();
     my $req = Plack::Request->new($env);
-    my $channel_re = qr{[^./]+};
     my $s;
     given ($req->path_info) {
         when ( qr{ ^/$ }x ) {
