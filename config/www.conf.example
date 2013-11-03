@@ -2,3 +2,5 @@ base_url = /
 static_path = static
 throttle = 0
 use_cache = 0
+logo_url = /s/camelia.png
+logo_link = http://perl6.org/

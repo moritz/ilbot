@@ -219,6 +219,8 @@ sub day {
     my $next = date($opt{day}) + 1;
     $t->param(NEXT_DATE => $next, NEXT_URL => "$base_url$opt{channel}/$next");
     $t->param(IS_TODAY => $opt{day} eq today() ? 'true' : 'false');
+    $t->param(LOGO_URL => config(www => 'logo_url'));
+    $t->param(LOGO_LINK => config(www => 'logo_link'));
     if (config(backend => 'timezone') eq 'local') {
         $t->param(TIMEZONE => config(backend => 'timezone_descr'));
     }
