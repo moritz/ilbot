@@ -147,6 +147,13 @@ $app = builder {
     enable "Plack::Middleware::Static",
             path => qr{^/(?:robots\.txt|s/)},
             root => $c->(www => 'static_path');
+    if ( -d $c->('config_root') . '/d' ) {
+        enable "Plack::Middleware::Static",
+                path => qr[^/($channel_re)/\d{4}-\d{2}-\d{2}/?],
+                pass_through => 1,
+                content_type => 'text/html; charset=UTF-8',
+                root => $c->('config_root') . '/d';
+    }
     $app;
 };
 # vim: ft=perl
