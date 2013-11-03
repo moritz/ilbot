@@ -34,8 +34,6 @@ my $channel_re = join '|', '[^./]+',
     @{ $frontend->backend->channels };
 $channel_re    = qr{(?:$channel_re)};
 
-say $channel_re;
-
 my $app = sub {
     my $env = shift;
     $frontend->ping();
