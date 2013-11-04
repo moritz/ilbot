@@ -10,7 +10,8 @@ use Getopt::Long qw/GetOptions/;
 GetOptions(
     'recreate!' => \my $Recreate,
     'verbose!'  => \my $Verbose,
-) or die "Usage: $0 [--recreate] [--verbose]"; 
+    'sleep=i'   => \my $Sleep,
+) or die "Usage: $0 [--recreate] [--verbose] [--sleep=seconds]";
 my $path = config('config_root') . '/d';
 say "Using root $path" if $Verbose;
 mkpath($path);
@@ -49,5 +50,6 @@ for my $channel (@{ $b->channels }) {
         );
 
         close $OUT;
+        sleep $Sleep if $Sleep;
     }
 }
