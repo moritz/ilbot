@@ -20,7 +20,7 @@ my $f = _frontend();
 
 use Data::Dumper;
 
-for my $channel ($b->channels) {
+for my $channel (@{ $b->channels }) {
     my $sanitized = Ilbot::Config::sanitize_channel_for_fs($channel);
     say "Working on channel '$channel', $path/$sanitized" if $Verbose;
     mkpath "$path/$sanitized";
