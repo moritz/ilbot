@@ -37,6 +37,9 @@ function collapse($e) {
 // collapse mulitple joins/quits into one line
 $(document).ready(function() {
     collapse($('table#log tr'))
+    $('#notify').click(function() {
+        $(this).hide().empty();
+    });
 });
 
 function show_collapsed(id) {
@@ -376,6 +379,10 @@ function disable_summary_mode() {
     IlbotConfig.in_summary_mode = false;
 }
 
+function notify(msg) {
+    $('#notify').html(msg).fadeIn().delay(5000).fadeOut();
+}
+
 function save_summary_changes() {
     var newly_checked = [];
     var was_checked = [];
@@ -397,9 +404,14 @@ function save_summary_changes() {
         $.post(IlbotConfig.base_url +  "e/summary",
             { check: newly_checked.join('.'), uncheck: was_checked.join('.') },
             function () {
+                notify('Summary saved!');
+
                 window.onbeforeunload = null;
             }
         );
+    }
+    else {
+        notify('No changes to save');
     }
 }
 

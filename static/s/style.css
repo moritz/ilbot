@@ -231,3 +231,19 @@ table.calendar a {
 .hidden {
     display: none;
 }
+
+/* stolen from * http://stackoverflow.com/questions/7464714/jquery-notification-bars-that-can-be-dismissed#7464803 */
+#notify {
+    position:relative;
+    width:100%;
+    background-color: #70709f;
+    height:50px;
+    color:white;
+    display:none;
+    font-weight: bold;
+    border: 10px;
+    font-size: 150%;
+    text-align: center;
+    padding: 5px;
+    cursor: pointer;
+}
