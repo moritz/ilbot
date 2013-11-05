@@ -14,6 +14,7 @@ use HTML::Entities qw(encode_entities);
 use Encode qw/encode_utf8/;
 
 use Data::Dumper;
+use JSON qw/encode_json/;
 
 use constant ENTITIES => qq{<>"&};
 use constant NBSP => "\xa0";
@@ -392,10 +393,7 @@ sub summary_ids {
     }
     my $b   = $self->backend->channel(channel => $opt{channel});
     my $ids = $b->summary_ids(day => $opt{day});
-    # crude way to generate JSON, I know
-    return '['
-        . join(',', @$ids)
-        . ']';
+    return encode_json $ids;
 }
 
 
