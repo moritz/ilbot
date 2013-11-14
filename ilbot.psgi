@@ -34,10 +34,47 @@ my $channel_re = join '|', '[^./]+',
     @{ $frontend->backend->channels };
 $channel_re    = qr{(?:$channel_re)};
 
+my $handle_json = sub {
+    my $req = shift;
+    state $json_fe  = _json_frontend();
+    my $error;
+
+    given ($req->path_info) {
+        when ( qr{ ^/$ }x ) {
+            $s = $json_fe->index;
+        }
+        when ( qr{ ^/ ($channel_re) /? $ }x ) {
+            $s = $json_fe->channel_index(channel => $1, out_fh => $OUT)
+                or $error = 'No such channel';
+        }
+        when ( qr! ^/ ($channel_re) / (\d{4}-\d{2}-\d{2}) $ !x ) {
+            $s = $json_fe->day(
+                channel => $1,
+                day     => $2,
+            ) or $error = 'No such channel or day';
+        }
+    };
+    return ($s, $error);
+
+};
+
+
 my $app = sub {
     my $env = shift;
     $frontend->ping();
     my $req = Plack::Request->new($env);
+    my $want_json = $req->headers->header('Accept') eq 'application/json';
+    if ($want_json) {
+        # TODO: $handle_Json
+        my ($res, $error) = $handle_json->($req);
+        if ($res) {
+            # TODO: Content-Type header
+            return [200, [], [encode_json $res]];
+        }
+        else {
+            return [404, [], [encode_json { error => $error || 'URL not known' }]];
+        }
+    }
     my $s;
     given ($req->path_info) {
         when ( qr{ ^/$ }x ) {

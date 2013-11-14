@@ -7,7 +7,7 @@ use HTML::Template 2.91;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT = qw/config _template _backend _frontend _search_backend sanitize_channel_for_fs/;
+our @EXPORT = qw/config _template _backend _frontend _json_frontend _search_backend sanitize_channel_for_fs/;
 
 my $path;
 my %config;
@@ -142,6 +142,13 @@ sub _frontend {
         );
     }
     return $f;
+}
+
+sub _json_frontend {
+    require Ilbot::Frontend::JSON;
+    return Ilbot::Frontend::JSON->new(
+        backend => _backend(),
+    );
 }
 
 sub sanitize_channel_for_fs {

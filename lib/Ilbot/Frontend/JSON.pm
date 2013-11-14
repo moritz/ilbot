@@ -1,4 +1,7 @@
 package Ilbot::Frontend::JSON;
+use 5.010;
+use strict;
+use warnings;
 
 use Ilbot::Config;
 
@@ -15,7 +18,7 @@ sub index {
     my %channels;
     for my $channel (@{ $self->backend->channels }) {
         (my $stripped = $channel) =~ s/^#+//;
-        $channels{$channel} = frontend(www => 'base_url') . "$stripped/";
+        $channels{$channel} = config(www => 'base_url') . "$stripped/";
     }
     return \%channels;
 }
@@ -25,7 +28,7 @@ sub channel_index {
     die "Missing option 'channel'" unless $opt{channel};
     my $b = $self->backend->channel(channel => '#' . $opt{channel});
     my %links;
-    my $prefix = frontend(www => 'base_url') . "$channel/";
+    my $prefix = config(www => 'base_url') . "$opt{channel}/";
     for my $c (@{ $b->days_and_activity_counts }) {
         $links{ $c->[0] } = $prefix . $c->[0];
     }
@@ -41,7 +44,7 @@ sub day {
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
 
-    my $b         = $self->backend->channel(channel => $full_channel);
+    my $b         = $self->backend->channel(channel => $opt{channel});
     return unless $b->exists;
     return if $opt{day} gt today();
     return if $opt{day} lt $b->first_day;
@@ -52,7 +55,7 @@ sub day {
     );
 
     my %response = (
-        channel     => $full_channel,
+        channel     => $opt{channel},
         day         => $opt{day},
         header      => [qw/id nick timestamp line/],
         rows        => $rows,
