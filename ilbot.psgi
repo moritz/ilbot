@@ -65,14 +65,14 @@ my $app = sub {
     my $req = Plack::Request->new($env);
     my $want_json = $req->headers->header('Accept') eq 'application/json';
     if ($want_json) {
-        # TODO: $handle_Json
+        state $json_headers = ['Content-Type', 'application/json; charset=UTF-8'];
         my ($res, $error) = $handle_json->($req);
         if ($res) {
             # TODO: Content-Type header
-            return [200, [], [encode_json $res]];
+            return [200, $json_headers, [encode_json $res]];
         }
         else {
-            return [404, [], [encode_json { error => $error || 'URL not known' }]];
+            return [404, $json_headers, [encode_json { error => $error || 'URL not known' }]];
         }
     }
     my $s;
