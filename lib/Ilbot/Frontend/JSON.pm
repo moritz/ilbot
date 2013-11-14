@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Ilbot::Config;
+use Ilbot::Date qw/today/;
 
 sub new {
     my ($class, %opt) = @_;
@@ -44,7 +45,7 @@ sub day {
     my $channel = $opt{channel};
     $channel =~ s/^\#+//;
 
-    my $b         = $self->backend->channel(channel => $opt{channel});
+    my $b         = $self->backend->channel(channel => '#' . $channel);
     return unless $b->exists;
     return if $opt{day} gt today();
     return if $opt{day} lt $b->first_day;
