@@ -12,6 +12,9 @@ use Date::Simple qw/date/;
 use Encode qw/encode_utf8/;
 use JSON;
 
+use constant DAY => 24 * 3600;
+
+
 # I don't know what the p5 porters where thinking
 # when they enabled this warning by default
 no if $] >= 5.018, 'warnings', "experimental::smartmatch";
@@ -76,9 +79,11 @@ my $app = sub {
         }
     }
     my $s;
+    my @header;
     given ($req->path_info) {
         when ( qr{ ^/$ }x ) {
             $s = $frontend->index;
+            push @header, "Cache-Control", 'max-age=' . (5 * DAY);
         }
         when (qr!^/e/($channel_re)/(\d{4}-\d{2}-\d{2})/summary\z!) {
             $s = $frontend->summary_ids(channel => "#$1", day => $2);
@@ -140,6 +145,8 @@ my $app = sub {
             return [302, [Location => $url ], []];
         }
         when ( qr! ^/ ($channel_re) / (\d{4}-\d{2}-\d{2}) ( (?: /summary)? ) $!x ) {
+            push @header, "Cache-Control", 'max-age=' . (30 * DAY)
+                if !$3 && $2 ne today();
             $s = $frontend->day(
                 channel => $1,
                 day     => $2,
@@ -148,6 +155,8 @@ my $app = sub {
                 or return [404, ['Content-Type' => 'text/plain'], ['No such channel/day']];
         }
         when ( qr! ^/ ($channel_re) / (\d{4}-\d{2}-\d{2}) /text $!x ) {
+            push @header, "Cache-Control", 'max-age=' . (30 * DAY)
+                if $2 ne today();
             $s = $frontend->day_text(
                 channel => $1,
                 day     => $2,
@@ -161,6 +170,7 @@ my $app = sub {
 
     }
     my $h = $frontend->http_header( accept => $env->{HTTP_ACCEPT} );
+    $h = [ @header, @$h ] if @header;
     close $out_fh;
 
     return [200, $h, [encode_utf8 $s]];
