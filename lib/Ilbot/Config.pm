@@ -31,6 +31,7 @@ my %defaults = (
         timezone_descr  => "the server's local time",
         use_cache       => 1,
         log_joins       => 1,
+        temp_path       => '/tmp/ilbot',
     },
     search => {
         language        => 'en',
@@ -86,6 +87,7 @@ sub config {
 
 sub _template {
     my $name = shift;
+
     my @args = (
         loop_context_vars   => 1,
         global_vars         => 1,
@@ -93,15 +95,34 @@ sub _template {
         default_escape      => 'html',
         utf8                => 1,
     );
+
+    my $classname = 'HTML::Template';
+    eval {
+        require 'HTML/Template/Compiled.pm';
+        my $temp_path = config(backend => 'temp_path');
+        mkdir $temp_path unless -d $temp_path;
+        my $cache_dir = join '/', $temp_path, 'templates';
+        mkdir $cache_dir unless -d $cache_dir;
+        if (-d $cache_dir && -w $cache_dir) {
+            $classname = 'HTML::Template::Compiled';
+            push @args, (
+                file_cache => 1,
+                file_cache_dir => $cache_dir,
+                case_sensitive  => 0,
+            );
+        }
+    };
+#    warn $@ if $@;
+
     if (ref $name) {
-        return HTML::Template->new(
+        return $classname->new(
             scalarref   => $name,
             path        => config('template'),
             @args,
         );
     } else {
         my $path = config('template') . "/$name.tmpl";
-        return HTML::Template->new(
+        return $classname->new(
             filename            => $path,
             @args,
         );
