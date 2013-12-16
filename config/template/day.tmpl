@@ -31,7 +31,7 @@
     
     <h1>IRC log for #<TMPL_VAR CHANNEL>, <TMPL_VAR DATE></h1>
 
-    <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="" ESCAPE=NONE>
+    <TMPL_VAR NAME=CHANNEL_LINKS ESCAPE=NONE>
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
 
     <p>All times shown according to <TMPL_IF UTC><abbr title="Coordinated Universal Time">UTC</abbr><TMPL_ELSE><TMPL_VAR TIMEZONE></TMPL_IF>.</p>
@@ -74,7 +74,7 @@
     <span id="bottom" />
 
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
-    <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="" ESCAPE=NONE>
+    <TMPL_VAR NAME=CHANNEL_LINKS ESCAPE=NONE>
 
     <TMPL_INCLUDE NAME="footer.tmpl">
 
