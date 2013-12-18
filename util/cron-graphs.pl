@@ -59,4 +59,5 @@ for my $channel (@{ $backend->channels }) {
     close $GNU or die "Error while writing to $gnu_file: $!";
 
     system('gnuplot', $gnu_file);
+    unlink $tmp_file, $gnu_file;
 }
