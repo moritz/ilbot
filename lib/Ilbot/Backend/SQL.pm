@@ -30,7 +30,7 @@ our %SQL = (
         activity_average         => q[SELECT SUM(cache_number_lines), DATEDIFF(DATE(MAX(day)), DATE(MIN(day))) FROM ilbot_day WHERE channel = ?],
         log_line                 => q[CALL ilbot_log_line (?, ?, ?)],
     },
-    Pg           => {
+    pg           => {
         log_line                 => q[SELECT ilbot_log_line (?, ?, ?)],
     }
 );
@@ -39,8 +39,12 @@ my %post_connect = (
     mysql   => sub {
         $_[0]{mysql_enable_utf8} = 1;
         $_[0]{mysql_auto_reconnect} = 1;
-        $_[0]->do(q[set time_zone = '+0:00'])
-            if config(backend => 'timezone') ne 'local';
+        if (config(backend => 'timezone') ne 'local') {
+            warn "Setting timezone to UTC!";
+            $_[0]->do(q[set time_zone = '+0:00']);
+            use Data::Dumper;
+            warn Dumper $_[0]->selectall_arrayref(q[SELECT DATE(FROM_UNIXTIME(1388531037))]);
+        }
     },
     Pg      => sub {
         $_[0]{pg_enable_utf8}    = 1;
