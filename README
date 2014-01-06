@@ -5,3 +5,9 @@ The documentation can be found at http://moritz.faui2k3.org/en/ilbot
 For installation please run ./install
 
 When upgrading from older versions of ilbot, please read UPGRADE.pod.
+
+Backends:
+    The ./install script only support mysql as database backend,
+    but the rest of the code also supports PostgreSQL. There is no working
+    migration between mysql and postgresql ilbot databases.
+
