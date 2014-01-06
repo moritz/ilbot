@@ -23,7 +23,7 @@ our %SQL = (
         lines_summary_nospam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND NOT spam AND in_summary ORDER BY id],
         lines_nosummary_spam     => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? ORDER BY id],
         lines_summary_spam       => q[SELECT id, nick, timestamp, line FROM ilbot_lines WHERE day = ? AND in_summary ORDER BY id],
-        summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary = 1 ORDER BY id],
+        summary_ids              => q[SELECT id FROM ilbot_lines WHERE day = ? AND in_summary ORDER BY id],
         count_upto               => q[SELECT COUNT(*) FROM ilbot_lines WHERE day = ? AND id <= ?],
     },
     mysql       => {
