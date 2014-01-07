@@ -14,6 +14,5 @@ requires 'Regexp::Common';
 requires 'Text::Table';
 requires 'CHI';
 requires 'Plack';
-requires 'DBD::mysql';
 requires 'Lucy';
 requires 'JSON';

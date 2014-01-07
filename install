@@ -10,6 +10,7 @@ use File::Basename qw/basename/;
 
 use Getopt::Long qw/GetOptions/;
 GetOptions(
+    'dbsystem=s'    => \my $Dbsystem,
     'dbhost=s'      => \my $Dbhost,
     'dbport=s'      => \my $Dbport,
     'dbname=s'      => \my $Dbname,
@@ -24,6 +25,7 @@ GetOptions(
 Usage: $0 [options]
 
 Valid options are:
+    --dbsystem=sys      Database backend, can be 'mysql' or 'postgresql'
     --dbhost=host       Host of the database server
     --dbport=3306       Port of the database server
     --dbname=ilbot      Name of the database
@@ -80,6 +82,30 @@ sub prompt {
     return $answer || $default;
 }
 
+my $sys   = $Dbsystem // prompt('Database system', 'mysql');
+if ($sys =~ /^(mysql|maria)/i) {
+    $sys = 'mysql';
+}
+elsif ($sys =~ /^postgre/i) {
+    $sys = 'postgresql';
+}
+else {
+    die "Unknown database system (I only know of mysql and postgresql)\n";
+}
+
+my %ports = (mysql => 3306, postgresql => 5432);
+my %driver = (mysql => 'mysql', postgresql => 'Pg');
+
+say "For $sys we need the extra driver $driver{$sys}. Checking...\n";
+requires("DBD::$driver{$sys}");
+
+if ($missing) {
+    die "DBD::$driver{$sys} missing. Please install it, and then try running $0 again\n";
+}
+else {
+    say "Ok.";
+}
+
 print <<EOT;
 Database Access
 ===============
@@ -88,13 +114,13 @@ For installation you need privileges for creating tables and indxes.
 For running ilbot, you need INSERT, SELECT and UPDATE privileges.
 EOT
 my $host   = $Dbhost // prompt('Database host', 'localhost');
-my $port   = $Dbport // prompt('Database port', 3306);
+my $port   = $Dbport // prompt('Database port', $ports{$sys});
 my $dbname = $Dbname // prompt('Database name', 'ilbot');
 my $dbuser = $Dbuser // prompt('Database username', 'ilbot');
 my $dbpass = $Dbpass // prompt('Database password');
 
 say "Now testing your database connection...";
-my $dbh = DBI->connect("DBI:mysql:database=$dbname;host=$host;port=$port", $dbuser, $dbpass, { RaiseError => 1, PrintError => 0 });
+my $dbh = DBI->connect("DBI:$driver{$sys}:database=$dbname;host=$host;port=$port", $dbuser, $dbpass, { RaiseError => 1, PrintError => 0 });
 $dbh->do('SELECT 1');
 
 my $has_table_irclog = eval { $dbh->do('SELECT 1 FROM ilbot_channel LIMIT 1'); 1 };
@@ -104,13 +130,13 @@ The database $dbname already has a table named 'ilbot_channel'. I'm going to
 use this table (and the others going along with it), and assume that they
 already have the right structure. If not, either abort this installer with
 Ctrl-C and run it again with a different database, or drop the relevant
-tables and create them again from the schema in file 'sql/schema.mysql'
+tables and create them again from the schema in file 'sql/schema.$sys'
 EOT
 }
 else {
     say "Database connection is fine, creating the schema for you...";
     eval {
-        open my $SCHEMA, '<', 'sql/schema.mysql';
+        open my $SCHEMA, '<', "sql/schema.$sys";
         local $/ = '';
         while (<$SCHEMA>) {
             $dbh->do($_);
@@ -158,7 +184,7 @@ open my $CONFIG, '>', $backend_conf;
 
 print { $CONFIG } <<EOC;
 # Database connectivity
-dsn      = mysql
+dsn      = $driver{$sys}
 database = $dbname
 host     = $host
 port     = $port
@@ -294,6 +320,10 @@ EOT
     }
 }
 
+my $dbstring = $sys eq 'mysql'
+    ? "mysql -h $Dbhost -u $Dbuser $Dbname"
+    : "psql -h $Dbhost -U $Dbuser $Dbname";
+
 print <<EOT;
 
 It's your turn now
@@ -308,7 +338,7 @@ advisable to run it inside a screen or tmux session.
 
 Periodically run `$path/bin/create-search index` to create or update
 the search index, and
-`mysql -h $Dbhost -u $Dbuser $Dbname < $path/sql/update-cache.mysql`
+`$dbstring < $path/sql/update-cache.$sys`
 to update some in-database caches.
 
 If you want to show activity graphs on the front page, please read
