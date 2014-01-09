@@ -42,14 +42,6 @@ If you don't supply some of these options, $0 will
 ask for them interactively.
 _
 
-my %files = (
-    bin               => ['ilbot2.pl', 'util/cron-graphs.pl', 'util/create-search-index'],
-    www               => ['ilbot.fcgi', 'ilbot.psgi'],
-    sql               => ["sql/update-cache.$sys"],
-    'static/s'        => ['static/s/*'],
-    'config/template' => ['config/template/*.tmpl'],
-);
-
 say 'Checking dependencies';
 
 my $missing = 0;
@@ -92,6 +84,14 @@ elsif ($sys =~ /^postgre/i) {
 else {
     die "Unknown database system (I only know of mysql and postgresql)\n";
 }
+
+my %files = (
+    bin               => ['ilbot2.pl', 'util/cron-graphs.pl', 'util/create-search-index'],
+    www               => ['ilbot.fcgi', 'ilbot.psgi'],
+    sql               => ["sql/update-cache.$sys"],
+    'static/s'        => ['static/s/*'],
+    'config/template' => ['config/template/*.tmpl'],
+);
 
 my %ports = (mysql => 3306, postgresql => 5432);
 my %driver = (mysql => 'mysql', postgresql => 'Pg');
