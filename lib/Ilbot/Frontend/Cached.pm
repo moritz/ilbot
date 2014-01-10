@@ -60,6 +60,7 @@ sub update_summary {
 
 sub search { shift->frontend->search(@_) }
 sub http_header { shift->frontend->http_header(@_) }
+sub summary_ids { shift->frontend->summary_ids(@_) }
 
 sub ping { $_[0]->frontend->ping }
 
