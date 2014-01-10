@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use 5.010;
 
+use Carp qw/confess/;
+
 use Lucy::Index::Indexer;
 use Lucy::Plan::Schema;
 use Lucy::Analysis::PolyAnalyzer;
@@ -68,6 +70,9 @@ sub index_all {
     my $verbose = $opt{verbose};
     my $count++;
     for my $channel (@{ $self->backend->channels }) {
+        if (ref $channel) {
+            confess "Internal error: \$channel is ref ($channel), should a channel name";
+        }
         my $b = $self->backend->channel(channel => $channel);
         my $i = $self->indexer(channel => $channel);
         say $channel if $verbose;
