@@ -208,6 +208,7 @@ sub day {
             \$c,
         );
         $prev_nick = $nick;
+        $prev_nick =~ s/^\*\s//;
     }
     $t->param(
         CHANNEL     => $channel,
@@ -283,9 +284,11 @@ sub message_line {
     my @classes;
     my @msg_classes;
     my $display_nick = $nick;
+    my $stripped_nick = $nick;
+    $stripped_nick =~ s/\*\s//;
     $display_nick =~ s/\A\*\ /'*' . NBSP/exms;
     $h{NICK} = encode_entities($display_nick, ENTITIES);
-    if ($nick ne ($args_ref->{prev_nick} // '')) {
+    if ($stripped_nick ne ($args_ref->{prev_nick} // '')) {
         # $c++ is used to alternate the background color
         $$c++;
         push @classes, 'new';
