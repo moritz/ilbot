@@ -9,7 +9,7 @@ use Ilbot::Backend::SQL;
 use Ilbot::Backend::Cached;
 use Ilbot::Date qw/today/;
 use Date::Simple qw/date/;
-use Encode qw/encode_utf8/;
+use Encode qw/decode_utf8 encode_utf8/;
 use JSON;
 
 use constant DAY => 24 * 3600;
@@ -124,7 +124,7 @@ my $app = sub {
             my $p = $req->query_parameters;
             $s = $frontend->search(
                 channel => $1,
-                q       => scalar($p->{q}),
+                q       => decode_utf8(scalar($p->{q})),
                 nick    => scalar($p->{nick}),
                 offset  => scalar($p->{offset}),
             )
