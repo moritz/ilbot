@@ -207,7 +207,7 @@ sub day {
             },
             \$c,
         );
-        $prev_nick = $nick;
+        $prev_nick = $nick // '';
         $prev_nick =~ s/^\*\s//;
     }
     $t->param(
