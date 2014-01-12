@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+use lib 'lib';
+# TO BE REPLACED BY THE INSTALLER
 use 5.010;
 use strict;
 use warnings;
