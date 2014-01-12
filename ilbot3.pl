@@ -21,10 +21,10 @@ my $log_joins = config(backend => 'log_joins');
 $Data::Dumper::Terse = 1;
 $Data::Dumper::Useqq = 1;
 
-my $config_file = shift() // 'bot.conf';
+my $config_file = shift(@ARGV) // 'bot.conf';
 
 sub read_config {
-    my $conf = Config::File::read_config_file(shift @ARGV || "bot.conf");
+    my $conf = Config::File::read_config_file($config_file);
     $conf->{nick}     ||= $ARGV[0] || 'ilbot3';
     $conf->{port}     ||= 6667;
     $conf->{server}   ||= 'irc.freenode.net';
