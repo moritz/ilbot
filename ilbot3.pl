@@ -13,6 +13,10 @@ use Data::Dumper;
 use AnyEvent::IRC::Util qw/prefix_nick/;
 use Config::File;
 use Ilbot::Config;
+use Time::HiRes qw/sleep/;
+use Getopt::Long;
+
+GetOptions(debug => \(my $Debug = 0));
 
 my $backend = _backend();
 my $log_joins = config(backend => 'log_joins');
@@ -34,7 +38,6 @@ sub read_config {
 
 my $c = AnyEvent->condvar;
 
-my $timer;
 my $con = new AnyEvent::IRC::Client;
 
 sub gen_cb {
@@ -47,7 +50,7 @@ sub gen_cb {
 
 sub ilog {
     my ($channel, $who, $what) = @_;
-    say join '|', map $_ // '(undef)', @_;
+    say join '|', map $_ // '(undef)', @_ if $Debug >= 2;
     return if !$log_joins && !defined($who);
     $backend->log_line(
         channel => $channel,
@@ -86,18 +89,33 @@ $con->reg_cb (
     },
 );
 
+if (($Debug || 0) >= 3) {
+    $con->reg_cb (
+        debug_recv => sub {
+            print "DEBUG ", Dumper $_[1];
+        }
+    );
+}
+
 my $conf = read_config();
 
 $con->connect ($conf->{server}, $conf->{port}, { nick => $conf->{nick} });
 
 my %current_channels;
-for my $channel ( @{ $conf->{channels} } ) {
-    say "Joining $channel";
-    $con->send_srv(
-        JOIN    => $channel,
-    );
-    $current_channels{$channel} = 1;
-}
+my @channels_to_join = @{ $conf->{channels} };
+my $timer = AnyEvent->timer(
+    interval    => 2,
+    cb          => sub {
+        if (my $channel = shift @channels_to_join) {
+            return if $current_channels{$channel};
+            say "Joining $channel";
+            $con->send_srv(
+                JOIN    => $channel,
+            );
+            $current_channels{$channel} = 1;
+        }
+    },
+);
 
 my $signal_handler = AnyEvent->signal(
     signal  => 'HUP',
@@ -106,11 +124,7 @@ my $signal_handler = AnyEvent->signal(
         say "In SIGHUP handler";
         for my $channel ( @{ $conf->{channels} } ) {
             unless ( $current_channels{$channel} ) {
-                say "Joining $channel";
-                $con->send_srv(
-                    JOIN    => $channel,
-                );
-                $current_channels{$channel} = 1;
+                push @channels_to_join, $channel;
             }
         }
         # TODO: leave channels that have been removed
