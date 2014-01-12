@@ -92,6 +92,7 @@ $con->connect ($conf->{server}, $conf->{port}, { nick => $conf->{nick} });
 
 my %current_channels;
 for my $channel ( @{ $conf->{channels} } ) {
+    say "Joining $channel";
     $con->send_srv(
         JOIN    => $channel,
     );
@@ -105,6 +106,7 @@ my $signal_handler = AnyEvent->signal(
         say "In SIGHUP handler";
         for my $channel ( @{ $conf->{channels} } ) {
             unless ( $current_channels{$channel} ) {
+                say "Joining $channel";
                 $con->send_srv(
                     JOIN    => $channel,
                 );
