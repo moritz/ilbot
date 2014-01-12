@@ -1,7 +1,11 @@
 DROP PROCEDURE IF EXISTS `ilbot_log_line`;
+
 DROP TABLE IF EXISTS `ilbot_lines`;
+
 DROP TABLE IF EXISTS `ilbot_day`;
+
 DROP TABLE IF EXISTS `ilbot_channel`;
+
 CREATE TABLE `ilbot_channel` (
     `id` int(11) NOT NULL auto_increment,
     `channel` VARCHAR(30) NOT NULL,
