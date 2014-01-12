@@ -99,7 +99,14 @@ if (($Debug || 0) >= 3) {
 
 my $conf = read_config();
 
-$con->connect ($conf->{server}, $conf->{port}, { nick => $conf->{nick} });
+$con->enable_ssl() if $conf->{use_ssl};
+my %info = (
+    nick => $conf->{nick},
+);
+for my $attr (qw/user password/) {
+    $info{$attr} = $conf->{$attr} if defined $conf->{attr};
+}
+$con->connect ($conf->{server}, $conf->{port}, \%info);
 
 my %current_channels;
 my @channels_to_join = @{ $conf->{channels} };
