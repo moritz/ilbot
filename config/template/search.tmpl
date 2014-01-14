@@ -33,6 +33,10 @@
 
     </form>
 
+    <TMPL_IF last_index_update>
+        <p>Searching this channels includes data upto <TMPL_VAR last_index_update>.</p>
+    </TMPL_IF>
+
 	<TMPL_IF RESULTS>
 	<h1>Results</h1>
 

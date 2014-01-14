@@ -347,6 +347,14 @@ sub search {
             q       => $opt{q},
             offset  => $opt{offset} // 0,
         );
+        if (my $ts = $res->{index_timestamp}) {
+            use Data::Dumper;
+            print Dumper $ts;
+            my ($sec, $min, $hour, $day, $mon, $year) = mytime($ts);
+            my $date = sprintf '%04d-%02d-%02d %02d:%02d H',
+                $year + 1900, $mon + 1, $day, $hour, $min;
+            $t->param(last_index_update => $date);
+        }
         my $count = $res->{total};
         if ($count == 0) {
             $t->param(no_results => 1);

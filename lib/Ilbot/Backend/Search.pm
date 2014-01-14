@@ -178,6 +178,22 @@ sub _searcher {
     );
 }
 
+sub _index_timestamp {
+    my $self = shift;
+    my $channel = $self->{channel};
+    my $timestamp_file = join('/', config('search_idx_root'), $channel, 'ilbot-timestamp');
+    my $can_open = open my $FH, '<', $timestamp_file;
+    if ($can_open) {
+        my $ts = <$FH>;
+        chomp $ts;
+        return $ts;
+    }
+    else {
+        warn "Could not open '$timestamp_file': $!";
+    }
+    return;
+}
+
 sub _query {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
@@ -233,6 +249,7 @@ sub search_results {
         days    => \@days,
         total   => $hits->total_hits,
         offset  => $offset,
+        index_timestamp => $self->_index_timestamp(),
     };
 }
 
