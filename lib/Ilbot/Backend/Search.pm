@@ -78,6 +78,8 @@ sub index_all {
         say $channel if $verbose;
         my $last_id;
         my $last_id_file = $self->index_dir(channel => $channel) . '/ilbot-last-id';
+        my $timestamp_file = $self->index_dir(channel => $channel) . '/ilbot-timestamp';
+        my $timestamp = time;
         if (open my $LAST_ID_FH, '<', $last_id_file) {
             $last_id = <$LAST_ID_FH>;
             chomp $last_id;
@@ -133,6 +135,10 @@ sub index_all {
             say $LAST_ID_FH $last_written_id;
             close $LAST_ID_FH or die "Cannot write to '$last_id_file': $!";
         }
+        open my $TIMESTAMP_FH, '>', $timestamp_file
+            or die "Cannot open '$timestamp_file' for writing: $!";
+        say $TIMESTAMP_FH $timestamp;
+        close $TIMESTAMP_FH or die "Cannot write to '$last_id_file': $!";
     }
     return $count;
 }
