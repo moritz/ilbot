@@ -51,6 +51,7 @@ sub gen_cb {
 sub ilog {
     my ($channel, $who, $what) = @_;
     say join '|', map $_ // '(undef)', @_ if $Debug >= 2;
+    next if $what =~ /^\s*\[off\]/i;
     return if !$log_joins && !defined($who);
     $backend->log_line(
         channel => $channel,
