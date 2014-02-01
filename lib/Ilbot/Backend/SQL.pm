@@ -38,7 +38,6 @@ our %SQL = (
 my %post_connect = (
     mysql   => sub {
         $_[0]{mysql_enable_utf8} = 1;
-        $_[0]{mysql_auto_reconnect} = 1;
         if (config(backend => 'timezone') ne 'local') {
             warn "Setting timezone to UTC!";
             $_[0]->do(q[set time_zone = '+0:00']);
