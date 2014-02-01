@@ -52,7 +52,7 @@ for my $table (qw/ilbot_channel ilbot_day ilbot_lines/) {
         }
         eval {
             $store->execute(@row);
-        }
+        };
         if ($@) {
             warn $@;
 
