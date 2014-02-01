@@ -5,6 +5,8 @@ use 5.010;
 use lib 'lib';
 use Config::File qw/read_config_file/;
 use Data::Dumper;
+use Encode qw/decode/;
+use List::Util qw/max/;
 $Data::Dumper::Useqq = 1;
 $| = 1;
 
@@ -15,6 +17,7 @@ use Ilbot::Config;
 use DBI;
 
 my $mysql_dbh = _backend->dbh();
+$mysql_dbh->{mysql_enable_utf8} = 0;
 my $pg_dbh    = Ilbot::Backend::SQL->new(config => $pg_config)->dbh();
 
 my %count = (
@@ -23,7 +26,10 @@ my %count = (
     ilbot_lines   => 7,
 );
 
+my %max;
+
 for my $table (qw/ilbot_channel ilbot_day ilbot_lines/) {
+    my $max;
     say "$table... ";
     $pg_dbh->begin_work;
     my $fetch = $mysql_dbh->prepare("SELECT * FROM $table ORDER BY id");
@@ -33,15 +39,31 @@ for my $table (qw/ilbot_channel ilbot_day ilbot_lines/) {
     $fetch->execute;
     my $c = 0;
     while (my @row = $fetch->fetchrow_array) {
+        if (defined $max) {
+            $max = max $max, $row[0];
+        }
+        else {
+            $max = $row[0];
+        }
         if ($table eq 'ilbot_lines') {
             $row[5] = $row[5] ? 'true' : 'false';
             $row[6] = $row[5] ? 'true' : 'false';
-            unless (utf8::valid($row[4])) {
-                print Dumper \@row;
-                $row[4] =~ s/[^0-\177]/./g;
-            }
+            $row[4] = Encode::decode('UTF-8', $row[4], sub  {chr $_[0] });
         }
-        $store->execute(@row);
+        eval {
+            $store->execute(@row);
+        }
+        if ($@) {
+            warn $@;
+
+            use Devel::Peek;
+            Dump \@row;
+
+            print Dumper \@row;
+
+            exit;
+
+        }
         ++$c;
         if ($c % 10_000 == 0) {
             $pg_dbh->commit;
@@ -52,8 +74,14 @@ for my $table (qw/ilbot_channel ilbot_day ilbot_lines/) {
     $fetch->finish;
     $store->finish;
     $pg_dbh->commit;
-    my $max = 1 + _backend()->_single_value("SELECT MAX(id) FROM $table");
-    $pg_dbh->do("ALTER SEQUENCE ${table}_id_seq RESTART WITH $max");
+    if (defined $max) {
+        $max{$table} = $max;
+        $max++;
+        $pg_dbh->do("ALTER SEQUENCE ${table}_id_seq RESTART WITH $max");
+    }
     say "\ndone $table!";
 }
+
+use Data::Dumper;
+print Dumper \%max;
 
