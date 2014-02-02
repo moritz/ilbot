@@ -16,7 +16,8 @@ use Ilbot::Config;
 use Time::HiRes qw/sleep/;
 use Getopt::Long;
 
-GetOptions(debug => \(my $Debug = 0));
+GetOptions('debug+' => \(my $Debug = 0));
+say "Debug level: $Debug";
 
 my $backend = _backend();
 my $log_joins = config(backend => 'log_joins');
@@ -60,6 +61,23 @@ sub ilog {
     );
 }
 
+my $conf = read_config();
+
+$con->enable_ssl() if $conf->{use_ssl};
+my %info = (
+    nick => $conf->{nick},
+);
+for my $attr (qw/user password/) {
+    $info{$attr} = $conf->{$attr} if defined $conf->{attr};
+}
+
+sub my_connect {
+    $con->connect ($conf->{server}, $conf->{port}, \%info);
+};
+
+my %current_channels;
+my @channels_to_join = @{ $conf->{channels} };
+
 # TODO: for tracking nick_change, find out which channels she is in
 $con->reg_cb (
     publicmsg => sub {
@@ -88,29 +106,24 @@ $con->reg_cb (
     kick => sub {
         ilog($_[2], undef, "$_[5] has kicked $_[1]: $_[4]");
     },
-);
-
-if (($Debug || 0) >= 3) {
-    $con->reg_cb (
-        debug_recv => sub {
+    error => sub {
+        my ($self, $code, $message) = @_;
+        if ($message =~ /closing link/i) {
+            my_connect();
+            %current_channels = ();
+            @channels_to_join = @{ $conf->{channels} };
+        }
+    },
+    debug_recv => sub {
+        if ($Debug >= 3) {
             print "DEBUG ", Dumper $_[1];
         }
-    );
-}
-
-my $conf = read_config();
-
-$con->enable_ssl() if $conf->{use_ssl};
-my %info = (
-    nick => $conf->{nick},
+    },
 );
-for my $attr (qw/user password/) {
-    $info{$attr} = $conf->{$attr} if defined $conf->{attr};
-}
-$con->connect ($conf->{server}, $conf->{port}, \%info);
 
-my %current_channels;
-my @channels_to_join = @{ $conf->{channels} };
+my_connect();
+
+
 my $timer = AnyEvent->timer(
     interval    => 2,
     cb          => sub {
