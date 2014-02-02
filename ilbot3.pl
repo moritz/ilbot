@@ -15,6 +15,7 @@ use Config::File;
 use Ilbot::Config;
 use Time::HiRes qw/sleep/;
 use Getopt::Long;
+use Encode qw/decode_utf8 encode_utf8/;
 
 GetOptions('debug+' => \(my $Debug = 0));
 say "Debug level: $Debug";
@@ -49,11 +50,18 @@ sub gen_cb {
     }
 }
 
+sub my_decode {
+    decode_utf8 $_[0], sub { encode_utf8 chr $_[0] };
+}
+
 sub ilog {
     my ($channel, $who, $what) = @_;
     say join '|', map $_ // '(undef)', @_ if $Debug >= 2;
-    next if $what =~ /^\s*\[off\]/i;
+    return if $what =~ /^\s*\[off\]/i;
     return if !$log_joins && !defined($who);
+    $channel =~ s{^##}{#};
+    $channel = lc $channel;
+    $what = my_decode($what);
     $backend->log_line(
         channel => $channel,
         nick    => $who,
