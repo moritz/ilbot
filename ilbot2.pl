@@ -127,11 +127,15 @@ my $conf     = Config::File::read_config_file(shift @ARGV || "bot.conf");
 my $nick     = shift @ARGV || $conf->{nick} || "ilbot6";
 my $server   = $conf->{server}  // "irc.freenode.net";
 my $port     = $conf->{port}    // 6667;
+my $password = $conf->{password} // undef;
+my $ssl      = $conf->{ssl}      // 0;
 my $channels = [ split m/\s+/, $conf->{channel}];
 
 my $bot = Ilbot::Logger->new(
         server    => $server,
         port      => $port,
+        password  => $password,
+        ssl       => $ssl,
         channels  => $channels,
         nick      => $nick,
         alt_nicks => ["irclogbot", "logbot"],
