@@ -1,3 +1,6 @@
-server  = 195.148.124.79
-nick    = ilbot_nextgen
-channel = \#bottest \#bottest2
+server   = 195.148.124.79
+port     = 6667
+ssl      = 0
+password =
+nick     = ilbot6
+channel  = \#bottest \#bottest2
