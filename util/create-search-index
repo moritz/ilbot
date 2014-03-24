@@ -2,6 +2,8 @@
 use strict;
 use warnings;
 use 5.010;
+use lib 'lib'; # just for local testing
+# TO BE REPLACED BY THE INSTALLER
 use File::Path qw/mkpath/;
 
 use Ilbot::Config;
