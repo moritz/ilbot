@@ -64,7 +64,7 @@ sub requires {
 die "Missing file 'cpanfile'" unless -e 'cpanfile';
 do 'cpanfile';
 if ($missing) {
-    die "$missing missing dependencies; please install them, and then try running $0 again\n";
+    die "$missing missing dependencies; please install them from the CPAN (or through your package manager, if applicable), and then try running $0 again\n";
 }
 say '... dependencies all OK';
 
