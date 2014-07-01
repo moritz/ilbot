@@ -22,7 +22,7 @@ my %defaults = (
         base_url        => '/',
         no_cache        => 0,
         throttle        => 0,
-        use_cache       => 1,
+        use_cache       => 0,
         logo_url        => '/s/camelia.png',
         logo_link       => 'http://perl-6.de/',
     },
