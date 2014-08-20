@@ -197,24 +197,30 @@ sub _index_timestamp {
 sub _query {
     my ($self, %opt) = @_;
     die "Missing argument 'q'" unless defined $opt{q};
-    my $query = Lucy::Search::QueryParser->new(
-        schema => $self->_searcher->get_schema,
-    )->parse($opt{q});
+    my @criteria;
+    if (length $opt{q}) {
+        push @criteria, Lucy::Search::QueryParser->new(
+            schema => $self->_searcher->get_schema,
+        )->parse($opt{q});
+    }
     if (length $opt{nick}) {
-        my $q_nick = Lucy::Search::TermQuery->new(
+        push @criteria, Lucy::Search::TermQuery->new(
             field   => 'nick',
             term    => lc($opt{nick}),
         );
-        $query = Lucy::Search::ANDQuery->new(
-            children => [$query, $q_nick],
+    }
+    if (@criteria > 1) {
+        return Lucy::Search::ANDQuery->new(
+            children => \@criteria,
         );
     }
-    return $query;
+    else {
+        return $criteria[0];
+    }
 }
 
 sub search_results {
     my ($self, %opt) = @_;
-    die "Missing argument 'q'" unless defined $opt{q};
     my $s           = $self->_searcher;
     my $q           = $self->_query(%opt);
     my $offset      = $opt{offset} // 0;

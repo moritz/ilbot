@@ -341,15 +341,13 @@ sub search {
     my $c = 0;
     my $prev_nick = q[!!!];
     my $line_number = 0;
-    if (defined $opt{q} && length $opt{q}) {
+    if (length $opt{q} || length $opt{nick}) {
         my $res = $b->search_results(
             nick    => $opt{nick},
             q       => $opt{q},
             offset  => $opt{offset} // 0,
         );
         if (my $ts = $res->{index_timestamp}) {
-            use Data::Dumper;
-            print Dumper $ts;
             my ($sec, $min, $hour, $day, $mon, $year) = mytime($ts);
             my $date = sprintf '%04d-%02d-%02d %02d:%02d H',
                 $year + 1900, $mon + 1, $day, $hour, $min;
