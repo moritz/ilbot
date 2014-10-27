@@ -41,8 +41,6 @@ my %post_connect = (
         if (config(backend => 'timezone') ne 'local') {
             warn "Setting timezone to UTC!";
             $_[0]->do(q[set time_zone = '+0:00']);
-            use Data::Dumper;
-            warn Dumper $_[0]->selectall_arrayref(q[SELECT DATE(FROM_UNIXTIME(1388531037))]);
         }
     },
     Pg      => sub {
