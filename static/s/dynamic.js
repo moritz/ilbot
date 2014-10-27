@@ -40,6 +40,16 @@ $(document).ready(function() {
     $('#notify').click(function() {
         $(this).hide().empty();
     });
+
+    // the default scrolling doesn't work, because it happens before
+    // collapse().
+    var fragment = window.location.hash;
+    if (fragment && fragment.length) {
+        var elem = $(fragment)[0];
+        if (elem) {
+            elem.scrollIntoView();
+        }
+    }
 });
 
 function show_collapsed(id) {
