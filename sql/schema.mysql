@@ -31,7 +31,6 @@ CREATE TABLE `ilbot_lines` (
     `line` mediumtext,
     `spam` bit(1) NOT NULL default 0,
     `in_summary` bit(1) NOT NULL default 0,
-
     PRIMARY KEY  (`id`),
     FOREIGN KEY (`day`) REFERENCES `ilbot_day` (`id`) ON DELETE CASCADE
 ) ENGINE = INNODB CHARACTER SET utf8;
