@@ -47,9 +47,9 @@
 	<p><a href="javascript:reset_checkboxes()">Reset all Checkboxes</a></p>
 	<div style="clear:both"></div>
     <TMPL_ELSE>
-    <form action="#" name="summary_form" id="summary_form">
+    <form action="#" id="summary_form">
 	</TMPL_IF>
-    <span id="top" />
+    <div id="top" />
     <table id="log" style="clear:both">
         <tr class="head">
 		<TMPL_IF ADMIN>
@@ -71,7 +71,7 @@
 	</TMPL_IF>
 	</form>
     
-    <span id="bottom" />
+    <div id="bottom" />
 
     <TMPL_INCLUDE NAME='linkblock.tmpl'>
     <TMPL_VAR NAME=CHANNEL_LINKS ESCAPE=NONE>
