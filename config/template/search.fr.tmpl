@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta name="description" content="IRC LOG for channel <TMPL_VAR CHANNEL>" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>s/style.css" title="Purple Haze Stylesheet" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>s/favicon.ico" type="image/x-icon" />
+
+
+    <title>IRC logs - Search</title>
+</head>
+<body>
+    <h1>Search in #<TMPL_VAR CHANNEL></h1>
+
+    <p><a href="<TMPL_VAR BASE_URL>">Recherche dans</a> | <a href="<TMPL_VAR
+    BASE_URL><TMPL_VAR CHANNEL>/">#<TMPL_VAR CHANNEL> index</a></p>
+
+    <form action="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/search/" method="get"
+    accept-charset="utf-8">
+        <label for="nick">Pseudo</label>
+		<input type="text" size="10" maxlength="30" name="nick"
+		value="<TMPL_VAR NICK>" id="nick"></input>
+		<br />
+
+        <label for="q">Texte</label>
+		<input type="text" size="10" maxlength="30" name="q"
+		value="<TMPL_VAR Q>" id="text"></input>
+		<br />
+
+		<input type="submit"></input><br />
+
+    </form>
+
+    <TMPL_IF last_index_update>
+        <p>La recherche sur ce salon inclus les donn&eacute;es jusqu'&agrave; <TMPL_VAR last_index_update>.</p>
+    </TMPL_IF>
+
+	<TMPL_IF RESULTS>
+	<h1>R&eacute;sultats</h1>
+
+	<p>
+	Pages de r&eacute;sultats&nbsp;:
+	<TMPL_LOOP RESULT_PAGES>
+        <TMPL_IF is_this><strong></TMPL_IF>
+		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
+		NICK ESCAPE=URL>;q=<TMPL_VAR Q>;offset=<TMPL_VAR OFFSET>"><TMPL_VAR
+		PAGE></a>
+        <TMPL_IF is_this></strong></TMPL_IF>
+	</TMPL_LOOP>
+	</p>
+
+	<TMPL_LOOP RESULTS>
+		<h2>R&eacute;sultats pour <a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/<TMPL_VAR DAY>"><TMPL_VAR DAY></a></h2>
+		<table>
+		<TMPL_LOOP LINES>
+			<TMPL_INCLUDE line.tmpl>
+		</TMPL_LOOP>
+		</table>
+	</TMPL_LOOP>
+
+	<p>
+	Pages de r&eacute;sultats&nbsp;:
+	<TMPL_LOOP RESULT_PAGES>
+        <TMPL_IF is_this><strong></TMPL_IF>
+		<a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=channel>/search/?nick=<TMPL_VAR
+		NICK ESCAPE=URL>;q=<TMPL_VAR NAME=Q>;offset=<TMPL_VAR NAME=OFFSET>"><TMPL_VAR
+		PAGE></a>
+        <TMPL_IF is_this></strong></TMPL_IF>
+	</TMPL_LOOP>
+	</p>
+	</TMPL_IF>
+
+    <TMPL_INCLUDE footer.tmpl>
+  </body>
+</html>

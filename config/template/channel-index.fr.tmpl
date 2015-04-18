@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta name="description" content="IRC logs by ilbot" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>s/style.css" title="Irclog default Stylesheet" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>s/favicon.ico" type="image/x-icon" />
+    <title>Historique IRC - Sommaire pour #<TMPL_VAR CHANNEL></title>
+</head>
+<body>
+    <h1>Historique IRC - Sommaire pour #<TMPL_VAR CHANNEL></h1>
+
+    <TMPL_VAR NAME=CHANNEL_LINKS DEFAULT="">
+	<TMPL_INCLUDE linkblock.tmpl>
+
+	<h2 id="<TMPL_VAR CHANNEL>">#<TMPL_VAR CHANNEL></h2>
+	<p><strong><a href="<TMPL_VAR BASE_URL><TMPL_VAR CHANNEL>/today">Aujourd'hui</a></strong></p>
+
+	<TMPL_VAR CALENDAR escape=none>
+
+    <TMPL_INCLUDE footer.tmpl>
+  </body>
+</html>

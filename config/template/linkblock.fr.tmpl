@@ -1,0 +1,31 @@
+    <p><TMPL_IF NAME=PREV_URL>
+        <TMPL_IF NAME=IS_SUMMARY>
+        <a href="<TMPL_VAR NAME=PREV_URL>/summary" rel="prev">
+        <TMPL_ELSE>
+        <a href="<TMPL_VAR NAME=PREV_URL>" rel="prev">
+        </TMPL_IF>&larr; Jour pr&eacute;c&eacute;dent</a> |
+    </TMPL_IF> 
+    <a href="<TMPL_VAR NAME=BASE_URL>">Salons</a> |
+	<a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/">#<TMPL_VAR
+    CHANNEL> index</a> |
+	<a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/today">Aujourd'hui</a> |
+    <TMPL_IF NAME=NEXT_URL>
+        <TMPL_IF NAME=IS_SUMMARY>
+        <a href="<TMPL_VAR NAME=NEXT_URL>/summary" rel="next">
+        <TMPL_ELSE>
+        <a href="<TMPL_VAR NAME=NEXT_URL>" rel="next">
+        </TMPL_IF>Jour suivant &rarr;</a> |
+    </TMPL_IF>
+    <a href="<TMPL_VAR BASE_URL><TMPL_VAR name=channel>/search">Recherche</a> |
+    <a href="http://www.google.com/search?q=site%3Airclog.perlgeek.de+inurl%3A<TMPL_VAR NAME=CHANNEL ESCAPE=URL>">Recherche Google</a>
+	<TMPL_IF NAME=DATE>| <a href="<TMPL_VAR
+	NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/<TMPL_VAR NAME=DATE>/text">Texte brut</a> |
+    <TMPL_IF NAME=IS_SUMMARY>
+    <a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/<TMPL_VAR
+    NAME=DATE>">mode complet</a>
+    <TMPL_ELSE>
+    <a href="<TMPL_VAR NAME=BASE_URL><TMPL_VAR NAME=CHANNEL>/<TMPL_VAR NAME=DATE>/summary">r&eacute;sum&eacute;</a>
+    </TMPL_IF>
+    </TMPL_IF>
+
+	</p>
