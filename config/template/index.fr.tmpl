@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta name="description" content="IRC logs by ilbot" />
+    <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>s/style.css" title="Irclog default Stylesheet" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>s/favicon.ico" type="image/x-icon" />
+    <title>IRC logs - Index</title>
+</head>
+<body>
+    <h1>Liste des salons IRC loggu&eacute;s</h1>
+
+    <table>
+    <tr>
+        <th>Salons</th><th></th><TMPL_IF HAS_IMAGES><th>Actvit&eacute;</th></TMPL_IF>
+    </tr>
+
+	<TMPL_LOOP CHANNELS>
+        <tr>
+            <td><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR CHANNEL></a></td>
+            <td><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/today">Aujourd'hui</a></td>
+            <TMPL_IF IMAGE_PATH>
+                <td><img alt="" src="<TMPL_VAR BASE_URL><TMPL_VAR NAME=IMAGE_PATH>"/> </td>
+            </TMPL_IF>
+        </tr>
+    </TMPL_LOOP>
+    </table>
+
+    <TMPL_INCLUDE NAME="footer.tmpl">
+  </body>
+</html>
