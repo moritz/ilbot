@@ -113,6 +113,15 @@ else {
         open my $SCHEMA, '<', 'sql/schema.mysql';
         local $/ = '';
         while (<$SCHEMA>) {
+            # the .sql file contains a custom DELIMITER command, which is needed
+            # for applying the schema through the mysql command line.
+            # But through the C API it is neither necessary nor allowed, so
+            # it must be stripped before passing it through DBI's "do" method.
+            # Compare http://stackoverflow.com/questions/2109366/changing-the-mysql-query-delimiter-through-the-c-api
+            if ( s/DELIMITER\s*(\S+)// ) {
+                my $delim = $1;
+                s{$delim\s*\z}{};
+            }
             $dbh->do($_);
         }
     };
