@@ -25,6 +25,7 @@ my %defaults = (
         use_cache       => 0,
         logo_url        => '/s/camelia.png',
         logo_link       => 'http://perl-6.de/',
+        logo_alt        => 'Perl 6',
         chan_conf       => {},
     },
     backend => {
