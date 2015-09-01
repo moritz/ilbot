@@ -7,7 +7,7 @@ use HTML::Template 2.91;
 use Data::Dumper;
 
 use parent 'Exporter';
-our @EXPORT = qw/config _template _backend _frontend _json_frontend _search_backend sanitize_channel_for_fs/;
+our @EXPORT = qw/chan_conf  config _template _backend _frontend _json_frontend _search_backend sanitize_channel_for_fs/;
 
 my $path;
 my %config;
@@ -25,6 +25,7 @@ my %defaults = (
         use_cache       => 0,
         logo_url        => '/s/camelia.png',
         logo_link       => 'http://perl-6.de/',
+        chan_conf       => {},
     },
     backend => {
         timezone        => 'utc',
@@ -83,6 +84,13 @@ sub config {
         }
     }
     return $c;
+}
+
+sub chan_conf {
+    my ( $chan, $key ) = @_;
+    my $conf = config( www => 'chan_conf' ) or return;
+    $conf->{$chan} or return;
+    return $conf->{$chan}{$key};
 }
 
 sub _template {

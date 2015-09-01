@@ -2,5 +2,9 @@ base_url = /
 static_path = static
 throttle = 0
 use_cache = 0
-logo_url = /s/camelia.png
-logo_link = http://perl6.org/
+logo_url  = /s/camelia.png          # Site default
+logo_link = http://perl6.org/       # Site default
+logo_alt  = Camelia, the Perl 6 bug # Site default
+chan_conf[bottest][logo_url]   = http://example.com/logo.jpg # for #bottest
+chan_conf[bottest][logo_link]  = http://example.com/         # for #bottest
+chan_conf[bottest][logo_alt]   = Custom channel logo alt=""  # for #bottest
