@@ -55,15 +55,10 @@ my @filter = (
         match   => \&synopsis_links,
         chain   => 'encode_entities',
     },
-    github_links     => {
-        re     => qr{(?i:\b(?:GH|pull request)\s*)#\d{2,6}\b},
-        match  => \&github_links,
+    tracker_links => {
+        re => qr{(?:\b(?:GH|pull\s*request|PR|RT)\s*)?#\d{2,8}\b}i,
+        match => \&tracker_links,
         chain  => 'encode_entities',
-    },
-    rt_links     => {
-        re      => qr{(?i:\brt\s*)?#\d{2,6}\b},
-        match   => \&rt_links,
-        chain   => 'encode_entities',
     },
     irc_channel_links => {
         re      => qr{\#(?:perl6-soc|perl6|parrot|cdk|bioclipse|parrotsketch)\b},
@@ -194,35 +189,37 @@ sub synopsis_links {
     }
 }
 
-
-sub github_links {
+sub tracker_links {
     my ($key, $opt) = @_;
-    my $channel = $opt->{channel};
-    if ($key =~ m/^GH/i) {
-        $key =~ m/(\d+)/;
-        if ($channel eq "parrot") {
-            return [qq{<a href="https://github.com/parrot/parrot/issues/$1">}, $key, qq{</a>}];
-        }
-        elsif ($channel eq "moe") {
-            return [qq{<a href="https://github.com/MoeOrganization/moe/issues/$1">}, $key, qq{</a>}];
-        }
-    }
-    elsif ($key =~ m/^pull request #(\d+)/i) {
-        if ($channel eq "moe") {
-            return [qq{<a href="https://github.com/MoeOrganization/moe/pull/$1">}, $key, qq{</a>}];
-        }
-    }
-    return $key;
-}
 
-sub rt_links {
-    my $text = shift;
-    my $key  = $text;
-    $key =~ s/[^0-9]+//g;
-    return [qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$key">},
-        $text,
-        qq{</a>},
-    ];
+    my $trac = chan_conf( $opt->{channel} => 'tracker' ) || {};
+    $trac->{github} and $trac->{github} =~ s{/$}{};
+    $trac->{default} ||= '';
+
+    # If we know GitHub repo address, link anything relevant to it
+    # Also link plain '#\d+' to GitHub, if GH is set as the default tracker
+    if ( $key !~ /RT/i and $trac->{github}
+        and ( $key =~ /GH|pull\s*request|PR/i or $trac->{default} eq 'GH' )
+    ) {
+        $key =~ /(\d+)/;
+        # Redirecting to /issues/ on GitHub works for pull requests as well
+        return [ qq{<a href="$trac->{github}/issues/$1">}, $key, qq{</a>} ];
+    }
+
+    # Link RT# tickets to RT
+    # Also link plain '#\d+' to RT, if RT is set as default tracker
+    if ( $key =~ /RT/i
+        or ( $trac->{default} eq 'RT' and $key !~ /GH|pull\s*request|PR/i )
+    ) {
+        $key =~ /(\d+)/;
+        return [
+            qq{<a href="http://rt.perl.org/rt3/Ticket/Display.html?id=$1">},
+            $key,
+            qq{</a>},
+        ];
+    }
+
+    return $key;
 }
 
 sub irc_channel_links {
