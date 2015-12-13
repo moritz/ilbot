@@ -7,6 +7,7 @@ requires 'Date::Simple';
 requires 'DBI';
 requires 'CGI::Carp';
 requires 'Encode::Guess';
+requires 'FCGI';
 requires 'HTML::Entities';
 requires 'HTML::Template', 2.91;
 requires 'HTTP::Headers';
