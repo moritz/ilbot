@@ -260,6 +260,7 @@ EOT
 
     if ($url =~ qr{https?://([^/]+)(.*)}) {
         my ($domain, $base) = ($1, $2);
+        $base .= '/' unless $base ~~ m{/$};
         open my $CONF, '>', "$path/config/www.conf";
         print $CONF <<EOC;
 base_url    = $base
