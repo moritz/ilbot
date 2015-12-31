@@ -192,7 +192,7 @@ if ($rate) {
 
 $app = builder {
     enable "Plack::Middleware::Static",
-            path => qr{^/(?:robots\.txt|s|\.well-known/)},
+            path => qr{^/(?:robots\.txt|s/|\.well-known/)},
             root => $c->(www => 'static_path');
     if ( -d $c->('config_root') . '/d' ) {
         enable "Plack::Middleware::Static",
