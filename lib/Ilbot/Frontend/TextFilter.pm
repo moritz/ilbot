@@ -61,7 +61,7 @@ my @filter = (
         chain  => 'encode_entities',
     },
     irc_channel_links => {
-        re      => qr{\#(?:perl6-soc|perl6|parrot|cdk|bioclipse|parrotsketch)\b},
+        re      => qr{\#(?:perl6-noise-gang|perl6-toolchain|perl6-release|perl6-gaming|perl6-dev|perl6-soc|perl6|moarvm|parrot|cdk|bioclipse|parrotsketch)\b},
         match   => \&irc_channel_links,
     },
     abbrs => {
