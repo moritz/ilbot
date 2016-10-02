@@ -1,4 +1,5 @@
 base_url = /
+proctol = https
 static_path = static
 throttle = 0
 use_cache = 0

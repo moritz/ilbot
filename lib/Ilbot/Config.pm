@@ -21,6 +21,7 @@ my %defaults = (
     www => {
         base_url        => '/',
         no_cache        => 0,
+        protocol        => 'http',
         throttle        => 0,
         use_cache       => 0,
         logo_url        => '/s/camelia.png',

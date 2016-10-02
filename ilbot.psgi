@@ -80,6 +80,8 @@ my $app = sub {
     }
     my $s;
     my @header;
+    my $base_url = config(www => 'base_url');
+    my $protocol = config(www => 'protocol');
     given ($req->path_info) {
         when ( qr{ ^/$ }x ) {
             $s = $frontend->index;
@@ -131,16 +133,16 @@ my $app = sub {
                 or return [404, ['Content-Type' => 'text/plain'], ['No such channel']];
         }
         when ( qr{ ^/ ($channel_re) /today $}x ) {
-            my $url = join '', 'http://',
+            my $url = join '', "$protocol://",
                                $env->{HTTP_HOST},
-                               "/$1/",
+                               "$base_url$1/",
                                today();
             return [302, [Location => $url ], []];
         }
         when ( qr{ ^/ ([^./]+) /yesterday $}x ) {
-            my $url = join '', 'http://',
+            my $url = join '', "$protocol://",
                                $env->{HTTP_HOST},
-                               "/$1/",
+                               "$base_url$1/",
                                date(today()) - 1;
             return [302, [Location => $url ], []];
         }
