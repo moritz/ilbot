@@ -10,7 +10,6 @@ use constant NBSP => "\xa0";
 
 use HTML::Entities qw(encode_entities);
 use Regexp::Common qw(URI);
-use POSIX qw/ceil/;
 
 use Ilbot::Config;
 
@@ -40,7 +39,7 @@ my @filter = (
     links => {
         re      => qr{$uri_regexp(?:#[\w_%:/!*+?;&=-]+)?(?<![.,])},
         match   => \&linkify,
-        chain   => 'break_words',
+        chain   => 'expand_tabs',
     },
     synopsis_links => {
         re      => qr{
@@ -71,10 +70,6 @@ my @filter = (
     email_obfuscate => {
         re      => qr/(?<=\w)\@(?=\w)/,
         match   => sub { [qq[<img src="${base_url}s/at.png" alt="@" />], '', ''] },
-    },
-    break_words => {
-        re      => qr/\S{50,}/,
-        match   => \&break_apart,
     },
     expand_tabs => {
         re          => qr/\t/,
@@ -226,17 +221,6 @@ sub irc_channel_links {
     my ($key, $state) = @_;
     $key =~ s/^#//;
     return [qq{<a href="/$key/today">}, "#$key", q{</a>}];
-}
-
-# expects a string consisting of a single long word, and returns the same
-# string with spaces after each 50 bytes at least
-sub break_apart {
-    my $str = shift;
-    my $max_chunk_size = 50;
-    my $l = length $str;
-    my $chunk_size = ceil( $l / ceil($l/$max_chunk_size));
-
-    return join chr(8203), unpack "(A$chunk_size)*", $str;
 }
 
 
