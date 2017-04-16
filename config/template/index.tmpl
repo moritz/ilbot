@@ -12,17 +12,17 @@
 <body>
     <h1>Index of IRC logs</h1>
 
-    <table>
+    <table class="index">
     <tr>
         <th>Channel</th><th></th><TMPL_IF HAS_IMAGES><th>Actvity</th></TMPL_IF>
     </tr>
 
 	<TMPL_LOOP CHANNELS>
         <tr>
-            <td><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR CHANNEL></a></td>
+            <td class="channel"><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR CHANNEL></a></td>
             <td><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/today">Today</a></td>
             <TMPL_IF IMAGE_PATH>
-                <td><img alt="" src="<TMPL_VAR BASE_URL><TMPL_VAR NAME=IMAGE_PATH>"/> </td>
+                <td class="activity"><img alt="" src="<TMPL_VAR BASE_URL><TMPL_VAR NAME=IMAGE_PATH>"/> </td>
             </TMPL_IF>
         </tr>
     </TMPL_LOOP>
