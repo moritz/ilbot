@@ -7,6 +7,7 @@ use Ilbot::Date qw/today/;
 use Ilbot::Config;
 use Date::Simple qw/date/;
 use Getopt::Long;
+use JSON qw(encode_json);
 use 5.010;
 
 my $dir = config(www => 'static_path') . '/s/images/index/';
@@ -34,6 +35,8 @@ my $template = do {
     <$IN>;
 };
 
+my %channels;
+
 for my $channel (@{ $backend->channels }) {
     my $b = $backend->channel(channel => $channel);
     my @counts;
@@ -43,6 +46,7 @@ for my $channel (@{ $backend->channels }) {
 
     # the last data point is probably wrong due to rounding:
     pop @counts;
+    $channels{$channel} = \@counts;
 
     (my $filename = $channel) =~ s/[^\w-]//g;
     $filename = "$dir/$filename.png";
@@ -61,3 +65,10 @@ for my $channel (@{ $backend->channels }) {
     system('gnuplot', $gnu_file);
     unlink $tmp_file, $gnu_file;
 }
+
+my $json_file = "$dir/plots.json";
+open my $OUT, '>', $json_file
+    or die "Cannot open '$json_file' for writing: $!";
+print { $OUT }  encode_json({ channels => \%channels }), "\n";
+close $OUT
+    or die "Cannot write to '$json_file': $!";
