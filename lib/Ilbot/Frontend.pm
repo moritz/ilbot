@@ -37,14 +37,6 @@ sub index {
     for my $channel (@{ $self->backend->channels }) {
         next unless $channel =~ s/^\#+//;
         my %data = (channel => $channel);
-
-        my $filename = $channel;
-        $filename =~ s/[^\w-]+//g;
-        $filename = "s/images/index/$filename.png";
-        if (-e "$path/$filename") {
-            $data{image_path}   = $filename;
-            $has_images         = 1;
-        }
         push @channels, \%data;
     }
 

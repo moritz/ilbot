@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="<TMPL_VAR BASE_URL>s/style.css" title="Irclog default Stylesheet" />
     <meta name="viewport" content="width=device-width" />
     <link rel="shortcut icon" href="<TMPL_VAR BASE_URL>s/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css" />
     <title>IRC logs - Index</title>
 </head>
 <body>
@@ -22,11 +23,70 @@
             <td class="channel"><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR CHANNEL></a></td>
             <td><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/today">Today</a></td>
             <TMPL_IF IMAGE_PATH>
-                <td class="activity"><img alt="" src="<TMPL_VAR BASE_URL><TMPL_VAR NAME=IMAGE_PATH>"/> </td>
+                <td class="activity"><div id="<TMPL_VAR NAME=CHART_ID ESCAPE=URL>" class="ct-chart ct-double-octave"></div></td>
             </TMPL_IF>
         </tr>
     </TMPL_LOOP>
     </table>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+    <script type="text/javascript">
+        $().ready(function() {
+            jQuery.ajax({
+                url: '/s/images/index/plots.json',
+                success: function(result) {
+                    var width = 200;
+                    var height = 50;
+                    var options = {
+                        offset: 0,
+                        width: width,
+                        height: height,
+                        showArea: true,
+                        showLine: false,
+                        showPoint: false,
+                        fullWidth: true,
+                        fullHeight: true,
+                        chartPadding: 0,
+                        scaleMinSpace: 0,
+                        axisX: {
+                          offset: 0,
+                          showLabel: false,
+                          showGrid: false,
+                        },
+                        axisY: {
+                          offset: 0,
+                          showLabel: false,
+                          showLabel: false,
+                          showGrid: false,
+                        },
+                    }
+                    var channels = result['channels'];
+                    var chart_counter = 0;
+                    $('table.index').find('tr').each(function() {
+                        var $row = $(this);
+                        var channel = $row.find('.channel').text();
+                        if (!channel) {
+                            return;
+                        }
+                        if (! channel in channels) {
+                            return;
+                        }
+                        chart_counter++;
+                        var $chart_div = $row.find('.activity').find('div');
+                        var chart_id = 'chart-' + chart_counter;
+                        $chart_div.attr('id', chart_id);
+                        var plot_data = { series: [channels[channel]]};
+                        $chart_div.css('min-width', width);
+                        $chart_div.css('min-height', height);
+                        new Chartist.Line('#' + chart_id, plot_data, options);
+                    });
+                    $('.ct-chart path').css('stroke', 'black');
+                }
+            });
+        });
+    </script>
 
     <TMPL_INCLUDE NAME="footer.tmpl">
   </body>
