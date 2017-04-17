@@ -22,9 +22,7 @@
         <tr>
             <td class="channel"><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/">#<TMPL_VAR CHANNEL></a></td>
             <td><a href="<TMPL_VAR BASE_URL><TMPL_VAR NAME=CHANNEL ESCAPE=URL>/today">Today</a></td>
-            <TMPL_IF IMAGE_PATH>
-                <td class="activity"><div id="<TMPL_VAR NAME=CHART_ID ESCAPE=URL>" class="ct-chart ct-double-octave"></div></td>
-            </TMPL_IF>
+            <td class="activity"><div id="<TMPL_VAR NAME=CHART_ID ESCAPE=URL>" class="ct-chart ct-double-octave"></div></td>
         </tr>
     </TMPL_LOOP>
     </table>
@@ -80,9 +78,11 @@
                         var plot_data = { series: [channels[channel]]};
                         $chart_div.css('min-width', width);
                         $chart_div.css('min-height', height);
-                        new Chartist.Line('#' + chart_id, plot_data, options);
+                        new Chartist.Line('#' + chart_id, plot_data, options).on('draw', function(d) {
+    d.element.attr({style: 'fill: black'});
+
+});
                     });
-                    $('.ct-chart path').css('stroke', 'black');
                 }
             });
         });
