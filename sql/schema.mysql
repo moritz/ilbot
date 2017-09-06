@@ -38,7 +38,7 @@ CREATE TABLE `ilbot_lines` (
 
 DELIMITER //
 -- no empty lines, would confuse the installer
-CREATE PROCEDURE `ilbot_log_line`(IN p_channel VARCHAR(30), IN p_nick VARCHAR(40), IN p_line mediumtext)
+CREATE PROCEDURE `ilbot_log_line`(IN p_channel VARCHAR(30), IN p_nick VARCHAR(40), IN p_line mediumtext CHARSET utf8)
 LANGUAGE SQL
 NOT DETERMINISTIC
 SQL SECURITY INVOKER
