@@ -37,7 +37,7 @@ my @filter = (
         match   => \&ansi_color_codes,
     },
     links => {
-        re      => qr{$uri_regexp(?:#[\w_%:/!*+?;&=-]+)?(?<![.,])},
+        re      => qr{$uri_regexp(?:#[\w_%:/!*+?;&=-]+)?(?<![.,)])},
         match   => \&linkify,
         chain   => 'expand_tabs',
     },
